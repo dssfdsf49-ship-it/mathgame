@@ -1,0 +1,906 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>스도쿠 게임</title>
+  <style>
+    :root{
+      --bg:#0b0c10; --card:#111318; --line:#2a2f3a; --text:#e8ebf0;
+      --muted:#9aa3b2; --fixed:#1a1f2a; --accent:#7aa2ff; --bad:#ff6b6b; --good:#33d17a;
+    }
+    body{ margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Apple SD Gothic Neo,Noto Sans KR,sans-serif; background:var(--bg); color:var(--text); }
+    .wrap{ max-width:1080px; margin:24px auto; padding:0 16px; }
+    .card{ background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px; box-shadow:0 8px 30px rgba(0,0,0,.35); }
+    h1{ font-size:18px; margin:0 0 12px; letter-spacing:-.2px; }
+    .row{ display:flex; gap:12px; flex-wrap:wrap; align-items:center; justify-content:space-between; }
+    .controls{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    select,button,label.toggle,input[type="text"]{
+      background:#0f1116; color:var(--text); border:1px solid var(--line);
+      padding:10px 12px; border-radius:12px; cursor:pointer; font-size:14px;
+    }
+    input[type="text"]{ cursor:text; }
+    button:hover, select:hover, label.toggle:hover, input[type="text"]:hover{ border-color:#3b4456; }
+    button.primary{ border-color:rgba(122,162,255,.7); }
+    button.danger{ border-color:rgba(255,107,107,.6); }
+    button.good{ border-color:rgba(51,209,122,.6); }
+    button.neutral{ border-color:rgba(154,163,178,.45); }
+    label.toggle{ display:inline-flex; align-items:center; gap:8px; user-select:none; }
+    label.toggle input{ width:16px; height:16px; }
+    .pill{ display:inline-block; padding:3px 10px; border-radius:999px; border:1px solid var(--line); color:var(--muted); font-size:12px; }
+
+    .layout{ display:flex; gap:14px; flex-wrap:wrap; align-items:flex-start; margin-top:14px; }
+    .hint{ color:var(--muted); font-size:13px; line-height:1.55; min-width:320px; flex:1; }
+    .status{ margin-top:10px; font-size:14px; }
+    .status b{ font-weight:750; }
+
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(9, 1fr);
+      width:min(560px, 92vw);
+      aspect-ratio:1/1;
+      border:2px solid #8b93a6;
+      border-radius:14px;
+      overflow:hidden;
+      user-select:none;
+    }
+    .cell{
+      border:1px solid var(--line);
+      display:flex; align-items:center; justify-content:center;
+      background:#0f1116;
+      position:relative;
+    }
+    .note{
+      position:absolute;
+      right:6px;
+      bottom:4px;
+      font-size:11px;
+      color: var(--muted);
+      pointer-events:none;
+      display:none;
+    }
+    .note.show{ display:block; }
+    body.showing-solution .note{ color:#111111; }
+    .cell:nth-child(3n+1){ border-left-width:2px; }
+    .cell:nth-child(-n+9){ border-top-width:2px; }
+    .cell.box-v{ border-right-width:2px; }
+    .cell.box-h{ border-bottom-width:2px; }
+
+    input.cellInput{
+      width:100%; height:100%;
+      text-align:center; font-size:22px; font-weight:650;
+      border:0; outline:0; background:transparent; color:var(--text);
+      caret-color:var(--accent);
+    }
+    input.cellInput:disabled{
+      background:transparent;
+      color:inherit;
+      opacity:1;
+      cursor:not-allowed;
+    }
+
+    /* ===== 정답 보기 모드 색상 규칙 =====
+       - 원래 문제(주어진 숫자): 검은 바탕 + 흰 글자
+       - 정답으로 채워지는 칸: 흰 바탕 + 검은 글자
+    */
+    body.showing-solution .cell.given input.cellInput:disabled{
+      background:#0b0c10;
+      color:#ffffff;
+    }
+    body.showing-solution .cell.solution-fill input.cellInput:disabled{
+      background:#ffffff;
+      color:#111111;
+    }
+    body.showing-solution .cell.solution-fill{ box-shadow: inset 0 0 0 1px rgba(0,0,0,.10); }
+
+    /* 평상시(퍼즐 모드) 주어진 숫자 스타일 */
+    .cell.given input.cellInput:disabled{ background: var(--fixed); color:#dfe6ff; }
+    /* 원래 문제(주어진 숫자) */
+    .cell.given input.cellInput:disabled{ background: var(--fixed); }
+    /* 정답보기에서, 원래 빈칸이었던 칸(정답으로 채운 칸) */
+    body.showing-solution .cell.solution-fill{ box-shadow: inset 0 0 0 1px rgba(122,162,255,.18); }
+
+    .mark-bad{ background:rgba(255,107,107,.14) !important; }
+    .mark-good{ background:rgba(51,209,122,.12) !important; }
+    /* 정답 보기 모드에서는 배경색 대신 테두리로 표시(흰/검 배경 구분 유지) */
+    body.showing-solution .mark-bad{ background:transparent !important; box-shadow: inset 0 0 0 3px rgba(255,107,107,.75) !important; }
+    body.showing-solution .mark-good{ background:transparent !important; box-shadow: inset 0 0 0 3px rgba(51,209,122,.70) !important; }
+
+    .seedBox{
+      display:flex; gap:8px; align-items:center; flex-wrap:wrap;
+      padding:10px 12px; border:1px dashed rgba(154,163,178,.35); border-radius:14px;
+      background:#0f1116;
+    }
+    .seedBox .label{ color:var(--muted); font-size:12px; }
+    .seedBox input{ min-width:220px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="row">
+        <div>
+          <h1>스도쿠 게임</h1>
+          <div class="pill" id="meta">난이도: - / 단서: - / 힌트: 0 / SEED: -</div>
+        </div>
+
+        <div class="controls">
+          <select id="difficulty">
+            <option value="baby" selected>왕초보</option>
+            <option value="easy">쉬움</option>
+            <option value="medium">보통</option>
+            <option value="hard">어려움</option>
+            <option value="expert">매우 어려움</option>
+</select>
+
+          <label class="toggle" title="같은 행/열/박스에 같은 숫자가 생기면 빨갛게 표시">
+            <input type="checkbox" id="autoCheck" checked />
+            실수 자동표시
+          </label>
+
+          <button class="primary" id="newBtn">새 퍼즐(시드)</button>
+          <button class="neutral" id="randomSeedBtn" title="시드를 랜덤으로 바꾸고 새 퍼즐 생성">랜덤 시드</button>
+
+          <button class="good" id="hintBtn">힌트(클릭)</button>
+          <button id="checkBtn">채점</button>
+          <button id="resetBtn">초기화</button>
+          <button class="danger" id="solveBtn">정답 보기</button>
+        </div>
+      </div>
+
+      <div class="layout">
+        <div>
+          <div id="grid" class="grid" aria-label="sudoku grid"></div>
+        </div>
+
+        <div class="hint">
+          <div class="seedBox">
+            <div class="label">SEED(시드):</div>
+            <input id="seedInput" type="text" placeholder="예: 20251217 / hello / abc-123" />
+            <button class="neutral" id="copySeedBtn" title="현재 시드를 복사">복사</button>
+          </div>
+
+          <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
+            <button class="neutral" id="savePuzzlePngBtn">문제 PNG 저장</button>
+            <button class="neutral" id="saveSolutionPngBtn">정답 PNG 저장</button>
+          </div>
+
+          <div style="margin-top:12px;">
+            - <b>시드</b>를 같은 값으로 두고 <b>새 퍼즐(시드)</b>를 누르면 같은 퍼즐이 다시 나와.<br/>
+            - PNG 저장은 <b>현재 화면 상태</b>랑 무관하게, 내부의 <b>문제/정답 데이터</b>로 깔끔하게 그림.<br/>
+            - <b>정답 보기</b>는 토글(정답 표시/퍼즐 복귀).<br/>
+          </div>
+
+          <div class="status" id="status">상태: <b>대기</b></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+(() => {
+  function xmur3(str) {
+    let h = 1779033703 ^ str.length;
+    for (let i = 0; i < str.length; i++) {
+      h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    return function() {
+      h = Math.imul(h ^ (h >>> 16), 2246822507);
+      h = Math.imul(h ^ (h >>> 13), 3266489909);
+      h ^= h >>> 16;
+      return h >>> 0;
+    };
+  }
+  function mulberry32(a) {
+    return function() {
+      let t = a += 0x6D2B79F5;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  function makeRngFromSeed(seedStr){
+    const seedFn = xmur3(seedStr);
+    const a = seedFn();
+    return mulberry32(a);
+  }
+
+  const deepCopy = (g) => g.map(row => row.slice());
+  function shuffle(arr, rng){
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = (rng() * (i + 1)) | 0;
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  function isValid(grid, r, c, n){
+    for(let i=0;i<9;i++){
+      if(grid[r][i] === n) return false;
+      if(grid[i][c] === n) return false;
+    }
+    const br = (r/3|0)*3, bc = (c/3|0)*3;
+    for(let rr=br; rr<br+3; rr++){
+      for(let cc=bc; cc<bc+3; cc++){
+        if(grid[rr][cc] === n) return false;
+      }
+    }
+    return true;
+  }
+
+  function findEmpty(grid){
+    for(let r=0;r<9;r++){
+      for(let c=0;c<9;c++){
+        if(grid[r][c] === 0) return [r,c];
+      }
+    }
+    return null;
+  }
+
+  function solveRandom(grid, rng){
+    const spot = findEmpty(grid);
+    if(!spot) return true;
+    const [r,c] = spot;
+    const nums = shuffle([1,2,3,4,5,6,7,8,9], rng);
+    for(const n of nums){
+      if(isValid(grid, r, c, n)){
+        grid[r][c] = n;
+        if(solveRandom(grid, rng)) return true;
+        grid[r][c] = 0;
+      }
+    }
+    return false;
+  }
+
+  function countSolutions(grid, limit=2){
+    let count = 0;
+    function dfs(){
+      if(count >= limit) return;
+      const spot = findEmpty(grid);
+      if(!spot){ count++; return; }
+      const [r,c] = spot;
+      for(let n=1;n<=9;n++){
+        if(isValid(grid, r, c, n)){
+          grid[r][c] = n;
+          dfs();
+          grid[r][c] = 0;
+          if(count >= limit) return;
+        }
+      }
+    }
+    dfs();
+    return count;
+  }
+
+  function generateFullSolution(rng){
+    const g = Array.from({length:9}, () => Array(9).fill(0));
+    solveRandom(g, rng);
+    return g;
+  }
+
+  function makePuzzleFromSolution(solution, cluesTarget, rng){
+    const puzzle = deepCopy(solution);
+    const cells = [];
+    for(let r=0;r<9;r++){
+      for(let c=0;c<9;c++){
+        cells.push([r,c]);
+      }
+    }
+    shuffle(cells, rng);
+
+    let filled = 81;
+    for(const [r,c] of cells){
+      if(filled <= cluesTarget) break;
+
+      const backup = puzzle[r][c];
+      puzzle[r][c] = 0;
+
+      const test = deepCopy(puzzle);
+      const solCount = countSolutions(test, 2);
+
+      if(solCount !== 1){
+        puzzle[r][c] = backup;
+      } else {
+        filled--;
+      }
+    }
+    return puzzle;
+  }
+
+  function cluesByDifficulty(diff){
+    if(diff === "baby")   return 58;
+    if(diff === "easy")   return 44;
+    if(diff === "medium") return 36;
+    if(diff === "hard")   return 30;
+    // '매우 어려움'을 체감상 더 어렵게: 단서 21개
+    if(diff === "expert") return 21;
+    return 36;
+  }
+
+  function makeRandomSeed(){
+    if (window.crypto && crypto.getRandomValues) {
+      const a = new Uint32Array(2);
+      crypto.getRandomValues(a);
+      return `${a[0].toString(16)}-${a[1].toString(16)}`;
+    }
+    return String(Date.now()) + "-" + Math.floor(Math.random()*1e9);
+  }
+
+  const gridEl = document.getElementById("grid");
+  const statusEl = document.getElementById("status");
+  const metaEl = document.getElementById("meta");
+  const diffEl = document.getElementById("difficulty");
+  const autoCheckEl = document.getElementById("autoCheck");
+  const seedInputEl = document.getElementById("seedInput");
+
+  const newBtn = document.getElementById("newBtn");
+  const randomSeedBtn = document.getElementById("randomSeedBtn");
+  const copySeedBtn = document.getElementById("copySeedBtn");
+
+  const hintBtn = document.getElementById("hintBtn");
+  const checkBtn = document.getElementById("checkBtn");
+  const resetBtn = document.getElementById("resetBtn");
+  const solveBtn = document.getElementById("solveBtn");
+
+  const savePuzzlePngBtn = document.getElementById("savePuzzlePngBtn");
+  const saveSolutionPngBtn = document.getElementById("saveSolutionPngBtn");
+
+  let puzzle = null;
+  let solution = null;
+  let fixed = null;
+  let inputs = [];
+
+  let isSolutionShown = false;
+  let hintUsed = 0;
+  let currentSeed = "";
+  let lastUserEntries = null; // 정답보기에서 오답/정답 구분용 스냅샷
+  let hintMode = false; // 힌트 모드(클릭한 칸을 해금)
+
+  function setStatus(text, kind=""){
+    statusEl.innerHTML = `상태: <b>${text}</b>`;
+    const b = statusEl.querySelector("b");
+    if(kind === "good") b.style.color = "var(--good)";
+    else if(kind === "bad") b.style.color = "var(--bad)";
+    else b.style.color = "var(--text)";
+  }
+
+  function hideAllNotes(){
+    for(let r=0;r<9;r++){
+      for(let c=0;c<9;c++){
+        const note = inputs?.[r]?.[c]?.parentElement?.querySelector?.('.note');
+        if(note){ note.classList.remove('show'); note.textContent = ''; }
+      }
+    }
+  }
+
+  function snapshotUserEntries(){
+    const snap = Array.from({length:9}, ()=>Array(9).fill(""));
+    for(let r=0;r<9;r++){
+      for(let c=0;c<9;c++){
+        if(fixed && !fixed[r][c]) snap[r][c] = inputs[r][c].value.trim();
+      }
+    }
+    return snap;
+  }
+
+  function buildGrid(){
+    gridEl.innerHTML = "";
+    inputs = [];
+    for(let r=0;r<9;r++){
+      for(let c=0;c<9;c++){
+        const cell = document.createElement("div");
+        cell.className = "cell";
+        if((c+1)%3===0 && c!==8) cell.classList.add("box-v");
+        if((r+1)%3===0 && r!==8) cell.classList.add("box-h");
+
+        const inp = document.createElement("input");
+        inp.className = "cellInput";
+
+        const note = document.createElement("div");
+        note.className = "note";
+        inp.inputMode = "numeric";
+        inp.maxLength = 1;
+
+        inp.addEventListener("input", () => {
+          inp.value = inp.value.replace(/[^1-9]/g, "");
+          cell.classList.remove("mark-good");
+          if(autoCheckEl.checked && !isSolutionShown) markConflicts();
+        });
+
+        cell.addEventListener("mousedown", (e) => {
+          if(hintMode){
+            e.preventDefault();
+            applyHintAt(r, c);
+            return;
+          }
+        });
+
+        inp.addEventListener("focus", () => {
+          if(hintMode){ applyHintAt(r, c); }
+        });
+
+        inp.addEventListener("keydown", (e) => {
+          const key = e.key;
+          let nr=r, nc=c;
+          if(key==="ArrowUp") nr--;
+          else if(key==="ArrowDown") nr++;
+          else if(key==="ArrowLeft") nc--;
+          else if(key==="ArrowRight") nc++;
+          else return;
+
+          e.preventDefault();
+          if(nr>=0 && nr<9 && nc>=0 && nc<9){
+            inputs[nr][nc].focus();
+          }
+        });
+
+        cell.appendChild(inp);
+        cell.appendChild(note);
+        gridEl.appendChild(cell);
+
+        if(!inputs[r]) inputs[r] = [];
+        inputs[r][c] = inp;
+      }
+    }
+  }
+
+  function updateMeta(){
+    let clues = 0;
+    for(let r=0;r<9;r++) for(let c=0;c<9;c++) if(puzzle[r][c] !== 0) clues++;
+    metaEl.textContent = `난이도: ${diffEl.options[diffEl.selectedIndex].text} / 단서: ${clues} / 힌트: ${hintUsed} / SEED: ${currentSeed || "-"}`;
+  }
+
+  function clearAllMarks(){
+    for(let r=0;r<9;r++){
+      for(let c=0;c<9;c++){
+        inputs[r][c].parentElement.classList.remove("mark-bad","mark-good");
+      }
+    }
+  }
+
+  function markConflicts(){
+    clearAllMarks();
+
+    const val = Array.from({length:9}, ()=>Array(9).fill(0));
+    for(let r=0;r<9;r++){
+      for(let c=0;c<9;c++){
+        const s = inputs[r][c].value.trim();
+        val[r][c] = s ? Number(s) : (fixed?.[r]?.[c] ? puzzle[r][c] : 0);
+      }
+    }
+
+    const bad = Array.from({length:9}, ()=>Array(9).fill(false));
+    const markGroup = (cells) => {
+      const map = new Map();
+      for(const [r,c] of cells){
+        const n = val[r][c];
+        if(!n) continue;
+        if(!map.has(n)) map.set(n, []);
+        map.get(n).push([r,c]);
+      }
+      for(const list of map.values()){
+        if(list.length >= 2){
+          for(const [r,c] of list) bad[r][c] = true;
+        }
+      }
+    };
+
+    for(let r=0;r<9;r++) markGroup(Array.from({length:9}, (_,c)=>[r,c]));
+    for(let c=0;c<9;c++) markGroup(Array.from({length:9}, (_,r)=>[r,c]));
+    for(let br=0;br<3;br++){
+      for(let bc=0;bc<3;bc++){
+        const cells = [];
+        for(let r=br*3;r<br*3+3;r++){
+          for(let c=bc*3;c<bc*3+3;c++){
+            cells.push([r,c]);
+          }
+        }
+        markGroup(cells);
+      }
+    }
+
+    let any = false;
+    for(let r=0;r<9;r++){
+      for(let c=0;c<9;c++){
+        if(bad[r][c]){
+          any = true;
+          inputs[r][c].parentElement.classList.add("mark-bad");
+        }
+      }
+    }
+    if(any) setStatus("중복(규칙 위반) 칸이 있어", "bad");
+    else setStatus("진행 중", "");
+  }
+
+  function render(){
+    fixed = Array.from({length:9}, (_,r)=>
+      Array.from({length:9}, (_,c)=> puzzle[r][c] !== 0)
+    );
+
+    for(let r=0;r<9;r++){
+      for(let c=0;c<9;c++){
+        const v = puzzle[r][c];
+        const inp = inputs[r][c];
+        const cell = inp.parentElement;
+
+        cell.classList.remove("mark-bad","mark-good");
+        cell.classList.remove("solution-fill");
+        cell.classList.toggle("given", v !== 0);
+
+        if(v !== 0){
+          inp.value = String(v);
+          inp.disabled = true;
+        } else {
+          inp.value = "";
+          inp.disabled = false;
+        }
+      }
+    }
+
+    isSolutionShown = false;
+    solveBtn.textContent = "정답 보기";
+    updateMeta();
+    hideAllNotes();
+    if(autoCheckEl.checked) markConflicts();
+    setStatus("퍼즐 준비 완료");
+  }
+
+  function newPuzzleFromSeed(seedStr){
+    setStatus("생성 중…", "");
+    setTimeout(() => {
+      hintUsed = 0;
+      currentSeed = (seedStr || "").trim();
+      if(!currentSeed) currentSeed = makeRandomSeed();
+      seedInputEl.value = currentSeed;
+
+      const diff = diffEl.value;
+      const cluesTarget = cluesByDifficulty(diff);
+
+      const rng = makeRngFromSeed(currentSeed + "|" + diff);
+      solution = generateFullSolution(rng);
+      puzzle = makePuzzleFromSolution(solution, cluesTarget, rng);
+
+      render();
+    }, 10);
+  }
+
+  function resetUserInputs(){
+    if(isSolutionShown){
+      render();
+      setStatus("정답 표시를 해제하고 퍼즐로 복귀했어");
+      return;
+    }
+
+    for(let r=0;r<9;r++){
+      for(let c=0;c<9;c++){
+        if(!fixed[r][c]){
+          const inp = inputs[r][c];
+          inp.value = "";
+          inp.disabled = false;
+          inp.parentElement.classList.remove("mark-bad","mark-good");
+        }
+      }
+    }
+    if(autoCheckEl.checked) markConflicts();
+    setStatus("내가 입력한 칸만 초기화 완료");
+  }
+
+  function toggleSolution(){
+    // 정답보기: 오답(빨강)/정답(초록) 구분 + 오답이면 내가 입력한 값(작게) 표시
+    if(isSolutionShown){
+      // 퍼즐로 돌아가기: 원래 퍼즐 + 직전에 입력했던 값 복원
+      setHintMode(false);
+      document.body.classList.remove("showing-solution");
+      render();
+      hideAllNotes();
+
+      if(lastUserEntries){
+        for(let r=0;r<9;r++){
+          for(let c=0;c<9;c++){
+            if(!fixed[r][c]){
+              inputs[r][c].value = lastUserEntries[r][c] || "";
+              inputs[r][c].disabled = false;
+            }
+          }
+        }
+      }
+      clearAllMarks();
+      if(autoCheckEl.checked) markConflicts();
+      setStatus("퍼즐로 돌아왔어 (내 입력도 복원됨)");
+      isSolutionShown = false;
+      solveBtn.textContent = "정답 보기";
+      return;
+    }
+
+    // --- switch to solution view ---
+    if(!fixed) return;
+    lastUserEntries = snapshotUserEntries();
+
+    setHintMode(false);
+    isSolutionShown = true;
+    document.body.classList.add("showing-solution");
+    solveBtn.textContent = "퍼즐로";
+
+    clearAllMarks();
+    hideAllNotes();
+
+    for(let r=0;r<9;r++){
+      for(let c=0;c<9;c++){
+        const inp = inputs[r][c];
+        const cell = inp.parentElement;
+        const note = cell.querySelector(".note");
+
+        const prior = lastUserEntries?.[r]?.[c] || "";
+
+        // show solution number
+        inp.value = String(solution[r][c]);
+        inp.disabled = true;
+
+        // Only mark non-given cells
+        if(!fixed[r][c]){
+          cell.classList.add("solution-fill");
+          if(prior){
+            if(Number(prior) === solution[r][c]){
+              cell.classList.add("mark-good");
+            } else {
+              cell.classList.add("mark-bad");
+              if(note){
+                note.textContent = `내가:${prior}`;
+                note.classList.add("show");
+              }
+            }
+          }
+        }
+      }
+    }
+
+    setStatus("정답 표시");
+  }
+
+  function setHintMode(on){
+    hintMode = !!on;
+    if(hintMode){
+      hintBtn.textContent = "힌트(클릭중)…";
+      hintBtn.classList.add("primary");
+      setStatus("힌트 모드: 해금할 칸을 클릭해줘 (원래 빈칸만 가능)");
+    } else {
+      hintBtn.textContent = "힌트(클릭)";
+      hintBtn.classList.remove("primary");
+      setStatus("진행 중", "");
+      if(autoCheckEl.checked) markConflicts();
+    }
+  }
+
+  function applyHintAt(r, c){
+    if(isSolutionShown){
+      setStatus("정답 표시 중에는 힌트를 사용할 수 없어(퍼즐로 돌아가줘)");
+      return;
+    }
+    if(!puzzle || !solution || !fixed){
+      setStatus("먼저 퍼즐을 생성해줘", "bad");
+      return;
+    }
+    if(fixed[r][c]){
+      setStatus("이 칸은 원래 주어진 숫자라 힌트 해금 대상이 아니야");
+      return;
+    }
+    const inp = inputs[r][c];
+    if(inp.value.trim()){
+      setStatus("이미 값이 들어있는 칸이야 (빈칸을 클릭해줘)");
+      return;
+    }
+
+    // 해금: 정답 숫자를 채우고, 고정칸처럼 잠그기
+    const n = solution[r][c];
+    inp.value = String(n);
+    inp.disabled = true;
+
+    // 퍼즐 상태에도 반영(이후 채점/저장/정답보기 구분에 일관성)
+    puzzle[r][c] = n;
+    fixed[r][c] = true;
+    inp.parentElement.classList.add("mark-good");
+
+    hintUsed++;
+    updateMeta();
+    setStatus(`힌트 해금 1칸 완료 (총 ${hintUsed}회)`, "good");
+
+    // 1회 해금 후 힌트 모드 자동 종료(원하면 계속 모드로 바꿀 수 있음)
+    setHintMode(false);
+  }
+
+  function hintOneCell(){
+    // 기존 '무작위 1칸' 방식 대신: 힌트 모드를 켜고 클릭한 칸을 해금
+    setHintMode(!hintMode);
+  }
+
+  function checkAnswer(){
+    if(isSolutionShown){
+      setStatus("정답 표시 중에는 채점할 필요가 없어(퍼즐로 돌아가서 채점해줘)");
+      return;
+    }
+    let filled = 0, correct = 0, wrong = 0;
+
+    for(let r=0;r<9;r++){
+      for(let c=0;c<9;c++){
+        const inp = inputs[r][c];
+        const cell = inp.parentElement;
+        cell.classList.remove("mark-bad","mark-good");
+
+        const v = inp.value.trim();
+        if(v) filled++;
+
+        if(!fixed[r][c] && v){
+          if(Number(v) === solution[r][c]){
+            correct++;
+            cell.classList.add("mark-good");
+          } else {
+            wrong++;
+            cell.classList.add("mark-bad");
+          }
+        }
+      }
+    }
+
+    if(filled === 81 && wrong === 0){
+      setStatus("완벽! 전부 정답", "good");
+    } else {
+      setStatus(`채점 완료: 맞음 ${correct} / 틀림 ${wrong} (입력 ${filled}/81)`, wrong ? "bad" : "");
+    }
+  }
+
+  // PNG export
+  function sanitizeForFilename(s){
+    return (s || "seed").replace(/[^a-zA-Z0-9._-]+/g, "_").slice(0, 60);
+  }
+  function downloadDataUrl(dataUrl, filename){
+    const a = document.createElement("a");
+    a.href = dataUrl;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }
+
+  function drawSudokuToCanvas(gridNumbers, fixedMask, opts){
+    const size = 1024;
+    const margin = 80;
+    const gridSize = size - margin*2;
+    const cell = gridSize / 9;
+
+    const canvas = document.createElement("canvas");
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext("2d");
+
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0,0,size,size);
+
+    if(opts && opts.title){
+      ctx.fillStyle = "#111";
+      ctx.font = "bold 30px system-ui, -apple-system, Segoe UI, Roboto, sans-serif";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "top";
+      ctx.fillText(opts.title, margin, 26);
+    }
+
+    const top = margin;
+    const left = margin;
+
+    ctx.strokeStyle = "#111";
+    ctx.lineWidth = 4;
+    ctx.strokeRect(left, top, gridSize, gridSize);
+
+    for(let i=1;i<9;i++){
+      ctx.beginPath();
+      ctx.lineWidth = (i%3===0) ? 4 : 1.5;
+      ctx.strokeStyle = "#111";
+      ctx.moveTo(left + i*cell, top);
+      ctx.lineTo(left + i*cell, top + gridSize);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.lineWidth = (i%3===0) ? 4 : 1.5;
+      ctx.moveTo(left, top + i*cell);
+      ctx.lineTo(left + gridSize, top + i*cell);
+      ctx.stroke();
+    }
+
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    for(let r=0;r<9;r++){
+      for(let c=0;c<9;c++){
+        const n = gridNumbers[r][c];
+        if(n === 0 && opts && opts.showZerosAsBlank) continue;
+
+        const x = left + c*cell + cell/2;
+        const y = top + r*cell + cell/2;
+        const isFixed = fixedMask ? fixedMask[r][c] : false;
+
+        ctx.fillStyle = "#111";
+        ctx.font = (isFixed ? "bold 58px system-ui, -apple-system, Segoe UI, Roboto, sans-serif"
+                            : "600 58px system-ui, -apple-system, Segoe UI, Roboto, sans-serif");
+        ctx.fillText(String(n), x, y);
+      }
+    }
+    return canvas;
+  }
+
+  function exportPuzzlePng(){
+    if(!puzzle || !solution){
+      setStatus("먼저 퍼즐을 생성해줘", "bad");
+      return;
+    }
+    const fixedMask = Array.from({length:9}, (_,r)=>Array.from({length:9}, (_,c)=>puzzle[r][c]!==0));
+    const title = `Sudoku Puzzle  |  ${diffEl.value}  |  seed=${currentSeed}`;
+    const canvas = drawSudokuToCanvas(puzzle, fixedMask, {title, showZerosAsBlank:true});
+    const dataUrl = canvas.toDataURL("image/png");
+    const fname = `sudoku_puzzle_${diffEl.value}_seed-${sanitizeForFilename(currentSeed)}.png`;
+    downloadDataUrl(dataUrl, fname);
+    setStatus("문제 PNG 저장 완료", "good");
+  }
+
+  function exportSolutionPng(){
+    if(!puzzle || !solution){
+      setStatus("먼저 퍼즐을 생성해줘", "bad");
+      return;
+    }
+    const fixedMask = Array.from({length:9}, (_,r)=>Array.from({length:9}, (_,c)=>puzzle[r][c]!==0));
+    const title = `Sudoku Solution  |  ${diffEl.value}  |  seed=${currentSeed}`;
+    const canvas = drawSudokuToCanvas(solution, fixedMask, {title, showZerosAsBlank:false});
+    const dataUrl = canvas.toDataURL("image/png");
+    const fname = `sudoku_solution_${diffEl.value}_seed-${sanitizeForFilename(currentSeed)}.png`;
+    downloadDataUrl(dataUrl, fname);
+    setStatus("정답 PNG 저장 완료", "good");
+  }
+
+  // Wire events
+  buildGrid();
+
+  newBtn.addEventListener("click", () => newPuzzleFromSeed(seedInputEl.value));
+  randomSeedBtn.addEventListener("click", () => {
+    seedInputEl.value = makeRandomSeed();
+    newPuzzleFromSeed(seedInputEl.value);
+  });
+
+  copySeedBtn.addEventListener("click", async () => {
+    const txt = seedInputEl.value.trim();
+    try{
+      await navigator.clipboard.writeText(txt);
+      setStatus("시드를 복사했어", "good");
+    } catch {
+      seedInputEl.focus();
+      seedInputEl.select();
+      document.execCommand("copy");
+      setStatus("시드를 복사했어", "good");
+    }
+  });
+
+  resetBtn.addEventListener("click", resetUserInputs);
+  solveBtn.addEventListener("click", toggleSolution);
+  checkBtn.addEventListener("click", checkAnswer);
+  hintBtn.addEventListener("click", hintOneCell);
+
+  savePuzzlePngBtn.addEventListener("click", exportPuzzlePng);
+  saveSolutionPngBtn.addEventListener("click", exportSolutionPng);
+
+  autoCheckEl.addEventListener("change", () => {
+    if(isSolutionShown) return;
+    if(autoCheckEl.checked) markConflicts();
+    else {
+      clearAllMarks();
+      setStatus("진행 중", "");
+    }
+  });
+
+  seedInputEl.addEventListener("keydown", (e) => {
+    if(e.key === "Enter") newPuzzleFromSeed(seedInputEl.value);
+  });
+
+  // Start
+  seedInputEl.value = makeRandomSeed();
+  newPuzzleFromSeed(seedInputEl.value);
+})();
+</script>
+</body>
+</html>
