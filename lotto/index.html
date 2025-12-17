@@ -1,0 +1,776 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>로또 6/45 시뮬레이터</title>
+  <style>
+    :root{
+      --bg:#0b1220; --card:#121a2b; --muted:#8aa0c7; --text:#e9f0ff;
+      --line:rgba(255,255,255,.10); --accent:#7aa7ff; --good:#35d07f; --bad:#ff5f73;
+      --chip:#1a2540;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      background:linear-gradient(180deg,#081022,#0b1220 40%,#0a1020);
+      color:var(--text);
+    }
+    header{
+      padding:18px 18px 10px; border-bottom:1px solid var(--line);
+      position:sticky; top:0; backdrop-filter:blur(10px);
+      background:rgba(11,18,32,.72);
+      z-index:5;
+    }
+    h1{margin:0; font-size:18px; letter-spacing:.2px}
+    .sub{margin-top:6px; color:var(--muted); font-size:12px; line-height:1.4}
+    main{max-width:1100px; margin:0 auto; padding:16px}
+    .tabs{display:flex; gap:8px; margin:10px 0 14px; flex-wrap:wrap}
+    .tab{
+      border:1px solid var(--line); background:transparent; color:var(--text);
+      padding:8px 12px; border-radius:999px; cursor:pointer; font-size:13px;
+      opacity:.85;
+    }
+    .tab.active{background:rgba(122,167,255,.16); border-color:rgba(122,167,255,.45); opacity:1}
+    .grid{
+      display:grid; grid-template-columns: 1.05fr .95fr; gap:14px;
+    }
+    @media (max-width: 980px){ .grid{grid-template-columns:1fr} }
+    .card{
+      background:rgba(18,26,43,.86); border:1px solid var(--line);
+      border-radius:18px; padding:14px;
+      box-shadow:0 14px 40px rgba(0,0,0,.28);
+    }
+    .card h2{margin:0 0 10px; font-size:14px; color:#dbe7ff}
+    .row{display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end}
+    label{display:block; font-size:12px; color:var(--muted); margin-bottom:6px}
+    input, select{
+      width:100%; padding:10px 10px; border-radius:12px;
+      border:1px solid var(--line); background:#0c1325; color:var(--text);
+      outline:none;
+    }
+    input:focus,select:focus{border-color:rgba(122,167,255,.55)}
+    .field{flex:1; min-width:160px}
+    .btn{
+      border:1px solid var(--line); background:rgba(255,255,255,.06);
+      color:var(--text); padding:10px 12px; border-radius:12px;
+      cursor:pointer; font-size:13px;
+    }
+    .btn:hover{border-color:rgba(122,167,255,.45)}
+    .btn.primary{
+      background:linear-gradient(90deg,rgba(122,167,255,.25),rgba(122,167,255,.12));
+      border-color:rgba(122,167,255,.55);
+    }
+    .btn.danger{
+      background:linear-gradient(90deg,rgba(255,95,115,.22),rgba(255,95,115,.10));
+      border-color:rgba(255,95,115,.55);
+    }
+    .muted{color:var(--muted); font-size:12px; line-height:1.45}
+    .numbers{
+      display:grid; grid-template-columns: repeat(9, 1fr); gap:8px;
+      margin-top:10px;
+    }
+    @media (max-width: 520px){ .numbers{grid-template-columns: repeat(6, 1fr);} }
+    .ball{
+      user-select:none;
+      border:1px solid var(--line); background:var(--chip);
+      border-radius:999px; text-align:center; padding:10px 0;
+      cursor:pointer; font-weight:700; font-size:12px;
+      transition:transform .06s ease, border-color .15s ease, background .15s ease;
+    }
+    .ball:active{transform:scale(.98)}
+    .ball.sel{
+      background:rgba(122,167,255,.22);
+      border-color:rgba(122,167,255,.70);
+    }
+    .pill{
+      display:inline-flex; gap:8px; align-items:center;
+      padding:8px 10px; border-radius:999px;
+      border:1px solid var(--line); background:rgba(255,255,255,.05);
+      font-size:12px; color:var(--text);
+    }
+    .pill b{letter-spacing:.2px}
+    .kvs{display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px}
+    @media (max-width: 520px){ .kvs{grid-template-columns: 1fr;} }
+    .kv{
+      border:1px solid var(--line); background:rgba(255,255,255,.04);
+      border-radius:14px; padding:10px;
+    }
+    .kv .k{font-size:12px; color:var(--muted)}
+    .kv .v{margin-top:6px; font-size:16px; font-weight:800}
+    .good{color:var(--good)} .bad{color:var(--bad)}
+    .list{
+      border:1px solid var(--line); border-radius:14px; overflow:hidden; margin-top:10px
+    }
+    .list .head, .list .item{
+      display:grid; grid-template-columns: 72px 1fr 90px 90px;
+      gap:10px; padding:10px 10px; align-items:center;
+    }
+    .list .head{
+      background:rgba(255,255,255,.05); color:var(--muted); font-size:12px;
+    }
+    .list .item{border-top:1px solid var(--line); font-size:12px}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+    .barwrap{
+      margin-top:10px; height:12px; border-radius:999px;
+      border:1px solid var(--line); background:rgba(255,255,255,.04); overflow:hidden
+    }
+    .bar{height:100%; width:0%; background:linear-gradient(90deg, rgba(122,167,255,.65), rgba(53,208,127,.65))}
+    .note{
+      margin-top:10px; border-left:3px solid rgba(122,167,255,.55);
+      padding:10px 10px; background:rgba(122,167,255,.08); border-radius:12px;
+      font-size:12px; color:#dbe7ff
+    }
+    .hide{display:none}
+    .right{justify-content:flex-end}
+    .spacer{flex:1}
+    .mini{font-size:11px; color:var(--muted)}
+  </style>
+</head>
+<body>
+<header>
+  <h1>로또 6/45 시뮬레이터</h1>
+  <div class="sub">
+    교육/재미용 시뮬레이터입니다. 실제 로또는 회차별 총판매/당첨자수에 따라 1~3등 상금이 달라집니다. 이 앱은 <b>입력한 상금표</b>로 계산합니다.
+  </div>
+  <div class="tabs" role="tablist" aria-label="모드 선택">
+    <button class="tab active" data-tab="single" role="tab" aria-selected="true">티켓 생성 · 1회 추첨</button>
+    <button class="tab" data-tab="mc" role="tab" aria-selected="false">시뮬레이션(몬테카를로)</button>
+  </div>
+</header>
+
+<main>
+  <!-- SINGLE MODE -->
+  <section id="tab-single">
+    <div class="grid">
+      <div class="card">
+        <h2>① 번호 선택(선택사항) · 자동/수동</h2>
+        <div class="muted">아래에서 6개를 고르면 “고정 번호”로 사용할 수 있어요. 선택하지 않으면 티켓은 자동으로 랜덤 생성됩니다.</div>
+
+        <div class="numbers" id="picker"></div>
+
+        <div class="row" style="margin-top:12px">
+          <span class="pill">선택: <b id="selCount">0</b>/6</span>
+          <span class="pill">내 번호: <b class="mono" id="selNums">-</b></span>
+          <span class="spacer"></span>
+          <button class="btn" id="btnQuickPick">빠른선택(6개)</button>
+          <button class="btn" id="btnClearPick">선택 초기화</button>
+        </div>
+
+        <div class="note">
+          ✅ “고정 번호로 티켓 만들기”를 누르면, 같은 번호로 여러 장을 생성합니다.<br/>
+          ✅ “랜덤 티켓 만들기”는 매 장마다 다른 번호를 뽑습니다.
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>② 티켓 생성 · 상금표</h2>
+        <div class="row">
+          <div class="field">
+            <label>티켓 장수</label>
+            <input id="ticketCount" type="number" min="1" max="5000" value="10" />
+            <div class="mini">권장: 1~5000 (브라우저 성능에 따라)</div>
+          </div>
+          <div class="field">
+            <label>1장 가격(원)</label>
+            <input id="ticketPrice" type="number" min="0" step="100" value="1000" />
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:10px">
+          <div class="field">
+            <label>1등(6개 일치) 상금(원)</label>
+            <input id="p1" type="number" min="0" step="1000000" value="2000000000" />
+          </div>
+          <div class="field">
+            <label>2등(5+보너스) 상금(원)</label>
+            <input id="p2" type="number" min="0" step="100000" value="50000000" />
+          </div>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <div class="field">
+            <label>3등(5개) 상금(원)</label>
+            <input id="p3" type="number" min="0" step="10000" value="1500000" />
+          </div>
+          <div class="field">
+            <label>4등(4개) 상금(원)</label>
+            <input id="p4" type="number" min="0" step="1000" value="50000" />
+          </div>
+          <div class="field">
+            <label>5등(3개) 상금(원)</label>
+            <input id="p5" type="number" min="0" step="1000" value="5000" />
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:12px">
+          <button class="btn primary" id="btnMakeFixed">고정 번호로 티켓 만들기</button>
+          <button class="btn" id="btnMakeRandom">랜덤 티켓 만들기</button>
+          <span class="spacer"></span>
+          <button class="btn danger" id="btnResetTickets">티켓 비우기</button>
+        </div>
+
+        <div class="list" id="ticketList">
+          <div class="head">
+            <div>#</div><div>티켓 번호</div><div class="right">일치</div><div class="right">등수</div>
+          </div>
+          <div class="item">
+            <div class="muted">-</div>
+            <div class="muted">아직 티켓이 없습니다.</div>
+            <div class="right muted">-</div>
+            <div class="right muted">-</div>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:12px">
+          <button class="btn primary" id="btnDraw">추첨하기(1회)</button>
+          <button class="btn" id="btnRedraw">다시 추첨(번호만)</button>
+        </div>
+
+        <div class="note" id="drawNote">
+          추첨 번호가 아직 없습니다.
+        </div>
+      </div>
+    </div>
+
+    <div class="grid" style="margin-top:14px">
+      <div class="card">
+        <h2>③ 결과 요약</h2>
+        <div class="kvs">
+          <div class="kv"><div class="k">구매금액</div><div class="v mono" id="sumCost">0</div></div>
+          <div class="kv"><div class="k">당첨금 합계</div><div class="v mono" id="sumWin">0</div></div>
+          <div class="kv"><div class="k">순손익</div><div class="v mono" id="sumNet">0</div></div>
+          <div class="kv"><div class="k">ROI(수익률)</div><div class="v mono" id="sumRoi">0%</div></div>
+        </div>
+
+        <div class="list" style="margin-top:12px">
+          <div class="head">
+            <div>등수</div><div>조건</div><div class="right">개수</div><div class="right">상금</div>
+          </div>
+          <div class="item"><div>1</div><div class="muted">6개 일치</div><div class="right mono" id="c1">0</div><div class="right mono" id="w1">0</div></div>
+          <div class="item"><div>2</div><div class="muted">5개 + 보너스</div><div class="right mono" id="c2">0</div><div class="right mono" id="w2">0</div></div>
+          <div class="item"><div>3</div><div class="muted">5개 일치</div><div class="right mono" id="c3">0</div><div class="right mono" id="w3">0</div></div>
+          <div class="item"><div>4</div><div class="muted">4개 일치</div><div class="right mono" id="c4">0</div><div class="right mono" id="w4">0</div></div>
+          <div class="item"><div>5</div><div class="muted">3개 일치</div><div class="right mono" id="c5">0</div><div class="right mono" id="w5">0</div></div>
+          <div class="item"><div>꽝</div><div class="muted">그 외</div><div class="right mono" id="c0">0</div><div class="right mono">0</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>④ 메모</h2>
+        <div class="muted">
+          - “추첨하기(1회)”는 티켓을 평가하고 요약까지 갱신합니다.<br/>
+          - “다시 추첨(번호만)”은 당첨번호만 바꾸고, 기존 티켓으로 다시 평가합니다.<br/>
+          - 숫자 생성은 브라우저 난수(암호학적 강도 X) 기반입니다.<br/>
+          - 성능: 티켓을 수천 장 이상 만들면 표시가 느려질 수 있어요.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MONTE CARLO -->
+  <section id="tab-mc" class="hide">
+    <div class="grid">
+      <div class="card">
+        <h2>① 시뮬레이션 설정</h2>
+        <div class="row">
+          <div class="field">
+            <label>반복 횟수(Trials)</label>
+            <input id="mcTrials" type="number" min="1" max="200000" value="20000" />
+            <div class="mini">권장: 5천~5만 (PC 성능에 따라)</div>
+          </div>
+          <div class="field">
+            <label>매 반복마다 구매할 티켓 장수</label>
+            <input id="mcTickets" type="number" min="1" max="2000" value="10" />
+          </div>
+          <div class="field">
+            <label>시드(재현 가능, 선택)</label>
+            <input id="mcSeed" type="text" placeholder="예: 20251216 (비우면 랜덤)" />
+            <div class="mini">같은 시드면 같은 결과(동일 조건) 재현</div>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:10px">
+          <div class="field">
+            <label>구매 방식</label>
+            <select id="mcMode">
+              <option value="randomEach">매 장 랜덤(일반 자동)</option>
+              <option value="fixedSame">고정 번호 1개 세트로 반복 구매(수동/고정)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>고정 번호(6개, mc 모드에서만 사용)</label>
+            <input id="mcFixed" type="text" placeholder="예: 1, 7, 12, 21, 33, 45" />
+          </div>
+        </div>
+
+        <div class="note">
+          💡 “Trials × 티켓 장수” 만큼 판정합니다. 예) 20,000 × 10 = 200,000장 평가
+        </div>
+
+        <div class="row" style="margin-top:10px">
+          <button class="btn primary" id="btnMcStart">시뮬레이션 시작</button>
+          <button class="btn danger" id="btnMcStop" disabled>중지</button>
+          <span class="spacer"></span>
+          <span class="pill">진행: <b id="mcProg">0%</b></span>
+        </div>
+
+        <div class="barwrap"><div class="bar" id="mcBar"></div></div>
+      </div>
+
+      <div class="card">
+        <h2>② 시뮬레이션 결과</h2>
+        <div class="kvs">
+          <div class="kv"><div class="k">총 평가 티켓</div><div class="v mono" id="mcTotalTickets">0</div></div>
+          <div class="kv"><div class="k">기대 당첨금(티켓 1장당)</div><div class="v mono" id="mcEvPerTicket">0</div></div>
+          <div class="kv"><div class="k">기대 손익(티켓 1장당)</div><div class="v mono" id="mcNetPerTicket">0</div></div>
+          <div class="kv"><div class="k">기대 ROI</div><div class="v mono" id="mcRoi">0%</div></div>
+        </div>
+
+        <div class="list" style="margin-top:12px">
+          <div class="head">
+            <div>등수</div><div>조건</div><div class="right">확률(추정)</div><div class="right">횟수</div>
+          </div>
+          <div class="item"><div>1</div><div class="muted">6개 일치</div><div class="right mono" id="mp1">0</div><div class="right mono" id="mn1">0</div></div>
+          <div class="item"><div>2</div><div class="muted">5개 + 보너스</div><div class="right mono" id="mp2">0</div><div class="right mono" id="mn2">0</div></div>
+          <div class="item"><div>3</div><div class="muted">5개 일치</div><div class="right mono" id="mp3">0</div><div class="right mono" id="mn3">0</div></div>
+          <div class="item"><div>4</div><div class="muted">4개 일치</div><div class="right mono" id="mp4">0</div><div class="right mono" id="mn4">0</div></div>
+          <div class="item"><div>5</div><div class="muted">3개 일치</div><div class="right mono" id="mp5">0</div><div class="right mono" id="mn5">0</div></div>
+          <div class="item"><div>꽝</div><div class="muted">그 외</div><div class="right mono" id="mp0">0</div><div class="right mono" id="mn0">0</div></div>
+        </div>
+
+        <div class="note">
+          📌 상금표(1~5등)와 티켓 가격은 “티켓 생성 · 상금표”의 값을 그대로 사용합니다.
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+/* ---------------------------
+   Utilities
+---------------------------- */
+const fmt = (n) => {
+  const x = Number.isFinite(n) ? Math.trunc(n) : 0;
+  return x.toLocaleString("ko-KR");
+};
+const pct = (x) => (Number.isFinite(x) ? (x*100).toFixed(4) : "0.0000") + "%";
+
+function uniqSorted(arr){
+  const s = Array.from(new Set(arr)).sort((a,b)=>a-b);
+  return s;
+}
+function parseNums(text){
+  const parts = text.split(/[^0-9]+/).filter(Boolean).map(v=>parseInt(v,10));
+  return parts.filter(v=>Number.isFinite(v) && v>=1 && v<=45);
+}
+
+/* Seedable RNG (LCG + xorshift-ish mix) for MC reproducibility */
+function makeRng(seedStr){
+  if(!seedStr) return { next: () => Math.random() };
+  // hash seed string -> 32-bit
+  let h = 2166136261 >>> 0;
+  for (let i=0;i<seedStr.length;i++){
+    h ^= seedStr.charCodeAt(i);
+    h = Math.imul(h, 16777619) >>> 0;
+  }
+  let state = (h || 1) >>> 0;
+  return {
+    next: () => {
+      // xorshift32
+      state ^= (state << 13) >>> 0;
+      state ^= (state >>> 17) >>> 0;
+      state ^= (state << 5) >>> 0;
+      return (state >>> 0) / 4294967296;
+    }
+  };
+}
+
+function drawTicket(rng){
+  const nums = [];
+  while(nums.length < 6){
+    const v = 1 + Math.floor(rng.next() * 45);
+    if(!nums.includes(v)) nums.push(v);
+  }
+  nums.sort((a,b)=>a-b);
+  return nums;
+}
+
+function drawWinning(rng){
+  const seven = [];
+  while(seven.length < 7){
+    const v = 1 + Math.floor(rng.next() * 45);
+    if(!seven.includes(v)) seven.push(v);
+  }
+  seven.sort((a,b)=>a-b);
+  const main = seven.slice(0,6);
+  const bonus = seven[6];
+  // ensure bonus not in main (it isn't, due to uniqueness)
+  return { main, bonus };
+}
+
+function gradeTicket(ticket, win){
+  let match = 0;
+  const winSet = new Set(win.main);
+  for (const n of ticket) if (winSet.has(n)) match++;
+  const hasBonus = ticket.includes(win.bonus);
+
+  if (match === 6) return { rank: 1, match, bonus: false };
+  if (match === 5 && hasBonus) return { rank: 2, match, bonus: true };
+  if (match === 5) return { rank: 3, match, bonus: false };
+  if (match === 4) return { rank: 4, match, bonus: false };
+  if (match === 3) return { rank: 5, match, bonus: false };
+  return { rank: 0, match, bonus: false };
+}
+
+function getPrizeTable(){
+  return {
+    price: Number(document.querySelector("#ticketPrice").value) || 0,
+    p1: Number(document.querySelector("#p1").value) || 0,
+    p2: Number(document.querySelector("#p2").value) || 0,
+    p3: Number(document.querySelector("#p3").value) || 0,
+    p4: Number(document.querySelector("#p4").value) || 0,
+    p5: Number(document.querySelector("#p5").value) || 0,
+  };
+}
+function prizeOf(rank, t){
+  if(rank===1) return t.p1;
+  if(rank===2) return t.p2;
+  if(rank===3) return t.p3;
+  if(rank===4) return t.p4;
+  if(rank===5) return t.p5;
+  return 0;
+}
+
+/* ---------------------------
+   Tabs
+---------------------------- */
+const tabs = document.querySelectorAll(".tab");
+tabs.forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    tabs.forEach(x=>x.classList.remove("active"));
+    btn.classList.add("active");
+    const tab = btn.dataset.tab;
+    document.querySelector("#tab-single").classList.toggle("hide", tab !== "single");
+    document.querySelector("#tab-mc").classList.toggle("hide", tab !== "mc");
+    tabs.forEach(x=>x.setAttribute("aria-selected", String(x===btn)));
+  });
+});
+
+/* ---------------------------
+   Picker UI
+---------------------------- */
+const pickerEl = document.querySelector("#picker");
+let picked = [];
+for(let i=1;i<=45;i++){
+  const b = document.createElement("div");
+  b.className = "ball";
+  b.textContent = i;
+  b.dataset.n = String(i);
+  b.addEventListener("click", ()=>{
+    const n = Number(b.dataset.n);
+    const idx = picked.indexOf(n);
+    if(idx >= 0){
+      picked.splice(idx,1);
+    } else {
+      if(picked.length >= 6) return;
+      picked.push(n);
+    }
+    picked = picked.sort((a,b)=>a-b);
+    renderPicked();
+  });
+  pickerEl.appendChild(b);
+}
+function renderPicked(){
+  document.querySelector("#selCount").textContent = String(picked.length);
+  document.querySelector("#selNums").textContent = picked.length ? picked.join(", ") : "-";
+  document.querySelectorAll(".ball").forEach(el=>{
+    const n = Number(el.dataset.n);
+    el.classList.toggle("sel", picked.includes(n));
+  });
+}
+document.querySelector("#btnClearPick").addEventListener("click", ()=>{
+  picked = [];
+  renderPicked();
+});
+document.querySelector("#btnQuickPick").addEventListener("click", ()=>{
+  const rng = makeRng(""); // random
+  picked = drawTicket(rng);
+  renderPicked();
+});
+renderPicked();
+
+/* ---------------------------
+   Tickets & Single draw
+---------------------------- */
+let tickets = []; // array of { nums: number[], result?: {rank, match, bonus}, prize?: number }
+let lastWin = null;
+
+const listEl = document.querySelector("#ticketList");
+
+function renderTickets(){
+  listEl.innerHTML = `
+    <div class="head">
+      <div>#</div><div>티켓 번호</div><div class="right">일치</div><div class="right">등수</div>
+    </div>
+  `;
+  if(tickets.length === 0){
+    const row = document.createElement("div");
+    row.className="item";
+    row.innerHTML = `
+      <div class="muted">-</div>
+      <div class="muted">아직 티켓이 없습니다.</div>
+      <div class="right muted">-</div>
+      <div class="right muted">-</div>
+    `;
+    listEl.appendChild(row);
+    updateSummary();
+    return;
+  }
+
+  // limit render for performance
+  const maxShow = 300;
+  const show = tickets.slice(0, maxShow);
+  show.forEach((t, idx)=>{
+    const r = t.result;
+    const row = document.createElement("div");
+    row.className="item";
+    row.innerHTML = `
+      <div class="muted">${idx+1}</div>
+      <div class="mono">${t.nums.join(", ")}</div>
+      <div class="right mono">${r ? r.match + (r.rank===2 ? "+B" : "") : "-"}</div>
+      <div class="right mono">${r ? (r.rank===0 ? "꽝" : r.rank+"등") : "-"}</div>
+    `;
+    listEl.appendChild(row);
+  });
+
+  if(tickets.length > maxShow){
+    const more = document.createElement("div");
+    more.className="item";
+    more.innerHTML = `<div class="muted">…</div><div class="muted">표시는 ${maxShow}장까지만(총 ${fmt(tickets.length)}장)</div><div></div><div></div>`;
+    listEl.appendChild(more);
+  }
+
+  updateSummary();
+}
+
+function setDrawNote(){
+  const box = document.querySelector("#drawNote");
+  if(!lastWin){
+    box.textContent = "추첨 번호가 아직 없습니다.";
+    return;
+  }
+  box.innerHTML = `
+    <b>당첨 번호</b>: <span class="mono">${lastWin.main.join(", ")}</span>
+    &nbsp; | &nbsp;
+    <b>보너스</b>: <span class="mono">${lastWin.bonus}</span>
+  `;
+}
+
+function evaluateAll(){
+  if(!lastWin) return;
+  const table = getPrizeTable();
+
+  const counts = {0:0,1:0,2:0,3:0,4:0,5:0};
+  const wins = {1:0,2:0,3:0,4:0,5:0};
+
+  for(const t of tickets){
+    const r = gradeTicket(t.nums, lastWin);
+    t.result = r;
+    const money = prizeOf(r.rank, table);
+    t.prize = money;
+    counts[r.rank] = (counts[r.rank]||0) + 1;
+    if(r.rank>=1 && r.rank<=5) wins[r.rank] += money;
+  }
+
+  // update rank table
+  document.querySelector("#c1").textContent = fmt(counts[1]||0);
+  document.querySelector("#c2").textContent = fmt(counts[2]||0);
+  document.querySelector("#c3").textContent = fmt(counts[3]||0);
+  document.querySelector("#c4").textContent = fmt(counts[4]||0);
+  document.querySelector("#c5").textContent = fmt(counts[5]||0);
+  document.querySelector("#c0").textContent = fmt(counts[0]||0);
+
+  document.querySelector("#w1").textContent = fmt(wins[1]||0);
+  document.querySelector("#w2").textContent = fmt(wins[2]||0);
+  document.querySelector("#w3").textContent = fmt(wins[3]||0);
+  document.querySelector("#w4").textContent = fmt(wins[4]||0);
+  document.querySelector("#w5").textContent = fmt(wins[5]||0);
+
+  renderTickets();
+}
+
+function updateSummary(){
+  const table = getPrizeTable();
+  const cost = (table.price * tickets.length) || 0;
+  const win = tickets.reduce((s,t)=>s + (t.prize||0), 0);
+  const net = win - cost;
+  const roi = cost>0 ? (win / cost - 1) : 0;
+
+  document.querySelector("#sumCost").textContent = fmt(cost);
+  document.querySelector("#sumWin").textContent  = fmt(win);
+  document.querySelector("#sumNet").textContent  = (net>=0?"+":"") + fmt(net);
+  document.querySelector("#sumNet").className    = "v mono " + (net>=0 ? "good":"bad");
+  document.querySelector("#sumRoi").textContent  = (cost>0 ? (roi*100).toFixed(2) : "0.00") + "%";
+  document.querySelector("#sumRoi").className    = "v mono " + (roi>=0 ? "good":"bad");
+}
+
+document.querySelector("#btnResetTickets").addEventListener("click", ()=>{
+  tickets = [];
+  renderTickets();
+  // reset per-rank table too
+  ["c1","c2","c3","c4","c5","c0","w1","w2","w3","w4","w5"].forEach(id=>{
+    document.querySelector("#"+id).textContent = "0";
+  });
+});
+
+document.querySelector("#btnMakeFixed").addEventListener("click", ()=>{
+  const n = Number(document.querySelector("#ticketCount").value) || 1;
+  if(picked.length !== 6){
+    alert("고정 번호는 6개를 선택해야 합니다.");
+    return;
+  }
+  for(let i=0;i<n;i++){
+    tickets.push({ nums: [...picked] });
+  }
+  if(lastWin) evaluateAll(); else renderTickets();
+});
+
+document.querySelector("#btnMakeRandom").addEventListener("click", ()=>{
+  const n = Number(document.querySelector("#ticketCount").value) || 1;
+  const rng = makeRng(""); // random
+  for(let i=0;i<n;i++){
+    tickets.push({ nums: drawTicket(rng) });
+  }
+  if(lastWin) evaluateAll(); else renderTickets();
+});
+
+document.querySelector("#btnDraw").addEventListener("click", ()=>{
+  if(tickets.length === 0){
+    alert("먼저 티켓을 생성하세요.");
+    return;
+  }
+  const rng = makeRng(""); // random draw
+  lastWin = drawWinning(rng);
+  setDrawNote();
+  evaluateAll();
+});
+
+document.querySelector("#btnRedraw").addEventListener("click", ()=>{
+  if(tickets.length === 0){
+    alert("먼저 티켓을 생성하세요.");
+    return;
+  }
+  const rng = makeRng(""); // random draw
+  lastWin = drawWinning(rng);
+  setDrawNote();
+  evaluateAll();
+});
+
+/* ---------------------------
+   Monte Carlo Simulation
+---------------------------- */
+let mcStopFlag = false;
+
+function setMcUiRunning(running){
+  document.querySelector("#btnMcStart").disabled = running;
+  document.querySelector("#btnMcStop").disabled = !running;
+}
+
+document.querySelector("#btnMcStop").addEventListener("click", ()=>{
+  mcStopFlag = true;
+});
+
+document.querySelector("#btnMcStart").addEventListener("click", async ()=>{
+  const trials = Math.max(1, Math.min(200000, Number(document.querySelector("#mcTrials").value)||1));
+  const perTrialTickets = Math.max(1, Math.min(2000, Number(document.querySelector("#mcTickets").value)||1));
+  const mode = document.querySelector("#mcMode").value;
+  const seedStr = document.querySelector("#mcSeed").value.trim();
+  const rng = makeRng(seedStr || null);
+
+  let fixedNums = null;
+  if(mode === "fixedSame"){
+    const parsed = uniqSorted(parseNums(document.querySelector("#mcFixed").value));
+    if(parsed.length !== 6){
+      alert("고정 번호 모드에서는 고정 번호 6개를 입력해야 합니다. (1~45, 중복 불가)");
+      return;
+    }
+    fixedNums = parsed;
+  }
+
+  const table = getPrizeTable();
+  const counts = {0:0,1:0,2:0,3:0,4:0,5:0};
+  let totalWin = 0;
+  const totalTickets = trials * perTrialTickets;
+
+  // progress UI
+  mcStopFlag = false;
+  setMcUiRunning(true);
+  document.querySelector("#mcBar").style.width = "0%";
+  document.querySelector("#mcProg").textContent = "0%";
+
+  // chunked loop to keep UI responsive
+  const chunk = 250; // trials per chunk
+  for(let t=0; t<trials; t+=chunk){
+    if(mcStopFlag) break;
+    const end = Math.min(trials, t+chunk);
+
+    for(let i=t; i<end; i++){
+      const win = drawWinning(rng);
+      for(let k=0;k<perTrialTickets;k++){
+        const ticket = (mode==="fixedSame") ? fixedNums : drawTicket(rng);
+        const r = gradeTicket(ticket, win);
+        counts[r.rank] = (counts[r.rank]||0) + 1;
+        totalWin += prizeOf(r.rank, table);
+      }
+    }
+
+    const doneTrials = end;
+    const prog = doneTrials / trials;
+    document.querySelector("#mcBar").style.width = (prog*100).toFixed(2) + "%";
+    document.querySelector("#mcProg").textContent = (prog*100).toFixed(1) + "%";
+
+    // allow paint
+    await new Promise(requestAnimationFrame);
+  }
+
+  const evaluatedTickets = Object.values(counts).reduce((a,b)=>a+b,0);
+  const cost = table.price * evaluatedTickets;
+  const evPerTicket = evaluatedTickets>0 ? (totalWin / evaluatedTickets) : 0;
+  const netPerTicket = evPerTicket - table.price;
+  const roi = cost>0 ? (totalWin / cost - 1) : 0;
+
+  document.querySelector("#mcTotalTickets").textContent = fmt(evaluatedTickets);
+  document.querySelector("#mcEvPerTicket").textContent = fmt(evPerTicket);
+  document.querySelector("#mcNetPerTicket").textContent = (netPerTicket>=0?"+":"") + fmt(netPerTicket);
+  document.querySelector("#mcNetPerTicket").className = "v mono " + (netPerTicket>=0 ? "good":"bad");
+  document.querySelector("#mcRoi").textContent = (roi*100).toFixed(2) + "%";
+  document.querySelector("#mcRoi").className = "v mono " + (roi>=0 ? "good":"bad");
+
+  const setProb = (idP, idN, rank) => {
+    const n = counts[rank]||0;
+    document.querySelector(idN).textContent = fmt(n);
+    document.querySelector(idP).textContent = evaluatedTickets>0 ? pct(n / evaluatedTickets) : "0%";
+  };
+  setProb("#mp1","#mn1",1);
+  setProb("#mp2","#mn2",2);
+  setProb("#mp3","#mn3",3);
+  setProb("#mp4","#mn4",4);
+  setProb("#mp5","#mn5",5);
+  setProb("#mp0","#mn0",0);
+
+  // finalize progress
+  const finalProg = (evaluatedTickets / totalTickets);
+  document.querySelector("#mcBar").style.width = (finalProg*100).toFixed(2) + "%";
+  document.querySelector("#mcProg").textContent = (finalProg*100).toFixed(1) + "%";
+
+  setMcUiRunning(false);
+});
+
+/* init */
+renderTickets();
+setDrawNote();
+updateSummary();
+</script>
+</body>
+</html>
