@@ -3,19 +3,34 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>수학 게임 모음</title>
+  <title>수학 플레이그라운드</title>
   <style>
     body{
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      max-width: 900px;
+      max-width: 920px;
       margin: 40px auto;
       padding: 0 16px;
     }
 
     h1{
-      margin: 0 0 18px 0;
+      margin: 0 0 14px 0;
       font-size: 48px;
       letter-spacing: -0.5px;
+    }
+
+    /* ✅ 섹션을 카드(박스)로 묶어서 구분 확실하게 */
+    .section{
+      margin-top: 18px;
+      padding: 16px 16px 18px;
+      border: 1px solid #e5e5e5;
+      border-radius: 18px;
+      background: #fafafa;
+    }
+
+    .section h2{
+      margin: 0 0 10px 0;
+      font-size: 20px;
+      letter-spacing: -0.2px;
     }
 
     .grid{
@@ -60,21 +75,36 @@
   </style>
 </head>
 <body>
-  <h1>수학 게임 모음</h1>
+  <h1>수학 플레이그라운드</h1>
 
-  <div class="grid">
-<a class="card" href="./dice/">
-  <div class="t">주사위 보드게임</div>
-</a>
+  <div class="section">
+    <h2>수학 게임 모음</h2>
+    <div class="grid">
+      <a class="card" href="./dice/">
+        <div class="t">주사위 보드게임</div>
+      </a>
 
-<a class="card" href="./sudoku/">
-  <div class="t">스도쿠 게임</div>
-</a>
+      <a class="card" href="./sudoku/">
+        <div class="t">스도쿠 게임</div>
+      </a>
 
-<a class="card" href="./slitherlink/">
-  <div class="t">슬리더링크 게임</div>
-</a>
+      <a class="card" href="./slitherlink/">
+        <div class="t">슬리더링크 게임</div>
+      </a>
+    </div>
+  </div>
 
+  <div class="section">
+    <h2>수학 실험 모음</h2>
+    <div class="grid">
+      <a class="card" href="./dicesum/">
+        <div class="t">주사위 실험 1</div>
+      </a>
+
+      <a class="card" href="./dicesum2/">
+        <div class="t">주사위 실험 2</div>
+      </a>
+    </div>
   </div>
 
   <footer>만든이: 서민재</footer>
