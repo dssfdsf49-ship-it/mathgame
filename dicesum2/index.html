@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>두 주사위 합 실험</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #0f172a;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #e5e7eb;
+      font-size: 16px;
+    }
+
+    .app {
+      background: #020617;
+      padding: 28px 32px;
+      border-radius: 24px;
+      box-shadow: 0 24px 48px rgba(0, 0, 0, 0.55);
+      width: 700px;
+      max-width: 100vw;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 1.6rem;
+      text-align: center;
+    }
+
+    .subtitle {
+      margin: 0 0 20px;
+      font-size: 0.95rem;
+      text-align: center;
+      color: #9ca3af;
+    }
+
+    .top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 16px;
+    }
+
+    .dice-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .dice-pair {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .dice {
+      width: 70px;
+      height: 70px;
+      border-radius: 18px;
+      border: 2px solid rgba(148, 163, 184, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 34px;
+      font-weight: 700;
+      background: radial-gradient(circle at 20% 20%, #1f2937, #020617);
+      text-shadow: 0 0 8px rgba(15, 23, 42, 0.8);
+      user-select: none;
+    }
+
+    .sum-text {
+      font-size: 0.98rem;
+      color: #e5e7eb;
+    }
+
+    .total {
+      font-size: 0.95rem;
+      color: #9ca3af;
+    }
+
+    @keyframes roll {
+      0%   { transform: translateY(0) rotate(0deg); }
+      25%  { transform: translateY(-8px) rotate(90deg); }
+      50%  { transform: translateY(0) rotate(180deg); }
+      75%  { transform: translateY(-5px) rotate(270deg); }
+      100% { transform: translateY(0) rotate(360deg); }
+    }
+
+    .dice.rolling {
+      animation: roll 0.6s ease-in-out;
+    }
+
+    button {
+      border-radius: 999px;
+      border: none;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.08s ease, box-shadow 0.08s ease, opacity 0.08s ease;
+    }
+
+    #roll-btn {
+      flex: 1;
+      padding: 14px 18px;
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      color: white;
+      box-shadow: 0 10px 20px rgba(22, 163, 74, 0.3);
+      white-space: nowrap;
+    }
+
+    #roll-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 28px rgba(22, 163, 74, 0.35);
+    }
+
+    #roll-btn:active {
+      transform: translateY(1px);
+      box-shadow: 0 6px 12px rgba(22, 163, 74, 0.25);
+      opacity: 0.9;
+    }
+
+    #roll-btn:disabled {
+      opacity: 0.6;
+      cursor: default;
+      transform: none;
+      box-shadow: 0 10px 20px rgba(15, 23, 42, 0.4);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      margin-top: 10px;
+    }
+
+    thead th {
+      font-weight: 600;
+      text-align: left;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #1f2933;
+      color: #9ca3af;
+    }
+
+    tbody tr:nth-child(even) {
+      background: rgba(15, 23, 42, 0.6);
+    }
+
+    td {
+      padding: 5px 3px;
+      vertical-align: middle;
+    }
+
+    .face-cell {
+      width: 34px;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    .bar-cell {
+      width: 100%;
+    }
+
+    .bar {
+      width: 100%;
+      height: 12px;
+      border-radius: 999px;
+      background: #020617;
+      overflow: hidden;
+    }
+
+    .bar-inner {
+      height: 100%;
+      width: 0%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #38bdf8, #6366f1);
+      transition: width 0.2s ease;
+    }
+
+    .count-cell,
+    .freq-cell {
+      text-align: right;
+      width: 70px;
+      padding-right: 4px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .auto-controls {
+      margin-top: 8px;
+      margin-bottom: 6px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(15, 23, 42, 0.9);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .auto-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    #auto-toggle {
+      padding: 9px 14px;
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: white;
+      box-shadow: 0 8px 16px rgba(37, 99, 235, 0.35);
+      font-size: 0.85rem;
+      white-space: nowrap;
+    }
+
+    #auto-toggle.running {
+      background: linear-gradient(135deg, #ef4444, #b91c1c);
+      box-shadow: 0 8px 16px rgba(239, 68, 68, 0.35);
+    }
+
+    .speed-controls {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .speed-label {
+      font-size: 0.8rem;
+      color: #9ca3af;
+      margin-top: 4px;
+      white-space: nowrap;
+    }
+
+    .speed-rows {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .speed-row {
+      display: flex;
+      gap: 4px;
+    }
+
+    .speed-btn {
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      background: #020617;
+      color: #e5e7eb;
+      cursor: pointer;
+      min-width: 80px;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .speed-btn.active {
+      background: #1d4ed8;
+      border-color: #3b82f6;
+      color: #f9fafb;
+    }
+
+    .speed-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .footer {
+      margin-top: 10px;
+      font-size: 0.8rem;
+      color: #6b7280;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .credit {
+      font-weight: 600;
+      color: #9ca3af;
+      white-space: nowrap;
+    }
+
+    /* 작은 화면(폰)에서 상단 레이아웃 정리 */
+    @media (max-width: 600px) {
+      .top-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      #roll-btn {
+        width: 100%;
+      }
+
+      .app {
+        padding: 20px 16px;
+        border-radius: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1>두 주사위 합 실험</h1>
+    <p class="subtitle">두 개의 주사위를 던져 나오는 합(2~12)의 상대도수를 살펴보세요.</p>
+
+    <div class="top-row">
+      <div class="dice-wrapper">
+        <div class="dice-pair">
+          <div id="dice1" class="dice">-</div>
+          <div id="dice2" class="dice">-</div>
+        </div>
+        <div id="sum-text" class="sum-text">합: -</div>
+        <div class="total">총 던진 횟수: <span id="total-rolls">0</span>회</div>
+      </div>
+      <button id="roll-btn">두 주사위 던지기 🎲🎲</button>
+    </div>
+
+    <div class="auto-controls">
+      <div class="auto-top">
+        <button id="auto-toggle">자동 굴리기 시작</button>
+        <div class="speed-controls">
+          <span class="speed-label">속도:</span>
+          <div class="speed-rows">
+            <div class="speed-row">
+              <button class="speed-btn active" data-speed="1">1배속</button>
+              <button class="speed-btn" data-speed="2">2배속</button>
+            </div>
+            <div class="speed-row">
+              <button class="speed-btn" data-speed="5">5배속</button>
+              <button class="speed-btn" data-speed="10">10배속</button>
+            </div>
+            <div class="speed-row">
+              <button class="speed-btn" data-speed="100">100배속</button>
+              <button class="speed-btn" data-speed="1000">1000배속</button>
+            </div>
+            <div class="speed-row">
+              <button class="speed-btn" data-speed="10000">10000배속</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th class="face-cell">합</th>
+          <th class="count-cell">도수</th>
+          <th class="freq-cell">상대도수</th>
+          <th class="bar-cell">그래프</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- 합 2~12 -->
+        <tr>
+          <td class="face-cell">2</td>
+          <td class="count-cell"><span id="count-2">0</span></td>
+          <td class="freq-cell"><span id="freq-2">0.0%</span></td>
+          <td class="bar-cell">
+            <div class="bar"><div id="bar-2" class="bar-inner"></div></div>
+          </td>
+        </tr>
+        <tr>
+          <td class="face-cell">3</td>
+          <td class="count-cell"><span id="count-3">0</span></td>
+          <td class="freq-cell"><span id="freq-3">0.0%</span></td>
+          <td class="bar-cell">
+            <div class="bar"><div id="bar-3" class="bar-inner"></div></div>
+          </td>
+        </tr>
+        <tr>
+          <td class="face-cell">4</td>
+          <td class="count-cell"><span id="count-4">0</span></td>
+          <td class="freq-cell"><span id="freq-4">0.0%</span></td>
+          <td class="bar-cell">
+            <div class="bar"><div id="bar-4" class="bar-inner"></div></div>
+          </td>
+        </tr>
+        <tr>
+          <td class="face-cell">5</td>
+          <td class="count-cell"><span id="count-5">0</span></td>
+          <td class="freq-cell"><span id="freq-5">0.0%</span></td>
+          <td class="bar-cell">
+            <div class="bar"><div id="bar-5" class="bar-inner"></div></div>
+          </td>
+        </tr>
+        <tr>
+          <td class="face-cell">6</td>
+          <td class="count-cell"><span id="count-6">0</span></td>
+          <td class="freq-cell"><span id="freq-6">0.0%</span></td>
+          <td class="bar-cell">
+            <div class="bar"><div id="bar-6" class="bar-inner"></div></div>
+          </td>
+        </tr>
+        <tr>
+          <td class="face-cell">7</td>
+          <td class="count-cell"><span id="count-7">0</span></td>
+          <td class="freq-cell"><span id="freq-7">0.0%</span></td>
+          <td class="bar-cell">
+            <div class="bar"><div id="bar-7" class="bar-inner"></div></div>
+          </td>
+        </tr>
+        <tr>
+          <td class="face-cell">8</td>
+          <td class="count-cell"><span id="count-8">0</span></td>
+          <td class="freq-cell"><span id="freq-8">0.0%</span></td>
+          <td class="bar-cell">
+            <div class="bar"><div id="bar-8" class="bar-inner"></div></div>
+          </td>
+        </tr>
+        <tr>
+          <td class="face-cell">9</td>
+          <td class="count-cell"><span id="count-9">0</span></td>
+          <td class="freq-cell"><span id="freq-9">0.0%</span></td>
+          <td class="bar-cell">
+            <div class="bar"><div id="bar-9" class="bar-inner"></div></div>
+          </td>
+        </tr>
+        <tr>
+          <td class="face-cell">10</td>
+          <td class="count-cell"><span id="count-10">0</span></td>
+          <td class="freq-cell"><span id="freq-10">0.0%</span></td>
+          <td class="bar-cell">
+            <div class="bar"><div id="bar-10" class="bar-inner"></div></div>
+          </td>
+        </tr>
+        <tr>
+          <td class="face-cell">11</td>
+          <td class="count-cell"><span id="count-11">0</span></td>
+          <td class="freq-cell"><span id="freq-11">0.0%</span></td>
+          <td class="bar-cell">
+            <div class="bar"><div id="bar-11" class="bar-inner"></div></div>
+          </td>
+        </tr>
+        <tr>
+          <td class="face-cell">12</td>
+          <td class="count-cell"><span id="count-12">0</span></td>
+          <td class="freq-cell"><span id="freq-12">0.0%</span></td>
+          <td class="bar-cell">
+            <div class="bar"><div id="bar-12" class="bar-inner"></div></div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="footer">
+      <span>상대도수 = (각 합의 도수) ÷ (총 던진 횟수)</span>
+      <span class="credit">만든이: 서민재</span>
+    </div>
+  </div>
+
+  <script>
+    const dice1El = document.getElementById("dice1");
+    const dice2El = document.getElementById("dice2");
+    const sumTextEl = document.getElementById("sum-text");
+    const rollBtn = document.getElementById("roll-btn");
+    const totalRollsEl = document.getElementById("total-rolls");
+
+    const autoToggleBtn = document.getElementById("auto-toggle");
+    const speedBtns = document.querySelectorAll(".speed-btn");
+
+    // 합 2~12까지 도수 저장 (0,1은 사용 안 함)
+    const counts = new Array(13).fill(0);
+    let totalRolls = 0;
+
+    // 자동 굴리기 관련
+    let autoIntervalId = null;
+    let speedMultiplier = 1;
+
+    const baseInterval = 600; // 1배속 기준(ms)
+    const minInterval = 40;   // 너무 작아지지 않도록 하한
+
+    function updateStats() {
+      for (let sum = 2; sum <= 12; sum++) {
+        const countEl = document.getElementById(`count-${sum}`);
+        const freqEl = document.getElementById(`freq-${sum}`);
+        const barEl = document.getElementById(`bar-${sum}`);
+
+        const count = counts[sum];
+        countEl.textContent = count;
+
+        let freqPercent = 0;
+        if (totalRolls > 0) {
+          freqPercent = (count / totalRolls) * 100;
+        }
+        freqEl.textContent = freqPercent.toFixed(1) + "%";
+        barEl.style.width = freqPercent.toFixed(1) + "%";
+      }
+
+      totalRollsEl.textContent = totalRolls;
+    }
+
+    function rollTwoDiceOnce(showAnimation = true) {
+      // showAnimation이 true인 경우에만 굴림 애니메이션
+      if (showAnimation && (dice1El.classList.contains("rolling") || dice2El.classList.contains("rolling"))) {
+        return;
+      }
+
+      if (showAnimation) {
+        rollBtn.disabled = true;
+        dice1El.classList.add("rolling");
+        dice2El.classList.add("rolling");
+      }
+
+      const d1 = Math.floor(Math.random() * 6) + 1;
+      const d2 = Math.floor(Math.random() * 6) + 1;
+      const sum = d1 + d2;
+
+      const applyResult = () => {
+        dice1El.classList.remove("rolling");
+        dice2El.classList.remove("rolling");
+        dice1El.textContent = d1;
+        dice2El.textContent = d2;
+        sumTextEl.textContent = `합: ${d1} + ${d2} = ${sum}`;
+
+        counts[sum]++;
+        totalRolls++;
+        updateStats();
+
+        if (!autoIntervalId && showAnimation) {
+          rollBtn.disabled = false;
+        }
+      };
+
+      if (showAnimation) {
+        setTimeout(applyResult, 600);
+      } else {
+        // 자동 굴리기에서는 애니메이션 없이 바로 적용
+        applyResult();
+      }
+    }
+
+    // 자동 굴리기용: 속도에 따라 한 틱에 여러 번 던지기
+    function autoRollStep() {
+      // 1~10배속: 1번씩, 그 이상은 speedMultiplier/10만큼 던지기
+      const rollsPerStep = Math.max(1, Math.round(speedMultiplier / 10));
+
+      let lastD1 = 1, lastD2 = 1, lastSum = 2;
+      for (let i = 0; i < rollsPerStep; i++) {
+        lastD1 = Math.floor(Math.random() * 6) + 1;
+        lastD2 = Math.floor(Math.random() * 6) + 1;
+        lastSum = lastD1 + lastD2;
+        counts[lastSum]++;
+        totalRolls++;
+      }
+
+      // 마지막 결과만 화면에 표시
+      dice1El.textContent = lastD1;
+      dice2El.textContent = lastD2;
+      sumTextEl.textContent = `합: ${lastD1} + ${lastD2} = ${lastSum}`;
+      updateStats();
+    }
+
+    function computeInterval() {
+      // 1~10배속까지는 간격 줄이고, 100 이상은 같은 간격 + 여러 번 던지기
+      const effectiveSpeed = Math.min(speedMultiplier, 10);
+      return Math.max(minInterval, baseInterval / effectiveSpeed);
+    }
+
+    function startAuto() {
+      if (autoIntervalId) return;
+      const interval = computeInterval();
+      autoIntervalId = setInterval(autoRollStep, interval);
+      autoToggleBtn.classList.add("running");
+      autoToggleBtn.textContent = "자동 굴리기 정지";
+      rollBtn.disabled = true; // 자동 모드일 때는 수동 버튼 잠금
+    }
+
+    function stopAuto() {
+      if (!autoIntervalId) return;
+      clearInterval(autoIntervalId);
+      autoIntervalId = null;
+      autoToggleBtn.classList.remove("running");
+      autoToggleBtn.textContent = "자동 굴리기 시작";
+      rollBtn.disabled = false;
+    }
+
+    rollBtn.addEventListener("click", () => {
+      rollTwoDiceOnce(true);
+    });
+
+    autoToggleBtn.addEventListener("click", () => {
+      if (autoIntervalId) {
+        stopAuto();
+      } else {
+        startAuto();
+      }
+    });
+
+    speedBtns.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const newSpeed = Number(btn.dataset.speed);
+        speedMultiplier = newSpeed;
+
+        // 버튼 스타일 업데이트
+        speedBtns.forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+
+        // 이미 자동 굴리는 중이면 속도 즉시 반영
+        if (autoIntervalId) {
+          clearInterval(autoIntervalId);
+          const interval = computeInterval();
+          autoIntervalId = setInterval(autoRollStep, interval);
+        }
+      });
+    });
+
+    // 처음 화면 초기화
+    updateStats();
+  </script>
+</body>
+</html>
