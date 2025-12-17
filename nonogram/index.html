@@ -1,0 +1,1257 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>네모네모 로직 통합 도구 (이미지→숫자 + 솔버/뷰어)</title>
+  <style>
+  :root{--ink:#111;--bg:#f6f7fb;--panel:#fff;--grid:#dcdcdc;--grid-strong:#777;}
+  html,body{height:100%}
+  body{margin:0;background:#f6f7fb;color:#111;font-family:system-ui,-apple-system,Segoe UI,Roboto,Apple SD Gothic Neo,Malgun Gothic,'Noto Sans KR',sans-serif}
+  .wrap{max-width:1200px;margin:0 auto;padding:18px;display:flex;flex-direction:column;gap:14px}
+  h1{font-size:20px;margin:0}
+  .tabs{display:flex;gap:8px}
+  .tab{padding:10px 14px;border:1px solid #ddd;border-bottom:none;background:#f3f4f8;border-radius:10px 10px 0 0;cursor:pointer;font-weight:600}
+  .tab.active{background:#fff}
+  .card{background:#fff;border-radius:0 12px 12px 12px;box-shadow:0 6px 20px rgba(0,0,0,.07);padding:14px}
+  .row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+  label{font-size:12px;color:#666}
+  input[type=number]{width:84px;padding:6px 8px;border:1px solid #d7d7d7;border-radius:8px}
+  textarea{width:100%;min-height:140px;padding:10px;border:1px solid #d7d7d7;border-radius:10px;font-family:ui-monospace,Consolas,monospace}
+  button{border:1px solid #d0d0d0;background:#fff;border-radius:10px;padding:8px 12px;cursor:pointer}
+  button.primary{background:#111;color:#fff;border-color:#111}
+  .seg{display:inline-flex;gap:0;overflow:hidden;border-radius:10px;border:1px solid #d0d0d0}
+  .seg button{border:0;border-right:1px solid #d0d0d0;padding:8px 12px}
+  .seg button:last-child{border-right:0}
+  .seg .active{background:#111;color:#fff}
+  .grid-container{display:inline-block;background:#fff;border-radius:16px;padding:12px;box-shadow:0 6px 20px rgba(0,0,0,.07)}
+  .top-index{display:grid;justify-content:center;margin-bottom:6px;color:#666;font-size:11px;user-select:none}
+  .top-index div{text-align:center}
+  .board-wrap{overflow:auto}
+  .status{font-size:13px;color:#555}
+  .hint{font-size:12px;color:#777}
+  .spacer{flex:1}
+  .tiny{font-size:12px;color:#666}
+</style>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f4f4f5;
+      color: #111827;
+    }
+    header {
+      padding: 10px 18px;
+      background: #111827;
+      color: white;
+      font-size: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    header span.sub {
+      font-size: 12px;
+      opacity: 0.8;
+    }
+    main {
+      padding: 14px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1.6fr);
+      gap: 14px;
+    }
+    @media (max-width: 960px) {
+      main { grid-template-columns: minmax(0, 1fr); }
+    }
+    .card {
+      background: white;
+      border-radius: 14px;
+      padding: 14px 16px 16px;
+      box-shadow: 0 10px 30px rgba(15,23,42,.06);
+    }
+    .card h2 {
+      margin: 0 0 8px;
+      font-size: 16px;
+    }
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 10px;
+      font-size: 13px;
+    }
+    label span {
+      margin-right: 4px;
+    }
+    input[type="number"] {
+      width: 70px;
+      padding: 4px 6px;
+      border-radius: 999px;
+      border: 1px solid #d4d4d8;
+      font-size: 13px;
+    }
+    input[type="file"] {
+      font-size: 12px;
+    }
+    button {
+      border-radius: 999px;
+      border: 1px solid #d4d4d8;
+      padding: 6px 10px;
+      font-size: 13px;
+      background: #f9fafb;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    button.primary {
+      background: #2563eb;
+      color: white;
+      border-color: #1d4ed8;
+    }
+    button.danger {
+      background: #fee2e2;
+      border-color: #fecaca;
+      color: #b91c1c;
+    }
+    button:active {
+      transform: translateY(1px);
+    }
+    canvas {
+      border-radius: 10px;
+      background: #ffffff;
+      display: block;
+      max-width: 100%;
+    }
+    textarea {
+      width: 100%;
+      min-height: 140px;
+      resize: vertical;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 13px;
+      padding: 8px;
+      border-radius: 10px;
+      border: 1px solid #d4d4d8;
+      background: #f9fafb;
+    }
+    .label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #4b5563;
+      margin: 8px 0 4px;
+    }
+    .hint {
+      font-size: 11px;
+      color: #6b7280;
+      margin-top: 4px;
+      line-height: 1.5;
+    }
+    .two-cols {
+      display: grid;
+      grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+      gap: 10px;
+    }
+    .error {
+      color: #b91c1c;
+      font-size: 11px;
+      margin-top: 4px;
+    }
+  </style>
+  <style>
+    .global-wrap {max-width: 1240px; margin: 0 auto; padding: 8px 16px 0;}
+    .global-tabs {display:flex; gap:8px; margin-bottom:8px;}
+    .global-tab-btn {
+      padding:8px 14px;
+      border-radius:999px;
+      border:1px solid #d4d4d8;
+      background:#f3f4f6;
+      font-size:13px;
+      cursor:pointer;
+    }
+    .global-tab-btn.active {
+      background:#111827;
+      color:#fff;
+      border-color:#111827;
+    }
+    .global-spacer {flex:1;}
+  </style>
+</head>
+<body>
+  <div class="global-wrap">
+    <div class="global-tabs">
+      <button id="tab-global-image" class="global-tab-btn active">① 이미지 → 숫자</button>
+      <button id="tab-global-solver" class="global-tab-btn">② 솔버 / 뷰어</button>
+      <div class="global-spacer"></div>
+      <div style="font-size:11px;color:#6b7280;align-self:center;">탭을 눌러 도구 전환</div>
+    </div>
+  </div>
+
+  <div id="app-image">
+
+  <header>
+    <div>네모네모 로직 &nbsp;<span class="sub">이미지 → 행·열 숫자 추출 (퍼즐 영역 직접 지정)</span></div>
+    <span class="sub">퍼즐 테두리를 두 번 클릭해서 영역을 정하면 인식이 훨씬 정확해집니다.</span>
+  </header>
+  <main>
+    <section class="card">
+      <h2>1. 이미지 불러오기 & 퍼즐 영역 지정</h2>
+      <div class="row">
+        <input id="fileInput" type="file" accept="image/*">
+      </div>
+      <div class="row">
+        <label><span>행(R)</span><input id="rowsInput" type="number" min="1" max="80" step="1" value="10"></label>
+        <label><span>열(C)</span><input id="colsInput" type="number" min="1" max="80" step="1" value="10"></label>
+      </div>
+      <div class="row">
+        <button id="markBtn" class="primary">퍼즐 영역 지정 시작</button>
+        <button id="clearCropBtn">영역 다시 지정</button>
+        <button id="analyzeBtn">이미지 분석 → 숫자 추출</button>
+      </div>
+      <div id="status" class="hint">1) 이미지를 선택 → 2) 행/열 입력 → 3) “퍼즐 영역 지정 시작”을 누르고 퍼즐의 왼쪽 위, 오른쪽 아래 모서리를 차례대로 클릭하세요.</div>
+      <div class="error" id="errorBox" style="display:none;"></div>
+      <div class="label" style="margin-top:10px;">이미지 + 지정한 퍼즐 영역</div>
+      <canvas id="imageCanvas" width="420" height="420"></canvas>
+      <div class="label" style="margin-top:10px;">인식된 격자 미리보기</div>
+      <canvas id="gridCanvas" width="420" height="420"></canvas>
+      <div class="hint">
+        ● 숫자, 여백까지 포함된 큰 이미지를 넣어도 괜찮습니다.<br>
+        ● 퍼즐 전체가 들어가도록 왼쪽 위 모서리, 오른쪽 아래 모서리를 정확히 찍어 주세요.<br>
+        ● 잘못 찍었으면 “영역 다시 지정”을 누르고 다시 두 번 클릭하면 됩니다.
+      </div>
+    </section>
+    <section class="card">
+      <h2>2. 추출된 행·열 숫자</h2>
+      <div class="two-cols">
+        <div>
+          <div class="label">행 숫자 (위에서 아래로)</div>
+          <textarea id="rowsClues" readonly></textarea>
+        </div>
+        <div>
+          <div class="label">열 숫자 (왼쪽에서 오른쪽으로)</div>
+          <textarea id="colsClues" readonly></textarea>
+        </div>
+      </div>
+      <div class="hint">
+        ● 각 줄은 한 행(또는 한 열)을 뜻합니다.<br>
+        ● 검은 칸 뭉치의 길이를 순서대로 적습니다. 예) <code>1 5</code><br>
+        ● 검은 칸이 하나도 없는 줄은 <code>0</code>으로 표시합니다.<br>
+        ● 숫자가 퍼즐과 다르면, 퍼즐 영역을 다시 지정해서 시도해 보세요.
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const fileInput = document.getElementById('fileInput');
+    const rowsInput = document.getElementById('rowsInput');
+    const colsInput = document.getElementById('colsInput');
+    const markBtn = document.getElementById('markBtn');
+    const clearCropBtn = document.getElementById('clearCropBtn');
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    const statusBox = document.getElementById('status');
+    const errorBox = document.getElementById('errorBox');
+    const imageCanvas = document.getElementById('imageCanvas');
+    const imageCtx = imageCanvas.getContext('2d');
+    const gridCanvas = document.getElementById('gridCanvas');
+    const gridCtx = gridCanvas.getContext('2d');
+    const rowsClues = document.getElementById('rowsClues');
+    const colsClues = document.getElementById('colsClues');
+
+    let loadedImage = null;
+    let imgDataFull = null;
+    let imgWidth = 0;
+    let imgHeight = 0;
+
+    // 프리뷰 스케일 정보 (캔버스 좌표 -> 원본 좌표 변환용)
+    let previewScale = 1;
+    let previewOffsetX = 0;
+    let previewOffsetY = 0;
+
+    // 퍼즐 영역 (원본 이미지 좌표 기준)
+    let cropSet = false;
+    let cropX1 = 0, cropY1 = 0, cropX2 = 0, cropY2 = 0;
+    let markMode = false;
+    let markClicks = 0;
+
+    const FILL_THRESHOLD = 210; // 이보다 어두우면 채워진 픽셀로 보는 기준 (0~255)
+    const FILL_RATIO = 0.35;   // 셀 중앙에서 어두운 픽셀 비율이 이 이상이면 "검은 칸"
+
+    function resetOutputs() {
+      rowsClues.value = '';
+      colsClues.value = '';
+      gridCtx.clearRect(0, 0, gridCanvas.width, gridCanvas.height);
+    }
+
+    fileInput.addEventListener('change', () => {
+      resetOutputs();
+      errorBox.style.display = 'none';
+      errorBox.textContent = '';
+      cropSet = false;
+      markMode = false;
+      markClicks = 0;
+
+      const file = fileInput.files && fileInput.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          loadedImage = img;
+          imgWidth = img.naturalWidth;
+          imgHeight = img.naturalHeight;
+
+          const tempCanvas = document.createElement('canvas');
+          tempCanvas.width = imgWidth;
+          tempCanvas.height = imgHeight;
+          const tctx = tempCanvas.getContext('2d');
+          tctx.drawImage(img, 0, 0);
+          imgDataFull = tctx.getImageData(0, 0, imgWidth, imgHeight);
+
+          drawImagePreview();
+          statusBox.textContent = '이미지가 로드되었습니다. “퍼즐 영역 지정 시작”을 눌러 퍼즐 테두리를 두 번 클릭해 주세요.';
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    function drawImagePreview() {
+      imageCtx.clearRect(0, 0, imageCanvas.width, imageCanvas.height);
+      imageCtx.fillStyle = '#e5e7eb';
+      imageCtx.fillRect(0, 0, imageCanvas.width, imageCanvas.height);
+
+      if (!loadedImage) return;
+
+      const maxW = imageCanvas.width;
+      const maxH = imageCanvas.height;
+      previewScale = Math.min(maxW / imgWidth, maxH / imgHeight, 1);
+      const drawW = imgWidth * previewScale;
+      const drawH = imgHeight * previewScale;
+      previewOffsetX = (imageCanvas.width - drawW) / 2;
+      previewOffsetY = (imageCanvas.height - drawH) / 2;
+
+      imageCtx.drawImage(loadedImage, previewOffsetX, previewOffsetY, drawW, drawH);
+
+      // 이미 퍼즐 영역이 지정되어 있다면 사각형 표시
+      if (cropSet || markClicks > 0) {
+        imageCtx.save();
+        imageCtx.strokeStyle = '#ef4444';
+        imageCtx.lineWidth = 2;
+        imageCtx.setLineDash([6, 4]);
+
+        let x1, y1, x2, y2;
+        if (cropSet) {
+          x1 = cropX1 * previewScale + previewOffsetX;
+          y1 = cropY1 * previewScale + previewOffsetY;
+          x2 = cropX2 * previewScale + previewOffsetX;
+          y2 = cropY2 * previewScale + previewOffsetY;
+        } else {
+          // 마킹 중일 때는 첫 클릭 좌표만 있을 수 있음
+          if (markClicks === 1) {
+            x1 = cropX1 * previewScale + previewOffsetX;
+            y1 = cropY1 * previewScale + previewOffsetY;
+            x2 = x1;
+            y2 = y1;
+          } else {
+            return;
+          }
+        }
+        const rx = Math.min(x1, x2);
+        const ry = Math.min(y1, y2);
+        const rw = Math.abs(x2 - x1);
+        const rh = Math.abs(y2 - y1);
+        imageCtx.strokeRect(rx, ry, rw, rh);
+        imageCtx.restore();
+      }
+    }
+
+    markBtn.addEventListener('click', () => {
+      if (!loadedImage) {
+        errorBox.textContent = '먼저 이미지를 선택해 주세요.';
+        errorBox.style.display = 'block';
+        return;
+      }
+      errorBox.style.display = 'none';
+      errorBox.textContent = '';
+      markMode = true;
+      markClicks = 0;
+      cropSet = false;
+      statusBox.textContent = '퍼즐의 왼쪽 위 모서리를 클릭한 뒤, 오른쪽 아래 모서리를 클릭해 주세요.';
+      drawImagePreview();
+    });
+
+    clearCropBtn.addEventListener('click', () => {
+      cropSet = false;
+      markMode = false;
+      markClicks = 0;
+      errorBox.style.display = 'none';
+      errorBox.textContent = '';
+      statusBox.textContent = '퍼즐 영역을 다시 지정하려면 “퍼즐 영역 지정 시작”을 누르고 두 번 클릭하세요.';
+      drawImagePreview();
+    });
+
+    imageCanvas.addEventListener('click', (evt) => {
+      if (!markMode || !loadedImage) return;
+
+      const rect = imageCanvas.getBoundingClientRect();
+      const cx = evt.clientX - rect.left;
+      const cy = evt.clientY - rect.top;
+
+      // 프리뷰 안쪽이 아니면 무시
+      const xInImg = (cx - previewOffsetX) / previewScale;
+      const yInImg = (cy - previewOffsetY) / previewScale;
+      if (xInImg < 0 || xInImg >= imgWidth || yInImg < 0 || yInImg >= imgHeight) {
+        return;
+      }
+
+      if (markClicks === 0) {
+        cropX1 = xInImg;
+        cropY1 = yInImg;
+        markClicks = 1;
+        statusBox.textContent = '이제 퍼즐의 오른쪽 아래 모서리를 클릭해 주세요.';
+      } else if (markClicks === 1) {
+        cropX2 = xInImg;
+        cropY2 = yInImg;
+        cropSet = true;
+        markMode = false;
+        markClicks = 2;
+        statusBox.textContent = '퍼즐 영역이 지정되었습니다. “이미지 분석 → 숫자 추출”을 눌러 주세요.';
+      }
+      drawImagePreview();
+    });
+
+    function computeCluesForLine(arr) {
+      const res = [];
+      let run = 0;
+      for (let v of arr) {
+        if (v === 1) run++;
+        else if (run > 0) {
+          res.push(run);
+          run = 0;
+        }
+      }
+      if (run > 0) res.push(run);
+      if (res.length === 0) return '0';
+      return res.join(' ');
+    }
+
+    function analyzeImage() {
+      resetOutputs();
+      errorBox.style.display = 'none';
+      errorBox.textContent = '';
+
+      if (!imgDataFull) {
+        errorBox.textContent = '이미지를 먼저 선택해 주세요.';
+        errorBox.style.display = 'block';
+        return;
+      }
+      if (!cropSet) {
+        errorBox.textContent = '퍼즐 영역을 먼저 지정해 주세요. “퍼즐 영역 지정 시작”을 누르고 퍼즐의 왼쪽 위, 오른쪽 아래를 차례대로 클릭합니다.';
+        errorBox.style.display = 'block';
+        return;
+      }
+
+      let R = parseInt(rowsInput.value || '0', 10);
+      let C = parseInt(colsInput.value || '0', 10);
+      if (!R || !C || R < 1 || C < 1) {
+        errorBox.textContent = '행(R), 열(C)을 올바르게 입력해 주세요.';
+        errorBox.style.display = 'block';
+        return;
+      }
+      if (R > 80 || C > 80) {
+        errorBox.textContent = '행과 열은 1~80 사이에서만 지원합니다.';
+        errorBox.style.display = 'block';
+        return;
+      }
+
+      statusBox.textContent = '이미지를 분석하는 중입니다...';
+
+      const data = imgDataFull.data;
+      const w = imgWidth;
+      const h = imgHeight;
+
+      let minX = Math.max(0, Math.floor(Math.min(cropX1, cropX2)));
+      let maxX = Math.min(w - 1, Math.ceil(Math.max(cropX1, cropX2)));
+      let minY = Math.max(0, Math.floor(Math.min(cropY1, cropY2)));
+      let maxY = Math.min(h - 1, Math.ceil(Math.max(cropY1, cropY2)));
+
+      const puzzleW = maxX - minX + 1;
+      const puzzleH = maxY - minY + 1;
+      const cellW = puzzleW / C;
+      const cellH = puzzleH / R;
+
+      const grid = Array.from({ length: R }, () => Array(C).fill(0));
+
+      for (let r = 0; r < R; r++) {
+        for (let c = 0; c < C; c++) {
+          const sx0 = minX + (c + 0.25) * cellW;
+          const sx1 = minX + (c + 0.75) * cellW;
+          const sy0 = minY + (r + 0.25) * cellH;
+          const sy1 = minY + (r + 0.75) * cellH;
+
+          let darkCount = 0;
+          let totalCount = 0;
+
+          for (let yy = Math.floor(sy0); yy < Math.ceil(sy1); yy++) {
+            if (yy < 0 || yy >= h) continue;
+            for (let xx = Math.floor(sx0); xx < Math.ceil(sx1); xx++) {
+              if (xx < 0 || xx >= w) continue;
+              const idx = (yy * w + xx) * 4;
+              const r2 = data[idx], g2 = data[idx+1], b2 = data[idx+2];
+              const bright = (r2 + g2 + b2) / 3;
+              if (bright < FILL_THRESHOLD) darkCount++;
+              totalCount++;
+            }
+          }
+
+          const ratio = totalCount ? darkCount / totalCount : 0;
+          grid[r][c] = ratio >= FILL_RATIO ? 1 : 0;
+        }
+      }
+
+      const rowLines = [];
+      for (let r = 0; r < R; r++) {
+        rowLines.push(computeCluesForLine(grid[r]));
+      }
+      const colLines = [];
+      for (let c = 0; c < C; c++) {
+        const col = [];
+        for (let r = 0; r < R; r++) col.push(grid[r][c]);
+        colLines.push(computeCluesForLine(col));
+      }
+      rowsClues.value = rowLines.join('\n');
+      colsClues.value = colLines.join('\n');
+
+      drawRecognizedGrid(grid);
+      statusBox.textContent = '이미지 분석이 완료되었습니다. 숫자가 퍼즐과 잘 맞는지 확인해 보세요.';
+    }
+
+    function drawRecognizedGrid(grid) {
+      const R = grid.length;
+      const C = grid[0].length;
+      const cell = 16;
+      const margin = 20;
+
+      const width = margin * 2 + C * cell;
+      const height = margin * 2 + R * cell;
+      gridCanvas.width = width;
+      gridCanvas.height = height;
+
+      gridCtx.clearRect(0, 0, width, height);
+      gridCtx.fillStyle = '#ffffff';
+      gridCtx.fillRect(0, 0, width, height);
+
+      gridCtx.fillStyle = '#4b5563';
+      gridCtx.font = '10px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+      gridCtx.textBaseline = 'middle';
+      gridCtx.textAlign = 'right';
+      for (let r = 0; r < R; r++) {
+        const y = margin + r * cell + cell / 2;
+        gridCtx.fillText(String(r + 1), margin - 4, y);
+      }
+      gridCtx.textAlign = 'center';
+      const topY = margin - 10;
+      for (let c = 0; c < C; c++) {
+        const x = margin + c * cell + cell / 2;
+        gridCtx.fillText(String(c + 1), x, topY);
+      }
+
+      for (let r = 0; r < R; r++) {
+        for (let c = 0; c < C; c++) {
+          const x = margin + c * cell;
+          const y = margin + r * cell;
+          gridCtx.fillStyle = grid[r][c] === 1 ? '#111827' : '#ffffff';
+          gridCtx.fillRect(x, y, cell, cell);
+        }
+      }
+
+      gridCtx.strokeStyle = '#d4d4d8';
+      gridCtx.lineWidth = 1;
+      gridCtx.beginPath();
+      for (let r = 0; r <= R; r++) {
+        const y = margin + r * cell + 0.5;
+        gridCtx.moveTo(margin, y);
+        gridCtx.lineTo(margin + C * cell, y);
+      }
+      for (let c = 0; c <= C; c++) {
+        const x = margin + c * cell + 0.5;
+        gridCtx.moveTo(x, margin);
+        gridCtx.lineTo(x, margin + R * cell);
+      }
+      gridCtx.stroke();
+
+      gridCtx.strokeStyle = '#9ca3af';
+      gridCtx.lineWidth = 1.5;
+      gridCtx.strokeRect(margin + 0.5, margin + 0.5, C * cell, R * cell);
+    }
+
+    analyzeBtn.addEventListener('click', analyzeImage);
+  </script>
+
+  </div>
+
+  <div id="app-solverviewer" style="display:none;">
+
+<div class="wrap">
+  <div class="row" style="justify-content:space-between;align-items:center">
+    <h1>네모네모 로직 · <span id="sizeLabel">10x10</span></h1>
+    <div class="status" id="status-solver">상태: 준비됨</div>
+  </div>
+
+  <div class="tabs">
+    <div id="tab-solver" class="tab active">솔버(단서→정답)</div>
+    <div id="tab-viewer" class="tab">뷰어(그리드 편집/렌더)</div>
+    <div class="spacer"></div>
+    <button id="savepng" title="현재 보드를 PNG로 저장" class="primary">PNG 저장</button>
+  </div>
+
+  <div id="panel-solver" class="card">
+    <div class="row">
+      <div><label>세로 N(행)</label><br/><input id="rowsS" type="number" min="1" max="60" value="10"/></div>
+      <div><label>가로 M(열)</label><br/><input id="colsS" type="number" min="1" max="60" value="10"/></div>
+      <button id="applyS" class="primary">크기 적용</button>
+      <button id="cleanRow">행 붙여넣기 정리</button>
+      <button id="cleanCol">열 붙여넣기 정리</button>
+      <button id="solve" class="primary">해결(Solve)</button>
+      <button id="copyToViewer">솔버 결과 → 뷰어로 복사</button>
+    </div>
+    <div class="row" style="align-items:flex-start">
+      <div style="flex:1;min-width:260px">
+        <label>행 단서 (위→아래, 각 줄 공백/쉼표 구분, 빈 줄=0)</label>
+        <textarea id="rowClues"></textarea>
+      </div>
+      <div style="flex:1;min-width:260px">
+        <label>열 단서 (왼→오른쪽, 각 줄 공백/쉼표 구분, 빈 줄=0)</label>
+        <textarea id="colClues"></textarea>
+      </div>
+    </div>
+    <div class="board-wrap" style="margin-top:10px">
+      <div class="grid-container">
+        <div class="top-index" id="topIndexS"></div>
+        <canvas id="boardS" width="420" height="420" style="display:block"></canvas>
+      </div>
+    </div>
+    <div class="hint" style="margin-top:6px">※ 줄 수 자동 보정, 쉼표/전각공백 허용, 빈 줄은 0으로 처리.</div>
+  </div>
+
+  <div id="panel-viewer" class="card" style="display:none">
+    <div class="row">
+      <div><label>세로 N(행)</label><br/><input id="rowsV" type="number" min="1" max="60" value="10"/></div>
+      <div><label>가로 M(열)</label><br/><input id="colsV" type="number" min="1" max="60" value="10"/></div>
+      <button id="applyV" class="primary">크기 적용</button>
+      <div class="seg" role="group" aria-label="도구">
+        <button id="toolToggle" class="active" title="토글(클릭시 반전)">토글</button>
+        <button id="toolPen" title="채우기(검정)">펜</button>
+        <button id="toolEraser" title="지우개(흰색)">지우개</button>
+      </div>
+      <button id="toggle">수정하기/잠금</button>
+      <button id="copyFromViewer">뷰어 그리드 → 텍스트 복사</button>
+      <button id="genClues" class="primary">뷰어 → 단서 생성</button>
+      <button id="genCluesToSolver">단서 생성 + 솔버로 복사</button>
+      <button id="resetV">다시하기</button>
+    </div>
+
+    <div class="row">
+      <div class="tiny">팁: 마우스 <b>드래그</b>로 연속 칠하기, <b>Shift+클릭</b>으로 같은 행/열 <b>직선 구간</b> 채우기.</div>
+    </div>
+
+    <div class="row">
+      <div style="display:flex;gap:8px;align-items:end;flex-wrap:wrap">
+        <div><label>행 r, 열 c1~c2 채우기</label><br/>
+          r <input id="rowIdx" type="number" min="1" value="1"/>
+          c1 <input id="rowC1" type="number" min="1" value="1"/>
+          c2 <input id="rowC2" type="number" min="1" value="1"/>
+          <button id="btnFillRow">행 구간 채우기(검정)</button>
+        </div>
+        <div><label>열 c, 행 r1~r2 채우기</label><br/>
+          c <input id="colIdx" type="number" min="1" value="1"/>
+          r1 <input id="colR1" type="number" min="1" value="1"/>
+          r2 <input id="colR2" type="number" min="1" value="1"/>
+          <button id="btnFillCol">열 구간 채우기(검정)</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="row" style="align-items:flex-start;margin-top:10px">
+      <div style="flex:1;min-width:260px">
+        <label>그리드 텍스트(#=검정, . 또는 0/X=빈칸)</label>
+        <textarea id="gridText"></textarea>
+        <div style="margin-top:6px"><button id="loadGrid" class="primary">텍스트 불러오기 → 뷰어</button></div>
+      </div>
+      <div class="board-wrap" style="margin-top:10px">
+        <div class="grid-container">
+          <div class="top-index" id="topIndexV"></div>
+          <canvas id="boardV" width="420" height="420" style="display:block;cursor:crosshair"></canvas>
+        </div>
+        <div class="hint" style="margin-top:6px">셀을 클릭/드래그해서 칠하기. Shift+클릭: 같은 행/열 직선 구간 채우기. 5칸마다 굵은 경계.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const sizeLabel = document.getElementById('sizeLabel');
+  const statusEl = document.getElementById('status-solver');
+  const saveBtn = document.getElementById('savepng');
+  const tabSolver = document.getElementById('tab-solver');
+  const tabViewer = document.getElementById('tab-viewer');
+  const panelSolver = document.getElementById('panel-solver');
+  const panelViewer = document.getElementById('panel-viewer');
+
+  function status(msg){ statusEl.textContent = '상태: ' + msg; }
+  function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
+
+  // SOLVER
+  const boardS = document.getElementById('boardS');
+  const ctxS = boardS.getContext('2d');
+  const rowsS = document.getElementById('rowsS');
+  const colsS = document.getElementById('colsS');
+  const applyS = document.getElementById('applyS');
+  const solveBtn = document.getElementById('solve');
+  const copyToViewer = document.getElementById('copyToViewer');
+  const topIndexS = document.getElementById('topIndexS');
+  const rowTxt = document.getElementById('rowClues');
+  const colTxt = document.getElementById('colClues');
+  const cleanRowBtn = document.getElementById('cleanRow');
+  const cleanColBtn = document.getElementById('cleanCol');
+
+  // VIEWER
+  const boardV = document.getElementById('boardV');
+  const ctxV = boardV.getContext('2d');
+  const rowsV = document.getElementById('rowsV');
+  const colsV = document.getElementById('colsV');
+  const applyV = document.getElementById('applyV');
+  const resetV = document.getElementById('resetV');
+  const toggleBtn = document.getElementById('toggle');
+  const copyFromViewer = document.getElementById('copyFromViewer');
+  const loadGridBtn = document.getElementById('loadGrid');
+  const gridText = document.getElementById('gridText');
+  const topIndexV = document.getElementById('topIndexV');
+  const genCluesBtn = document.getElementById('genClues');
+  const genCluesToSolverBtn = document.getElementById('genCluesToSolver');
+
+  // New tool controls
+  const toolToggle = document.getElementById('toolToggle');
+  const toolPen = document.getElementById('toolPen');
+  const toolEraser = document.getElementById('toolEraser');
+  const btnFillRow = document.getElementById('btnFillRow');
+  const btnFillCol = document.getElementById('btnFillCol');
+  const rowIdx = document.getElementById('rowIdx');
+  const rowC1 = document.getElementById('rowC1');
+  const rowC2 = document.getElementById('rowC2');
+  const colIdx = document.getElementById('colIdx');
+  const colR1 = document.getElementById('colR1');
+  const colR2 = document.getElementById('colR2');
+
+  let R = 10, C = 10;
+  let cell = 28;
+  let thickEvery = 5;
+  let editV = true;
+  let tool = 'toggle'; // 'toggle' | 'pen' | 'eraser'
+
+  let gridS = makeGrid(R, C, -1);
+  let gridV = makeGrid(R, C, 0);
+
+  function makeGrid(r,c,val){ return Array.from({length:r},()=>Array(c).fill(val)); }
+  function updateSizeAll(){
+    sizeLabel.textContent = `${R}x${C}`;
+    updateCanvasSize(boardS); updateCanvasSize(boardV);
+    renderTopIndex(topIndexS); renderTopIndex(topIndexV);
+  }
+  function updateCanvasSize(canvas){
+    const margin = 22;
+    canvas.width = C*cell + margin*2;
+    canvas.height = R*cell + margin*2;
+  }
+  function renderTopIndex(el){
+    el.style.gridTemplateColumns = `repeat(${C}, ${cell}px)`;
+    el.innerHTML = Array.from({length:C},(_,i)=>`<div>${i+1}</div>`).join('');
+  }
+  
+  
+function drawBoard(ctx, grid, isSolver){
+  const margin = 22;
+
+  // 배경 초기화
+  ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+  // ===== 번호 그리기 =====
+  ctx.fillStyle = '#666666';
+  ctx.font = '11px system-ui, -apple-system, Segoe UI, Roboto';
+  ctx.textBaseline = 'middle';
+
+  // (1) 행 번호: 왼쪽 + 오른쪽
+  const leftX = margin - 6;
+  const rightX = margin + C * cell + margin / 2;
+  ctx.textAlign = 'right';
+  for (let r = 0; r < R; r++){
+    const y = margin + r * cell + cell / 2;
+    ctx.fillText(String(r + 1), leftX, y);
+  }
+  ctx.textAlign = 'center';
+  for (let r = 0; r < R; r++){
+    const y = margin + r * cell + cell / 2;
+    ctx.fillText(String(r + 1), rightX, y);
+  }
+
+  // (2) 열 번호: 위 + 아래
+  const topY = margin / 2;
+  const bottomY = margin + R * cell + margin / 2;
+  ctx.textAlign = 'center';
+  for (let c = 0; c < C; c++){
+    const x = margin + c * cell + cell / 2;
+    const label = String(c + 1);
+    ctx.fillText(label, x, topY);
+    ctx.fillText(label, x, bottomY);
+  }
+
+  // ===== 칸 채우기 =====
+  for (let r = 0; r < R; r++){
+    for (let c = 0; c < C; c++){
+      const x = margin + c * cell;
+      const y = margin + r * cell;
+      const v = grid[r][c];
+
+      if (isSolver){
+        if (v === -1) ctx.fillStyle = '#fafafa';
+        else if (v === 1) ctx.fillStyle = '#121212';
+        else ctx.fillStyle = '#ffffff';
+      } else {
+        ctx.fillStyle = (v === 1 ? '#121212' : '#ffffff');
+      }
+      ctx.fillRect(x, y, cell, cell);
+    }
+  }
+
+  // ===== 얇은 격자선 =====
+  ctx.strokeStyle = '#dcdcdc';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  for (let i = 0; i <= R; i++){
+    const y = margin + i * cell + 0.5;
+    ctx.moveTo(margin, y);
+    ctx.lineTo(margin + C * cell, y);
+  }
+  for (let i = 0; i <= C; i++){
+    const x = margin + i * cell + 0.5;
+    ctx.moveTo(x, margin);
+    ctx.lineTo(x, margin + R * cell);
+  }
+  ctx.stroke();
+
+  // ===== 진한 격자선 =====
+  ctx.strokeStyle = '#777777';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  for (let r = thickEvery; r < R; r += thickEvery){
+    const y = margin + r * cell + 0.5;
+    ctx.moveTo(margin, y);
+    ctx.lineTo(margin + C * cell, y);
+  }
+  for (let c = thickEvery; c < C; c += thickEvery){
+    const x = margin + c * cell + 0.5;
+    ctx.moveTo(x, margin);
+    ctx.lineTo(x, margin + R * cell);
+  }
+  ctx.stroke();
+
+  // ===== 바깥 테두리 =====
+  ctx.strokeStyle = '#b4b4b4';
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(margin + 0.5, margin + 0.5, C * cell, R * cell);
+}
+
+
+  function renderAll(){ updateSizeAll(); drawBoard(ctxS, gridS, true); drawBoard(ctxV, gridV, false); }
+
+  // parsing helpers
+  function normalizeLines(text){
+    const t = text.replace(/\uFEFF/g,'').replace(/[\u200B-\u200D\u2060]/g,'').replace(/[\u00A0\u3000]/g,' ');
+    return t.replace(/\r\n|\r|\n/g,'\n').split('\n');
+  }
+  function cleanPartNums(s){ return s.replace(/[，,]+/g,' ').replace(/[^0-9\s]/g,' ').replace(/\s+/g,' ').trim(); }
+  function coerceLinesTo(text, expectedLines){
+    let raw = normalizeLines(text).map(s=>s.trim());
+    while(raw.length && raw[0]==='') raw.shift();
+    while(raw.length && raw[raw.length-1]==='') raw.pop();
+    let nonBlank = raw.filter(s=>s!==''); if(nonBlank.length === expectedLines) raw = nonBlank;
+    if(raw.length < expectedLines){ while(raw.length < expectedLines) raw.push('0'); }
+    else if(raw.length > expectedLines){ raw = raw.slice(0, expectedLines); }
+    return raw;
+  }
+  function parseClueLines(text, expectedLines){
+    const lines = coerceLinesTo(text, expectedLines);
+    return lines.map((ln)=>{
+      const cleaned = cleanPartNums(ln);
+      if(cleaned==='') return [];
+      const parts = cleaned.split(' ').map(Number).filter(x=>x>=0);
+      return parts.filter(x=>x>0);
+    });
+  }
+
+  function feasible(length, clues){
+    if(clues.length===0) return true;
+    return clues.reduce((a,b)=>a+b,0) + (clues.length-1) <= length;
+  }
+  function* placements(L, clues, known){
+    if(clues.length===0){
+      const arr = Array(L).fill(0);
+      for(let i=0;i<L;i++){ if(known[i]!==-1 && known[i]!==0) return; }
+      yield arr; return;
+    }
+    const total = clues.reduce((a,b)=>a+b,0);
+    const minLen = total + (clues.length-1);
+    if(minLen > L) return;
+    const first = clues[0];
+    for(let s0=0; s0<=L - minLen; s0++){
+      let ok=true;
+      for(let i=0;i<s0;i++){ if(known[i]!==-1 && known[i]!==0){ ok=false; break; } }
+      if(!ok) continue;
+      for(let i=0;i<first;i++){ const idx=s0+i; if(known[idx]!==-1 && known[idx]!==1){ ok=false; break; } }
+      if(!ok) continue;
+      if(clues.length===1){
+        for(let i=s0+first;i<L;i++){ if(known[i]!==-1 && known[i]!==0){ ok=false; break; } }
+        if(ok){
+          const arr = Array(L).fill(0);
+          for(let i=0;i<first;i++) arr[s0+i]=1;
+          yield arr;
+        }
+      }else{
+        const sep = s0+first;
+        if(sep >= L) continue;
+        if(known[sep]!==-1 && known[sep]!==0) continue;
+        const remKnown = known.slice(sep+1);
+        const subClues = clues.slice(1);
+        for(const tail of placements(L - sep - 1, subClues, remKnown)){
+          const arr = Array(L).fill(0);
+          for(let i=0;i<first;i++) arr[s0+i]=1;
+          arr[sep]=0;
+          for(let t=0;t<tail.length;t++) arr[sep+1+t]=tail[t];
+          yield arr;
+        }
+      }
+    }
+  }
+  function deduceLine(L, clues, known){
+    const sols = Array.from(placements(L, clues, known));
+    if(sols.length===0) return {ok:false, line:known, changes:0};
+    const merged = known.slice();
+    let changes=0;
+    for(let i=0;i<L;i++){
+      let all1=true, all0=true;
+      for(const s of sols){ if(s[i]===1) all0=false; else all1=false; if(!all1 && !all0) break; }
+      const v = all1 ? 1 : all0 ? 0 : known[i];
+      if(v !== merged[i]){ merged[i]=v; changes++; }
+    }
+    return {ok:true, line:merged, changes, solsCount:sols.length};
+  }
+  function propagate(grid, rowClues, colClues){
+    const H = grid.length, W = grid[0].length;
+    while(true){
+      let changed=0;
+      for(let r=0;r<H;r++){
+        const res = deduceLine(W, rowClues[r], grid[r]);
+        if(!res.ok) return false;
+        grid[r] = res.line; changed += res.changes;
+      }
+      for(let c=0;c<W;c++){
+        const col = Array(H); for(let r=0;r<H;r++) col[r]=grid[r][c];
+        const res = deduceLine(H, colClues[c], col);
+        if(!res.ok) return false;
+        for(let r=0;r<H;r++) grid[r][c]=res.line[r];
+        changed += res.changes;
+      }
+      if(changed===0) break;
+    }
+    return true;
+  }
+  function solved(grid){
+    for(const row of grid) for(const v of row) if(v===-1) return false;
+    return true;
+  }
+  function copyGrid(g){ return g.map(row=>row.slice()); }
+  function firstUnknown(g){
+    for(let r=0;r<g.length;r++) for(let c=0;c<g[0].length;c++) if(g[r][c]===-1) return [r,c];
+    return null;
+  }
+  function backtrack(grid, rowClues, colClues, limit=30000){
+    let steps=0;
+    function dfs(g){
+      if(steps++ > limit) return null;
+      if(!propagate(g, rowClues, colClues)) return null;
+      if(solved(g)) return g;
+      const pos = firstUnknown(g);
+      if(!pos) return g;
+      const [r,c]=pos;
+      for(const guess of [1,0]){
+        const g2 = copyGrid(g); g2[r][c]=guess;
+        const res = dfs(g2);
+        if(res) return res;
+      }
+      return null;
+    }
+    return dfs(copyGrid(grid));
+  }
+
+  function setTool(next){
+    tool = next;
+    [toolToggle, toolPen, toolEraser].forEach(b=>b.classList.remove('active'));
+    if(tool==='toggle') toolToggle.classList.add('active');
+    else if(tool==='pen') toolPen.classList.add('active');
+    else toolEraser.classList.add('active');
+    status('도구: ' + (tool==='toggle'?'토글':tool==='pen'?'펜(채우기)':'지우개'));
+  }
+  toolToggle.addEventListener('click', ()=> setTool('toggle'));
+  toolPen.addEventListener('click', ()=> setTool('pen'));
+  toolEraser.addEventListener('click', ()=> setTool('eraser'));
+
+  const margin = 22;
+  function posToRC(ev, canvas){
+    const rect = canvas.getBoundingClientRect();
+    const x = ev.clientX - rect.left, y = ev.clientY - rect.top;
+    if(x < margin || y < margin) return null;
+    const c = Math.floor((x - margin)/cell), r = Math.floor((y - margin)/cell);
+    if(r<0||c<0||r>=R||c>=C) return null;
+    return {r,c};
+  }
+
+  let isDown = false;
+  let paintValue = 1;
+  let anchor = null;
+
+  function applyCell(r,c, value){
+    if(gridV[r][c] === value) return;
+    gridV[r][c] = value;
+  }
+
+  boardV.addEventListener('mousedown', (ev)=>{
+    if(!editV) return;
+    const pt = posToRC(ev, boardV); if(!pt) return;
+    isDown = true;
+    anchor = pt;
+    if(tool==='pen') paintValue = 1;
+    else if(tool==='eraser') paintValue = 0;
+    else { paintValue = gridV[pt.r][pt.c] ? 0 : 1; }
+    if(!ev.shiftKey){
+      applyCell(pt.r, pt.c, paintValue);
+      drawBoard(ctxV, gridV, false);
+    }
+    ev.preventDefault();
+  });
+  boardV.addEventListener('mousemove', (ev)=>{
+    if(!editV || !isDown) return;
+    if(ev.shiftKey) return;
+    const pt = posToRC(ev, boardV); if(!pt) return;
+    applyCell(pt.r, pt.c, paintValue);
+    drawBoard(ctxV, gridV, false);
+  });
+  function fillLine(a, b, value){
+    if(a.r===b.r){
+      const r=a.r, s=Math.min(a.c,b.c), e=Math.max(a.c,b.c);
+      for(let c=s;c<=e;c++) applyCell(r,c,value);
+    } else if(a.c===b.c){
+      const c=a.c, s=Math.min(a.r,b.r), e=Math.max(a.r,b.r);
+      for(let r=s;r<=e;r++) applyCell(r,c,value);
+    } else {
+      const dr = Math.abs(b.r-a.r), dc = Math.abs(b.c-a.c);
+      const steps = Math.max(dr,dc);
+      for(let k=0;k<=steps;k++){
+        const rr = Math.round(a.r + (b.r-a.r)*k/steps);
+        const cc = Math.round(a.c + (b.c-a.c)*k/steps);
+        if(rr>=0&&rr<R&&cc>=0&&cc<C) applyCell(rr,cc,value);
+      }
+    }
+  }
+  window.addEventListener('mouseup', (ev)=>{
+    if(!isDown) return;
+    isDown = false;
+    const pt = posToRC(ev, boardV);
+    if(pt && anchor && ev.shiftKey){
+      fillLine(anchor, pt, paintValue);
+    }
+    drawBoard(ctxV, gridV, false);
+    gridText.value = gridToText(gridV);
+  });
+
+  function clamp1(v, lo, hi){ v = Math.floor(v); return Math.max(lo, Math.min(hi, v)); }
+  btnFillRow.addEventListener('click', ()=>{
+    let r = clamp1(parseInt(rowIdx.value||'1',10), 1, R) - 1;
+    let c1 = clamp1(parseInt(rowC1.value||'1',10), 1, C) - 1;
+    let c2 = clamp1(parseInt(rowC2.value||'1',10), 1, C) - 1;
+    if(c1>c2) [c1,c2] = [c2,c1];
+    for(let c=c1;c<=c2;c++) gridV[r][c]=1;
+    drawBoard(ctxV, gridV, false); gridText.value = gridToText(gridV);
+    status(`행 ${r+1}의 ${c1+1}~${c2+1} 칸 채움`);
+  });
+  btnFillCol.addEventListener('click', ()=>{
+    let c = clamp1(parseInt(colIdx.value||'1',10), 1, C) - 1;
+    let r1 = clamp1(parseInt(colR1.value||'1',10), 1, R) - 1;
+    let r2 = clamp1(parseInt(colR2.value||'1',10), 1, R) - 1;
+    if(r1>r2) [r1,r2] = [r2,r1];
+    for(let r=r1;r<=r2;r++) gridV[r][c]=1;
+    drawBoard(ctxV, gridV, false); gridText.value = gridToText(gridV);
+    status(`열 ${c+1}의 ${r1+1}~${r2+1} 칸 채움`);
+  });
+
+  function runsFromArray(arr){
+    const out=[]; let cnt=0;
+    for(let i=0;i<arr.length;i++){ if(arr[i]===1){ cnt++; } else { if(cnt>0){ out.push(cnt); cnt=0; } } }
+    if(cnt>0) out.push(cnt);
+    return out;
+  }
+  function generateCluesFromViewer(){
+    const rowLines = [];
+    for(let r=0;r<R;r++){ const runs = runsFromArray(gridV[r]); rowLines.push(runs.length? runs.join(' ') : '0'); }
+    const colLines = [];
+    for(let c=0;c<C;c++){ const col = Array.from({length:R}, (_,i)=>gridV[i][c]); const runs = runsFromArray(col); colLines.push(runs.length? runs.join(' ') : '0'); }
+    return {rowLines, colLines};
+  }
+
+  function gridToText(g){ return g.map(row=> row.map(v=> v? '#': '.').join('')).join('\n'); }
+
+  function applySizeSolver(){
+    R = clamp(parseInt(rowsS.value||'10',10),1,60);
+    C = clamp(parseInt(colsS.value||'10',10),1,60);
+    rowsV.value = R; colsV.value = C;
+    gridS = makeGrid(R,C,-1);
+    gridV = makeGrid(R,C,0);
+    rowTxt.value = Array.from({length:R},()=> "0").join('\n');
+    colTxt.value = Array.from({length:C},()=> "0").join('\n');
+    gridText.value = gridToText(gridV);
+    renderAll();
+  }
+  applyS.addEventListener('click', ()=>{ applySizeSolver(); status('솔버 크기 적용'); });
+  cleanRowBtn.addEventListener('click', ()=>{ rowTxt.value = coerceLinesTo(rowTxt.value, R).join('\n'); status('행 붙여넣기 정리 완료'); });
+  cleanColBtn.addEventListener('click', ()=>{ colTxt.value = coerceLinesTo(colTxt.value, C).join('\n'); status('열 붙여넣기 정리 완료'); });
+  solveBtn.addEventListener('click', ()=>{
+    try{
+      const rowClues = parseClueLines(rowTxt.value, R);
+      const colClues = parseClueLines(colTxt.value, C);
+      for(let i=0;i<R;i++) if(!feasible(C, rowClues[i])) throw new Error(`${i+1}행 단서 합이 가로 길이를 초과합니다.`);
+      for(let j=0;j<C;j++) if(!feasible(R, colClues[j])) throw new Error(`${j+1}열 단서 합이 세로 길이를 초과합니다.`);
+      gridS = makeGrid(R,C,-1);
+      const res = backtrack(gridS, rowClues, colClues);
+      if(!res){ alert('모순이 있거나 풀이 불가한 단서입니다.'); status('풀이 실패'); return; }
+      gridS = res; drawBoard(ctxS, gridS, true); status('풀이 완료');
+    }catch(e){ alert(e.message||e); status('오류'); }
+  });
+  copyToViewer.addEventListener('click', ()=>{
+    gridV = gridS.map(row => row.map(v => v===1 ? 1 : 0));
+    rowsV.value = R; colsV.value = C;
+    gridText.value = gridToText(gridV);
+    renderAll(); tabViewer.click(); status('솔버 결과를 뷰어로 복사');
+  });
+
+  function applySizeViewer(){
+    R = clamp(parseInt(rowsV.value||'10',10),1,60);
+    C = clamp(parseInt(colsV.value||'10',10),1,60);
+    rowsS.value = R; colsS.value = C;
+    gridV = makeGrid(R,C,0);
+    gridText.value = gridToText(gridV);
+    renderAll();
+  }
+  applyV.addEventListener('click', ()=>{ applySizeViewer(); status('뷰어 크기 적용'); });
+  resetV.addEventListener('click', ()=>{ gridV = makeGrid(R,C,0); gridText.value = gridToText(gridV); renderAll(); status('뷰어 초기화'); });
+  toggleBtn.addEventListener('click', ()=>{ editV = !editV; status(editV ? '뷰어 편집 On' : '뷰어 잠금'); });
+  copyFromViewer.addEventListener('click', ()=>{ gridText.value = gridToText(gridV); gridText.select(); document.execCommand('copy'); status('뷰어 그리드 텍스트 복사됨'); });
+  loadGridBtn.addEventListener('click', ()=>{ try{ 
+      const lines = coerceLinesTo(gridText.value, R);
+      const g = makeGrid(R,C,0);
+      for(let i=0;i<R;i++){
+        const line = lines[i].replace(/\s+/g,'');
+        if(line.length !== C) throw new Error(`${i+1}행 글자수가 ${C}과 다릅니다.`);
+        for(let j=0;j<C;j++){ const ch=line[j]; g[i][j] = (ch==='#' || ch==='1') ? 1 : 0; }
+      }
+      gridV = g; drawBoard(ctxV, gridV, false); status('텍스트→뷰어 반영'); 
+    } catch(e){ alert(e.message||e); status('오류'); } });
+
+  genCluesBtn.addEventListener('click', ()=>{
+    rowsS.value = R; colsS.value = C;
+    const {rowLines, colLines} = generateCluesFromViewer();
+    rowTxt.value = rowLines.join('\n');
+    colTxt.value = colLines.join('\n');
+    gridS = gridV.map(row => row.slice()); drawBoard(ctxS, gridS, true);
+    tabSolver.click();
+    status('뷰어 → 단서 생성 완료 (솔버에 동일 그림 반영)');
+  });
+  genCluesToSolverBtn.addEventListener('click', ()=>{
+    rowsS.value = R; colsS.value = C;
+    const {rowLines, colLines} = generateCluesFromViewer();
+    rowTxt.value = rowLines.join('\n');
+    colTxt.value = colLines.join('\n');
+    gridS = makeGrid(R,C,-1);
+    try{
+      const rowClues = parseClueLines(rowTxt.value, R);
+      const colClues = parseClueLines(colTxt.value, C);
+      const res = backtrack(gridS, rowClues, colClues);
+      if(!res){ alert('생성된 단서로는 풀이가 모순입니다.'); status('생성 단서 풀이 실패'); tabSolver.click(); return; }
+      gridS = res; drawBoard(ctxS, gridS, true); tabSolver.click(); status('단서 생성 후 솔버에서 풀이 완료');
+    }catch(e){ alert(e.message||e); tabSolver.click(); status('오류'); }
+  });
+
+  function activate(tab){
+    if(tab==='solver'){
+      tabSolver.classList.add('active'); tabViewer.classList.remove('active');
+      panelSolver.style.display='block'; panelViewer.style.display='none';
+    }else{
+      tabViewer.classList.add('active'); tabSolver.classList.remove('active');
+      panelViewer.style.display='block'; panelSolver.style.display='none';
+    }
+  }
+  tabSolver.addEventListener('click', ()=> activate('solver'));
+  tabViewer.addEventListener('click', ()=> activate('viewer'));
+  saveBtn.addEventListener('click', ()=>{
+    const canvas = (panelViewer.style.display==='none') ? boardS : boardV;
+    const link = document.createElement('a');
+    link.download = `nonogram_${R}x${C}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+
+  // init
+  activate('viewer');
+  function gridToText(g){ return g.map(row=> row.map(v=> v? '#': '.').join('')).join('\n'); }
+  function applySizeSolverInit(){
+    rowsS.value = R; colsS.value = C;
+    rowTxt.value = Array.from({length:R},()=> "0").join('\n');
+    colTxt.value = Array.from({length:C},()=> "0").join('\n');
+  }
+  updateSizeAll(); drawBoard(ctxS, gridS, true); drawBoard(ctxV, gridV, false); applySizeSolverInit();
+  status('준비됨');
+})();
+</script>
+
+  </div>
+
+  <script>
+    (function() {
+      const tabImg = document.getElementById('tab-global-image');
+      const tabSolver = document.getElementById('tab-global-solver');
+      const appImg = document.getElementById('app-image');
+      const appSolver = document.getElementById('app-solverviewer');
+
+      function activate(which) {
+        if (which === 'image') {
+          tabImg.classList.add('active');
+          tabSolver.classList.remove('active');
+          appImg.style.display = '';
+          appSolver.style.display = 'none';
+        } else {
+          tabSolver.classList.add('active');
+          tabImg.classList.remove('active');
+          appSolver.style.display = '';
+          appImg.style.display = 'none';
+        }
+      }
+
+      tabImg.addEventListener('click', function() { activate('image'); });
+      tabSolver.addEventListener('click', function() { activate('solver'); });
+      activate('image');
+    })();
+  </script>
+</body>
+</html>
