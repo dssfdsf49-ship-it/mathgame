@@ -1,0 +1,2969 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>주사위 보드게임</title>
+  <style>
+/* 🎯 주사위 옆 치트 커맨드 입력 */
+.cheat-input {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  margin-left: 6px; /* 치트 배지랑 살짝 띄우기 */
+}
+
+.cheat-input input {
+  width: 90px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  border: 1px solid #d4d4d8;
+  font-size: 12px;
+  background: #f9fafb;
+}
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  margin: 0;          /* 🔹 바깥 여백 제거 */
+  padding: 20px;      /* 🔹 대신 안쪽 여백으로 변경 */
+  background: #f5f5f7;
+}
+
+    h1 {
+      text-align: center;
+      margin-bottom: 4px;
+    }
+/* 우주/네온 테마에서
+   - 설정줄(.config)은 항상 검은색
+   - 상태줄(.status)은 기본 글씨만 밝게, 플레이어 이름은 말 색 그대로 사용 */
+body.theme-space .config,
+body.theme-space .config *,
+body.theme-neon .config,
+body.theme-neon .config * {
+  color: #111827 !important;   /* 설정창만 강제로 검정 */
+}
+
+/* 우주/네온 테마에서 상태줄은 항상 진한 글씨색 사용
+   (플레이어 이름은 JS가 inline style로 색을 주기 때문에 그대로 유지됨) */
+body.theme-space .status,
+body.theme-space .status span,
+body.theme-neon .status,
+body.theme-neon .status span {
+  color: #111827;
+}
+
+
+
+
+
+    .game-container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 16px;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+      transition: transform 0.15s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+.top-panel {
+  display: flex;
+  flex-direction: column;   /* 위: 상태창, 아래: 주사위 박스가 세로로 쌓이도록 */
+  align-items: center;      /* 두 박스를 가로 가운데 정렬 */
+  gap: 12px;
+  margin-bottom: 16px;
+  position: relative;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.4);
+}
+
+
+    .top-panel::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: -1px;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, #4f46e5, #22c55e, #f97316);
+      opacity: 0.9;
+    }
+
+    .status-block {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      background: rgba(249, 250, 251, 0.9);
+      padding: 8px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(209, 213, 219, 0.9);
+      backdrop-filter: blur(8px);
+    }
+
+    .status {
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    #currentPlayer {
+      font-weight: 700;
+    }
+
+    .config {
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      background: rgba(249, 250, 251, 0.9);
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(209, 213, 219, 0.9);
+    }
+
+    .config select,
+    .config input[type="number"],
+    .config input[type="text"],
+    .cell-range-edit input[type="text"] {
+      padding: 2px 6px;
+      border-radius: 999px;
+      border: 1px solid #d4d4d8;
+      font-size: 12px;
+      background: #f9fafb;
+      width: 70px;
+    }
+
+    .config input[type="text"],
+    .cell-range-edit input[type="text"] {
+      width: 140px;
+    }
+
+    /* 🔧 칸 편집 모드 아래에 들어가는 범위 입력창 스타일 */
+    .cell-range-edit {
+      margin-top: 6px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      font-size: 11px;
+    }
+
+    .cell-range-edit label {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .config label {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .config button {
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid #d4d4d8;
+      background: #f3f4f6;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .config button:active {
+      transform: translateY(1px);
+    }
+
+    .dice-box {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      align-items: flex-end;
+      position: relative;
+      padding: 6px 10px;
+      border-radius: 16px;
+    }
+
+    .dice-box::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background:
+        radial-gradient(circle at 10% 0%, rgba(59, 130, 246, 0.18), transparent 55%),
+        radial-gradient(circle at 90% 100%, rgba(244, 114, 182, 0.18), transparent 55%);
+      z-index: -1;
+    }
+
+    .dice-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    #rollBtn,
+    #skipBtn {
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+      color: #fff;
+      transition: transform 0.05s ease, box-shadow 0.05s ease, opacity 0.2s ease;
+    }
+
+    #rollBtn {
+      background: linear-gradient(135deg, #4f46e5, #6366f1);
+    }
+
+    #skipBtn {
+      background: linear-gradient(135deg, #6b7280, #9ca3af);
+    }
+
+    #rollBtn:active,
+    #skipBtn:active {
+      transform: translateY(1px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+    }
+
+    #rollBtn:disabled,
+    #skipBtn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+
+    .dice-visual {
+      width: 64px;
+      height: 64px;
+      border-radius: 12px;
+      border: 2px solid #e5e7eb;
+      background: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      font-weight: 700;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+      transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    
+    /* 🎲 굴리는 중일 때 – 굴러가는 모션 (살짝만) */
+    .dice-visual.rolling {
+      /* 살짝 오른쪽으로 굴러가면서 1바퀴만 회전 */
+      animation: dice-roll 0.7s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+
+    @keyframes dice-roll {
+      0% {
+        transform: translateX(0px) translateY(0px) rotateZ(0deg);
+      }
+      20% {
+        transform: translateX(6px) translateY(-3px) rotateZ(180deg);
+      }
+      50% {
+        transform: translateX(10px) translateY(-1px) rotateZ(360deg);
+      }
+      80% {
+        transform: translateX(4px) translateY(1px) rotateZ(540deg);
+      }
+      100% {
+        transform: translateX(0px) translateY(0px) rotateZ(720deg);
+      }
+    }
+
+    /* 치트 주사위: 클래스 자체는 네온 스타일만 표시 (애니메이션은 rolling 때만 적용) */
+    .dice-visual.cheat-active {
+      /* 여기서는 별도 transform 애니메이션을 걸지 않는다 */
+    }
+
+    /* 치트 + 굴리는 중일 때: 동일한 굴림 + 박스 그림자만 살짝 반짝임 */
+    .dice-visual.rolling.cheat-active {
+      animation:
+        dice-roll 0.7s cubic-bezier(0.25, 0.8, 0.25, 1),
+        cheat-glow 0.7s ease-out;
+    }
+
+    @keyframes cheat-glow {
+      0% {
+        box-shadow:
+          0 4px 10px rgba(0, 0, 0, 0.06),
+          0 0 0px rgba(250, 204, 21, 0.0);
+      }
+      40% {
+        box-shadow:
+          0 4px 12px rgba(0, 0, 0, 0.10),
+          0 0 14px rgba(250, 204, 21, 0.85);
+      }
+      100% {
+        box-shadow:
+          0 4px 10px rgba(0, 0, 0, 0.06),
+          0 0 0px rgba(250, 204, 21, 0.0);
+      }
+    }
+
+.dice-pip-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      width: 100%;
+      height: 100%;
+      gap: 2px;
+    }
+
+    .dice-cell {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .dice-pip {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: currentColor;
+    }
+
+    .dice-value {
+      font-size: 12px;
+      max-width: 260px;
+      text-align: right;
+      display: block;
+    }
+
+    .cheat-badge {
+      margin-left: 8px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid #e5e7eb;
+      background: #f9fafb;
+      font-size: 13px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .cheat-badge span {
+      font-weight: 600;
+      color: #4b5563;
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 4px;
+      margin-top: 8px;
+    }
+
+    .cell {
+      position: relative;
+      border-radius: 10px;
+      border: 1px solid #e0e0e0;
+      background: #fafafa;
+      min-height: 60px;
+      padding: 4px;
+      box-sizing: border-box;
+      font-size: 11px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: box-shadow 0.2s ease, transform 0.2s ease;
+      cursor: pointer;
+    }
+/* ===== 특수 칸 아이콘 + 반짝 효과 ===== */
+.cell.zone-boost::after,
+.cell.zone-slow::after,
+.cell.zone-reset::after,
+.cell.zone-gkey::after {
+  position: absolute;
+  right: 6px;
+  top: 4px;
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+/* 아이콘 모양 */
+.cell.zone-boost::after { content: "⚡"; }   /* x2 칸 */
+.cell.zone-slow::after  { content: "🐢"; }   /* 1/2 칸 */
+.cell.zone-reset::after { content: "☠"; }   /* 함정 칸 */
+.cell.zone-gkey::after  { content: "🔑"; }   /* 황금열쇠 칸 */
+
+/* 은은한 네온 테두리 */
+.cell.zone-boost {
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.35);
+}
+.cell.zone-slow {
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.35);
+}
+.cell.zone-reset {
+  box-shadow: 0 0 10px rgba(234, 179, 8, 0.45);
+}
+.cell.zone-gkey {
+  box-shadow: 0 0 12px rgba(168, 85, 247, 0.6);
+}
+
+    .cell:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.14);
+    }
+
+    .cell-index {
+      font-weight: 600;
+      opacity: 0.7;
+    }
+
+    .cell-zone-label {
+      font-size: 10px;
+      opacity: 0.9;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .cell-zone-label::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: #9ca3af;
+    }
+
+    .token-container {
+      position: relative;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 4px;
+    }
+
+    .token {
+      width: 16px;
+      height: 16px;
+      border-radius: 999px;
+      border: 2px solid rgba(255, 255, 255, 0.8);
+      box-sizing: border-box;
+      transition: transform 0.1s ease;
+    }
+
+    .zone-boost {
+      background: #ffeaea;
+      border-color: #ffb3b3;
+    }
+    .zone-boost .cell-zone-label::before {
+      background: #ef4444;
+    }
+
+    .zone-slow {
+      background: #e8f0ff;
+      border-color: #b3c6ff;
+    }
+    .zone-slow .cell-zone-label::before {
+      background: #3b82f6;
+    }
+
+    .zone-reset {
+      background: #fef3c7;
+      border-color: #facc15;
+    }
+    .zone-reset .cell-zone-label::before {
+      background: #facc15;
+    }
+
+    .zone-gkey {
+      background: #f5f3ff;
+      border-color: #a855f7;
+    }
+    .zone-gkey .cell-zone-label::before {
+      background: #a855f7;
+    }
+
+    .cell.start-cell {
+      border: 2px solid #22c55e;
+      box-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+      background: #ecfdf5;
+    }
+
+    .cell.finish-cell {
+      border: 2px solid #f97316;
+      box-shadow: 0 0 12px rgba(249, 115, 22, 0.7);
+      background: #fff7ed;
+    }
+
+    .legend {
+      margin-top: 10px;
+      font-size: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-color {
+      width: 14px;
+      height: 14px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+
+    .legend-color.boost {
+      background: #ffeaea;
+      border-color: #ffb3b3;
+    }
+
+    .legend-color.slow {
+      background: #e8f0ff;
+      border-color: #b3c6ff;
+    }
+
+    .legend-color.reset {
+      background: #fef3c7;
+      border-color: #facc15;
+    }
+
+    .legend-color.gkey {
+      background: #f5f3ff;
+      border-color: #a855f7;
+    }
+
+    .players-legend {
+      font-size: 12px;
+      margin-top: 6px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .player-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #f3f4f6;
+      border: 1px solid transparent;
+      transition: border 0.1s ease, background 0.1s ease;
+    }
+
+    .player-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+    }
+
+    .player-pill.current-turn {
+      border: 2px solid #111827;
+      background: #e0f2fe;
+    }
+
+    .token.current-turn {
+      transform: scale(1.2);
+      animation: pulse 0.8s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%   { transform: scale(1.0); }
+      50%  { transform: scale(1.3); }
+      100% { transform: scale(1.0); }
+    }
+
+    .log-box {
+      margin-top: 14px;
+      font-size: 12px;
+      max-height: 200px;
+      overflow-y: auto;
+      background: #f9fafb;
+      border-radius: 10px;
+      padding: 8px;
+      border: 1px solid #e5e7eb;
+    }
+
+    .log-entry {
+      margin-bottom: 4px;
+    }
+
+    /* 공통 오버레이 (황금열쇠/치트) */
+    #goldenKeyOverlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(15, 23, 42, 0.55);
+      z-index: 9998;
+      pointer-events: none;
+      opacity: 0;
+    }
+
+    #goldenKeyOverlay.show {
+      display: flex;
+      animation-name: overlayFade;
+      animation-timing-function: ease-out;
+      animation-fill-mode: forwards;
+    }
+
+    @keyframes overlayFade {
+      0%   { opacity: 0; }
+      20%  { opacity: 1; }
+      80%  { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    #goldenKeyPopup,
+    #cheatPopup {
+      padding: 16px 26px;
+      border-radius: 999px;
+      font-size: 24px;
+      font-weight: 800;
+      display: none;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
+      z-index: 9999;
+      transform: scale(0.4);
+      opacity: 0;
+    }
+
+    #goldenKeyPopup {
+      position: relative;
+      background: rgba(250, 204, 21, 0.97);
+      color: #78350f;
+      font-size: 28px;
+    }
+
+    #cheatPopup {
+      position: relative;
+      background: rgba(249, 250, 251, 0.95);
+      color: #111827;
+    }
+
+    #goldenKeyPopup.show,
+    #cheatPopup.show {
+      display: flex;
+      animation-name: gkey-pop;
+      animation-timing-function: ease-out;
+      animation-fill-mode: forwards;
+    }
+
+    @keyframes gkey-pop {
+      0% {
+        opacity: 0;
+        transform: scale(0.2);
+      }
+      30% {
+        opacity: 1;
+        transform: scale(1.05);
+      }
+      70% {
+        opacity: 1;
+        transform: scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: scale(1.1);
+      }
+    }
+
+    .sparkle {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: radial-gradient(circle, #fefce8 0%, #facc15 40%, transparent 70%);
+      opacity: 0;
+      box-shadow: 0 0 14px rgba(250, 250, 170, 0.9);
+      pointer-events: none;
+      animation-name: sparkleBlink;
+      animation-timing-function: ease-out;
+      animation-fill-mode: forwards;
+    }
+
+    @keyframes sparkleBlink {
+      0%   { transform: scale(0.2); opacity: 0; }
+      30%  { transform: scale(1.3); opacity: 1; }
+      70%  { transform: scale(0.9); opacity: 0.9; }
+      100% { transform: scale(0.4); opacity: 0; }
+    }
+
+    .token.token-fast {
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.8);
+      animation: fastMove 0.2s linear infinite;
+    }
+
+    @keyframes fastMove {
+      0%   { transform: scale(1.15) translateX(-1px); }
+      50%  { transform: scale(1.25) translateX(1px); }
+      100% { transform: scale(1.15) translateX(-1px); }
+    }
+
+    .cell.landing {
+      animation: landingFlash 0.35s ease-out;
+    }
+
+    @keyframes landingFlash {
+      0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 rgba(250, 204, 21, 0);
+      }
+      50% {
+        transform: scale(1.03);
+        box-shadow: 0 0 12px rgba(250, 204, 21, 0.9);
+      }
+      100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 rgba(250, 204, 21, 0);
+      }
+    }
+
+    .game-container.shake {
+      animation: shakeBoard 0.4s ease;
+    }
+
+    @keyframes shakeBoard {
+      0%   { transform: translateX(0); }
+      20%  { transform: translateX(-4px); }
+      40%  { transform: translateX(4px); }
+      60%  { transform: translateX(-3px); }
+      80%  { transform: translateX(3px); }
+      100% { transform: translateX(0); }
+    }
+
+    @media (max-width: 600px) {
+      .cell {
+        min-height: 48px;
+      }
+      .board {
+        grid-template-columns: repeat(6, 1fr);
+      }
+      .dice-value {
+        max-width: 200px;
+      }
+      .dice-row {
+        flex-wrap: wrap;
+      }
+      #goldenKeyPopup {
+        font-size: 22px;
+        padding: 12px 18px;
+      }
+      #cheatPopup {
+        font-size: 20px;
+        padding: 10px 16px;
+      }
+    }
+
+    /* ===================== */
+    /*   테마별 색상 스킨    */
+    /* ===================== */
+
+    body.theme-default {
+    }
+
+    body.theme-space {
+      background: radial-gradient(circle at top, #1e293b 0, #020617 45%, #000000 100%);
+      color: #e5e7eb;
+    }
+    body.theme-space .game-container {
+      background: rgba(15, 23, 42, 0.96);
+      border-radius: 18px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+    }
+    body.theme-space .cell {
+      background: #020617;
+      border-color: #1f2937;
+    }
+    body.theme-space .zone-boost {
+      background: rgba(8, 47, 73, 0.9);
+      border-color: #38bdf8;
+    }
+    body.theme-space .zone-slow {
+      background: rgba(30, 64, 175, 0.9);
+      border-color: #a5b4fc;
+    }
+    body.theme-space .zone-reset {
+      background: rgba(127, 29, 29, 0.9);
+      border-color: #f97373;
+    }
+    body.theme-space .zone-gkey {
+      background: rgba(88, 28, 135, 0.95);
+      border-color: #fbbf24;
+    }
+    body.theme-space .log-box {
+      background: rgba(15, 23, 42, 0.9);
+      border-color: #1f2937;
+    }
+/* 우주 테마: 누구 차례인지 더 눈에 띄게 */
+body.theme-space .players-legend .player-pill {
+  background: transparent;          /* 기본은 배경 투명 */
+  border-color: transparent;
+  color: #e5e7eb;                   /* 글씨는 밝게 */
+}
+
+/* 우주 테마에서 현재 턴인 플레이어 pill */
+body.theme-space .players-legend .player-pill.current-turn {
+  background: #0b1120;              /* 진한 남색 캡슐 */
+  border-color: #facc15;            /* 황금색 테두리 */
+  box-shadow:
+    0 0 0 2px rgba(248, 250, 252, 0.9),
+    0 0 12px rgba(250, 204, 21, 0.85);  /* 살짝 빛나는 효과 */
+}
+
+
+    body.theme-forest {
+      background:
+        linear-gradient(to top, #bbf7d0 0%, #86efac 35%, #22c55e 38%, #16a34a 41%, #14532d 43%),
+        linear-gradient(to top, #bbf7d0 0%, #bbf7d0 42%, #e0f2fe 80%, #bfdbfe 100%);
+    }
+    body.theme-forest .game-container {
+      background: #ecfdf5;
+    }
+    body.theme-forest .cell {
+      background: #d1fae5;
+      border-color: #6ee7b7;
+    }
+    body.theme-forest .zone-boost {
+      background: #bbf7d0;
+      border-color: #22c55e;
+    }
+    body.theme-forest .zone-slow {
+      background: #a7f3d0;
+      border-color: #22c55e;
+    }
+    body.theme-forest .zone-reset {
+      background: #fef3c7;
+      border-color: #f97316;
+    }
+    body.theme-forest .zone-gkey {
+      background: #f5f3ff;
+      border-color: #4c1d95;
+    }
+    body.theme-forest .log-box {
+      background: #f0fdf4;
+      border-color: #bbf7d0;
+    }
+    body.theme-forest .players-legend .player-pill {
+      background: #dcfce7;
+    }
+
+    body.theme-desert {
+      background: linear-gradient(135deg, #f97316, #facc15);
+    }
+    body.theme-desert .game-container {
+      background: #fffbeb;
+    }
+    body.theme-desert .cell {
+      background: #fef3c7;
+      border-color: #fbbf24;
+    }
+    body.theme-desert .zone-boost {
+      background: #fed7aa;
+      border-color: #f97316;
+    }
+    body.theme-desert .zone-slow {
+      background: #fee2e2;
+      border-color: #f87171;
+    }
+    body.theme-desert .zone-reset {
+      background: #fee2e2;
+      border-color: #b91c1c;
+    }
+    body.theme-desert .zone-gkey {
+      background: #fef9c3;
+      border-color: #a16207;
+    }
+    body.theme-desert .log-box {
+      background: #fffbeb;
+      border-color: #facc15;
+    }
+    body.theme-desert .players-legend .player-pill {
+      background: #fffbeb;
+    }
+
+    body.theme-neon {
+      background: radial-gradient(circle at top, #111827 0, #020617 50%, #000000 100%);
+      color: #e5e7eb;
+    }
+    body.theme-neon .game-container {
+      background: rgba(15, 23, 42, 0.98);
+      border-radius: 18px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.75);
+    }
+    body.theme-neon .cell {
+      background: #020617;
+      border-color: #4c1d95;
+      box-shadow: 0 0 0 1px rgba(139, 92, 246, 0.3);
+    }
+    body.theme-neon .zone-boost {
+      background: rgba(8, 47, 73, 0.9);
+      border-color: #22d3ee;
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.7);
+    }
+    body.theme-neon .zone-slow {
+      background: rgba(76, 29, 149, 0.9);
+      border-color: #a855f7;
+      box-shadow: 0 0 15px rgba(168, 85, 247, 0.7);
+    }
+    body.theme-neon .zone-reset {
+      background: rgba(127, 29, 29, 0.95);
+      border-color: #fb7185;
+      box-shadow: 0 0 15px rgba(248, 113, 113, 0.7);
+    }
+    body.theme-neon .zone-gkey {
+      background: rgba(250, 204, 21, 0.95);
+      border-color: #f97316;
+      box-shadow: 0 0 18px rgba(250, 204, 21, 0.8);
+    }
+    body.theme-neon .log-box {
+      background: rgba(15, 23, 42, 0.95);
+      border-color: #4c1d95;
+    }
+/* 네온 테마: 현재 턴 pill 강조 */
+body.theme-neon .players-legend .player-pill {
+  background: rgba(15, 23, 42, 0.7);
+  border-color: transparent;
+  color: #e5e7eb;
+}
+
+body.theme-neon .players-legend .player-pill.current-turn {
+  background: #020617;
+  border-color: #22d3ee;              /* 시안색 테두리 */
+  box-shadow:
+    0 0 0 2px rgba(244, 244, 245, 0.9),
+    0 0 14px rgba(56, 189, 248, 0.9);
+}
+
+
+    h1 {
+      text-align: center;
+      margin-bottom: 6px;
+      font-size: 28px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      background: linear-gradient(120deg, #4f46e5, #ec4899, #f97316);
+      -webkit-background-clip: text;
+      color: transparent;
+      filter: drop-shadow(0 2px 6px rgba(15, 23, 42, 0.25));
+    }
+
+    .game-container::before {
+      content: "";
+      position: absolute;
+      inset: -2px;
+      border-radius: inherit;
+      background: linear-gradient(
+        135deg,
+        rgba(79, 70, 229, 0.55),
+        rgba(14, 165, 233, 0.45),
+        rgba(236, 72, 153, 0.55)
+      );
+      opacity: 0.7;
+      z-index: -1;
+    }
+  
+        /* 칸 편집 패널 (카드형 디자인) */
+    .cell-edit-card {
+      margin-top: 10px;
+      margin-bottom: 6px;
+      padding: 8px 10px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #f9fafb, #eef2ff);
+      border: 1px solid #e5e7eb;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    /* 🔽 칸 편집 모드 접기/펼치기 버튼 */
+    .cell-edit-toggle {
+      margin-left: 8px;             /* 제목 오른쪽에 살짝만 띄우기 */
+      padding: 3px 10px;
+      border-radius: 999px;
+      border: 1px solid #d4d4d8;
+      background: #e5e7eb;
+      font-size: 11px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+
+    /* 접힌 상태에서는 내용(body)만 숨김 */
+    .cell-edit-card.collapsed .cell-edit-body {
+      display: none;
+    }
+
+
+
+    .cell-edit-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: flex-start;  /* 제목 + 버튼을 왼쪽에 모으기 */
+      column-gap: 8px;              /* 가로 간격 */
+      row-gap: 4px;                 /* 세로 간격 */
+    }
+
+    .cell-edit-title {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 700;
+      font-size: 12px;
+      color: #111827;
+    }
+
+    .cell-edit-title-icon {
+      font-size: 14px;
+    }
+
+    .cell-edit-sub {
+      font-size: 11px;
+      color: #6b7280;
+      flex-basis: 100%;     /* 제목/버튼 아래 줄 전체를 차지하게 */
+      margin-left: 22px;    /* 아이콘/제목 밑으로 살짝 들여쓰기 */
+    }
+
+
+    .cell-edit-panel {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+      margin-top: 2px;
+    }
+
+    .cell-edit-btn {
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid #d4d4d8;
+      background: white;
+      cursor: pointer;
+      font-size: 11px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    }
+
+    .cell-edit-btn:hover {
+      border-color: #4f46e5;
+    }
+
+    .cell-edit-btn.active {
+      background: linear-gradient(135deg, #4f46e5, #2563eb);
+      color: #f9fafb;
+      border-color: #4338ca;
+      box-shadow: 0 0 0 1px rgba(191, 219, 254, 0.7),
+        0 4px 8px rgba(37, 99, 235, 0.35);
+    }
+
+    .cell-edit-btn-icon {
+      font-size: 12px;
+    }
+
+    .cell-edit-hint {
+      font-size: 11px;
+      color: #6b7280;
+    }
+
+    /* === 우주/네온 테마에서 일반 주사위를 더 밝게 보이도록 강제 === */
+    body.theme-space .dice-visual:not(.cheat-active),
+    body.theme-neon .dice-visual:not(.cheat-active) {
+      background: #ffffff !important;      /* 안쪽 완전 흰색 */
+      border-color: #e5e7eb;
+      color: #020617;
+      box-shadow:
+        0 0 0 2px rgba(15, 23, 42, 0.9),
+        0 0 20px rgba(255, 255, 255, 0.95); /* 사방으로 흰 빛 */
+    }
+
+    body.theme-space .dice-visual:not(.cheat-active) .dice-pip,
+    body.theme-neon .dice-visual:not(.cheat-active) .dice-pip {
+      background: #020617;  /* 눈은 짙은 색으로 또렷하게 */
+    }
+
+    /* 🌟 네온 테마 황금열쇠 칸 색을 더 연하게 조정 */
+    body.theme-neon .zone-gkey {
+      background: rgba(254, 252, 232, 0.96); /* 아주 옅은 파스텔 노랑 */
+      border-color: #fde68a;                 /* 연한 테두리 */
+      color: #1f2937;                        /* 진한 글자색으로 대비 */
+      box-shadow: 0 0 10px rgba(250, 204, 21, 0.45);
+    }
+
+    /* 🌟 네온 테마 황금열쇠 칸에 네온 느낌 추가 (연한 바탕 + 강한 외곽 글로우) */
+    body.theme-neon .zone-gkey {
+      background: rgba(254, 252, 232, 0.96); /* 연한 파스텔 노랑 유지 */
+      border-color: #facc15;                 /* 살짝 더 진한 골드 테두리 */
+      color: #1f2937;                        /* 글자는 진한 색으로 선명하게 */
+      box-shadow:
+        0 0 4px rgba(250, 204, 21, 0.7),
+        0 0 14px rgba(250, 204, 21, 0.9),
+        0 0 28px rgba(250, 249, 150, 0.9);   /* 바깥쪽으로 퍼지는 네온 광채 */
+    }
+
+    /* 🌟 네온 테마 황금열쇠 칸 네온 광채를 조금만 줄인 버전 */
+    body.theme-neon .zone-gkey {
+      background: rgba(254, 252, 232, 0.96); /* 연한 파스텔 노랑 유지 */
+      border-color: #facc15;                 /* 골드 테두리 유지 */
+      color: #1f2937;                        /* 진한 글자색 유지 */
+      box-shadow:
+        0 0 3px rgba(250, 204, 21, 0.55),
+        0 0 12px rgba(250, 249, 150, 0.65);  /* 기존보다 반경과 강도 모두 살짝 감소 */
+    }
+
+    /* 🌟 네온 테마 황금열쇠 칸: 테두리는 더 진하게, 안쪽은 살짝 더 연하게, 네온 광채는 조금만 강화 */
+    body.theme-neon .zone-gkey {
+      background: rgba(255, 253, 244, 0.97); /* 더 밝은 크림색 느낌 */
+      border-color: #eab308;                 /* 한 톤 더 진한 골드 테두리 */
+      color: #1f2937;                        /* 글자는 그대로 선명하게 */
+      box-shadow:
+        0 0 4px rgba(250, 204, 21, 0.6),
+        0 0 14px rgba(250, 249, 150, 0.72);  /* 직전보다 살짝만 더 강해진 네온 */
+    }
+
+    /* 💡 네온 테마: 이미지 없이 네온 격자 + 빛나는 중심부 표현 */
+    body.theme-neon::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: -1;
+      background-image:
+        radial-gradient(circle at center,
+          rgba(52, 211, 153, 0.20),
+          transparent 55%),
+        radial-gradient(circle at top,
+          rgba(59, 130, 246, 0.20),
+          transparent 60%),
+        linear-gradient(rgba(56, 189, 248, 0.24) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(236, 72, 153, 0.24) 1px, transparent 1px);
+      background-size:
+        100% 100%,
+        100% 100%,
+        48px 48px,
+        48px 48px;
+      opacity: 0.55;
+      mix-blend-mode: screen;
+    }
+
+    /* 🌌 우주 테마: 별을 더 많고 밝게 (CSS만 사용, 기존보다 밀도/밝기 증가) */
+    body.theme-space::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: -1;
+      background-image:
+        radial-gradient(2px 2px at 10% 15%, rgba(248, 250, 252, 1.0), transparent 55%),
+        radial-gradient(1.5px 1.5px at 25% 30%, rgba(226, 232, 240, 1.0), transparent 55%),
+        radial-gradient(2.2px 2.2px at 40% 20%, rgba(248, 250, 252, 1.0), transparent 55%),
+        radial-gradient(1.8px 1.8px at 65% 18%, rgba(226, 232, 240, 1.0), transparent 55%),
+        radial-gradient(1.6px 1.6px at 80% 28%, rgba(248, 250, 252, 1.0), transparent 55%),
+        radial-gradient(2px 2px at 20% 65%, rgba(226, 232, 240, 1.0), transparent 55%),
+        radial-gradient(1.5px 1.5px at 50% 75%, rgba(248, 250, 252, 1.0), transparent 55%),
+        radial-gradient(2px 2px at 72% 68%, rgba(226, 232, 240, 1.0), transparent 55%),
+        radial-gradient(1.4px 1.4px at 88% 82%, rgba(248, 250, 252, 1.0), transparent 55%),
+        radial-gradient(1.2px 1.2px at 15% 85%, rgba(226, 232, 240, 1.0), transparent 55%),
+        radial-gradient(2.4px 2.4px at 55% 10%, rgba(248, 250, 252, 1.0), transparent 55%);
+      opacity: 1.0;
+      mix-blend-mode: screen;
+    }
+
+    /* 💡 네온 테마: 격자 삭제, 좌우에서 비추는 네온 광원 느낌만 */
+    body.theme-neon::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: -1;
+      background-image:
+        radial-gradient(circle at 0% 50%, rgba(236, 72, 153, 0.40), transparent 60%),
+        radial-gradient(circle at 100% 50%, rgba(56, 189, 248, 0.40), transparent 60%);
+      background-size: 100% 100%;
+      opacity: 0.75;
+      mix-blend-mode: screen;
+    }
+
+    /* 🌌 우주 테마: 별을 훨씬 더 밝고 또렷하게 (강한 화이트 포인트) */
+    body.theme-space::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: -1;
+      background-image:
+        radial-gradient(2.4px 2.4px at 8% 12%,  rgba(255, 255, 255, 1.0), transparent 60%),
+        radial-gradient(2.2px 2.2px at 22% 26%, rgba(248, 250, 252, 0.98), transparent 60%),
+        radial-gradient(2.6px 2.6px at 38% 18%, rgba(255, 255, 255, 1.0), transparent 60%),
+        radial-gradient(2.4px 2.4px at 61% 16%, rgba(248, 250, 252, 0.98), transparent 60%),
+        radial-gradient(2.2px 2.2px at 78% 24%, rgba(255, 255, 255, 1.0), transparent 60%),
+        radial-gradient(2.4px 2.4px at 18% 60%, rgba(248, 250, 252, 0.98), transparent 60%),
+        radial-gradient(2.2px 2.2px at 46% 72%, rgba(255, 255, 255, 1.0), transparent 60%),
+        radial-gradient(2.4px 2.4px at 70% 66%, rgba(248, 250, 252, 0.98), transparent 60%),
+        radial-gradient(2.2px 2.2px at 88% 78%, rgba(255, 255, 255, 1.0), transparent 60%),
+        radial-gradient(2.0px 2.0px at 14% 82%, rgba(248, 250, 252, 0.95), transparent 60%),
+        radial-gradient(2.8px 2.8px at 52% 10%, rgba(255, 255, 255, 1.0), transparent 60%);
+      opacity: 1.0;              /* 완전한 밝기 */
+      mix-blend-mode: screen;    /* 어두운 배경 위에서 하얀 별이 잘 보이도록 */
+    }
+/* 🌌 우주 테마: 별 100개 정도 (가벼운 버전) */
+body.theme-space::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0.95;
+  mix-blend-mode: screen;
+  background-image:
+    radial-gradient(1.8px 1.8px at 10% 10%, rgba(255, 255, 255, 1.0), transparent 60%),
+    radial-gradient(1.4px 1.4px at 25% 18%, rgba(226, 232, 240, 1.0), transparent 60%),
+    radial-gradient(1.6px 1.6px at 40% 14%, rgba(248, 250, 252, 1.0), transparent 60%),
+    radial-gradient(1.9px 1.9px at 60% 12%, rgba(255, 255, 255, 1.0), transparent 60%),
+    radial-gradient(1.5px 1.5px at 78% 20%, rgba(226, 232, 240, 1.0), transparent 60%),
+
+    radial-gradient(1.4px 1.4px at 15% 30%, rgba(248, 250, 252, 1.0), transparent 60%),
+    radial-gradient(1.8px 1.8px at 35% 32%, rgba(255, 255, 255, 1.0), transparent 60%),
+    radial-gradient(1.3px 1.3px at 55% 28%, rgba(226, 232, 240, 1.0), transparent 60%),
+    radial-gradient(1.7px 1.7px at 72% 35%, rgba(248, 250, 252, 1.0), transparent 60%),
+    radial-gradient(1.4px 1.4px at 90% 30%, rgba(255, 255, 255, 1.0), transparent 60%),
+
+    radial-gradient(1.5px 1.5px at 8% 45%, rgba(248, 250, 252, 1.0), transparent 60%),
+    radial-gradient(1.9px 1.9px at 27% 46%, rgba(255, 255, 255, 1.0), transparent 60%),
+    radial-gradient(1.4px 1.4px at 45% 42%, rgba(226, 232, 240, 1.0), transparent 60%),
+    radial-gradient(1.6px 1.6px at 63% 48%, rgba(248, 250, 252, 1.0), transparent 60%),
+    radial-gradient(1.3px 1.3px at 82% 44%, rgba(248, 250, 252, 1.0), transparent 60%),
+    radial-gradient(1.8px 1.8px at 96% 40%, rgba(255, 255, 255, 1.0), transparent 60%),
+
+    radial-gradient(1.4px 1.4px at 12% 60%, rgba(226, 232, 240, 1.0), transparent 60%),
+    radial-gradient(1.7px 1.7px at 30% 63%, rgba(248, 250, 252, 1.0), transparent 60%),
+    radial-gradient(1.3px 1.3px at 48% 58%, rgba(248, 250, 252, 1.0), transparent 60%),
+    radial-gradient(1.9px 1.9px at 67% 62%, rgba(255, 255, 255, 1.0), transparent 60%),
+    radial-gradient(1.4px 1.4px at 83% 59%, rgba(226, 232, 240, 1.0), transparent 60%),
+    radial-gradient(1.6px 1.6px at 94% 55%, rgba(255, 255, 255, 1.0), transparent 60%),
+
+    radial-gradient(1.5px 1.5px at 6% 75%, rgba(248, 250, 252, 1.0), transparent 60%),
+    radial-gradient(1.8px 1.8px at 22% 78%, rgba(255, 255, 255, 1.0), transparent 60%),
+    radial-gradient(1.3px 1.3px at 38% 72%, rgba(226, 232, 240, 1.0), transparent 60%),
+    radial-gradient(1.7px 1.7px at 56% 80%, rgba(248, 250, 252, 1.0), transparent 60%),
+    radial-gradient(1.4px 1.4px at 72% 75%, rgba(248, 250, 252, 1.0), transparent 60%),
+    radial-gradient(1.9px 1.9px at 88% 78%, rgba(255, 255, 255, 1.0), transparent 60%),
+
+    radial-gradient(1.6px 1.6px at 12% 90%, rgba(226, 232, 240, 1.0), transparent 60%),
+    radial-gradient(1.4px 1.4px at 30% 92%, rgba(248, 250, 252, 1.0), transparent 60%),
+    radial-gradient(1.8px 1.8px at 48% 88%, rgba(255, 255, 255, 1.0), transparent 60%),
+    radial-gradient(1.5px 1.5px at 66% 93%, rgba(226, 232, 240, 1.0), transparent 60%),
+    radial-gradient(1.7px 1.7px at 82% 88%, rgba(248, 250, 252, 1.0), transparent 60%),
+    radial-gradient(1.6px 1.6px at 95% 85%, rgba(255, 255, 255, 1.0), transparent 60%);
+   opacity: 1.0;
+   filter: brightness(3.0) drop-shadow(0 0 4px white);
+   mix-blend-mode: screen;
+}
+    /* 🌲 숲 테마: 위에서 비치는 햇살 + 연두/에메랄드 느낌 */
+    body.theme-forest::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: -1;
+      background-image:
+        radial-gradient(circle at top left,  rgba(190, 242, 100, 0.35), transparent 60%),
+        radial-gradient(circle at top right, rgba(45, 212, 191, 0.30), transparent 65%),
+        radial-gradient(circle at bottom,    rgba(34, 197, 94, 0.30), transparent 70%);
+      opacity: 0.9;
+      mix-blend-mode: soft-light;
+    }
+
+    /* 🏜 사막 테마: 모래 언덕 위로 떨어지는 햇빛 느낌 */
+    body.theme-desert::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: -1;
+      background-image:
+        radial-gradient(circle at top,    rgba(253, 224, 171, 0.50), transparent 60%),
+        radial-gradient(circle at 20% 70%,rgba(251, 191, 36, 0.35),  transparent 65%),
+        radial-gradient(circle at 80% 80%,rgba(248, 250, 252, 0.30), transparent 70%);
+      opacity: 0.95;
+      mix-blend-mode: soft-light;
+    }
+
+    /* 🌲 숲 테마: 나무 줄기 + 윗부분 수관 느낌 (이미지 없이 CSS로 표현) */
+    body.theme-forest::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: -1;
+      background-image:
+        /* 위쪽 수관(나뭇잎 덩어리) */
+        radial-gradient(circle at top, rgba(74, 222, 128, 0.45), transparent 60%),
+        radial-gradient(circle at 20% 10%, rgba(52, 211, 153, 0.45), transparent 55%),
+        radial-gradient(circle at 80% 12%, rgba(34, 197, 94, 0.45), transparent 55%),
+        /* 세로로 반복되는 나무 줄기들 */
+        repeating-linear-gradient(
+          90deg,
+          rgba(15, 23, 42, 0.0) 0px,
+          rgba(15, 23, 42, 0.0) 26px,
+          rgba(15, 23, 42, 0.55) 26px,
+          rgba(15, 23, 42, 0.55) 33px
+        );
+      background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%;
+      opacity: 0.9;
+      mix-blend-mode: soft-light;
+    }
+
+    /* 🌲 숲 테마 (소프트 버전): 세로 줄무늬 제거, 윗부분 수관 + 바닥 느낌만 남김 */
+    body.theme-forest::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: -1;
+      background-image:
+        /* 위쪽 수관(나뭇잎) */
+        radial-gradient(circle at top,     rgba(74, 222, 128, 0.45), transparent 60%),
+        radial-gradient(circle at 15% 0%,  rgba(52, 211, 153, 0.40), transparent 55%),
+        radial-gradient(circle at 85% 0%,  rgba(34, 197, 94, 0.40), transparent 55%),
+        /* 아래쪽 숲 바닥/그늘 */
+        radial-gradient(circle at 50% 100%, rgba(15, 118, 110, 0.55), transparent 65%),
+        radial-gradient(circle at 20% 100%, rgba(4, 120, 87, 0.45), transparent 70%),
+        radial-gradient(circle at 80% 100%, rgba(6, 95, 70, 0.45), transparent 70%),
+        /* 살짝 들어오는 햇살 */
+        linear-gradient(135deg, rgba(255, 255, 255, 0.06), transparent 55%);
+      background-size: 100% 100%;
+      opacity: 0.9;
+      mix-blend-mode: soft-light;
+    }
+
+/* 🔤 우주/네온 테마에서도 칸 편집 영역 글씨는 항상 진한 색으로 */
+body.theme-space .cell-edit-card,
+body.theme-space .cell-edit-card * {
+  color: #111827;
+}
+
+body.theme-neon .cell-edit-card,
+body.theme-neon .cell-edit-card * {
+  color: #111827;
+}
+
+/* ✅ 단, 활성화된 버튼은 흰 글씨 유지 (파란 그라데이션 버튼) */
+body.theme-space .cell-edit-btn.active,
+body.theme-neon .cell-edit-btn.active {
+  color: #f9fafb;
+}
+/* === 배경 절단 현상 수정용 – 숲/사막 배경 다시 정의 === */
+
+/* 숲 테마: 위는 짙은 숲, 아래로 갈수록 밝은 초록으로 부드럽게 */
+body.theme-forest {
+  background: linear-gradient(
+    to bottom,
+    #14532d 0%,   /* 가장 위 – 진한 숲 초록 */
+    #166534 30%,  /* 중간 위쪽 */
+    #22c55e 60%,  /* 중간 – 선명한 초록 */
+    #bbf7d0 100%  /* 맨 아래 – 밝은 연두 */
+  );
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+/* (옵션) 사막 테마도 혹시 비슷하게 느껴지면 같이 부드럽게 */
+body.theme-desert {
+  background: linear-gradient(
+    to bottom,
+    #a16207 0%,   /* 위 – 짙은 모래/바위색 */
+    #f97316 35%,  /* 중간 – 주황빛 모래 */
+    #fdba74 70%,  /* 아래 – 밝은 모래색 */
+    #fef3c7 100%  /* 맨 아래 – 아주 연한 모래색 */
+  );
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+/* 🌌 우주 테마: 기존 별 위에 큰 별 몇 개 추가 레이어 */
+body.theme-space::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;              /* 게임 화면 뒤쪽에만 보이게 */
+  opacity: 0.95;
+  mix-blend-mode: screen;
+  filter: brightness(1.6) drop-shadow(0 0 4px white);
+
+  /* 7px / 6px / 5px 정도 크기의 별들을 1/3씩 배치 */
+  background-image:
+    radial-gradient(7px 7px at 12% 12%, rgba(255, 255, 255, 1.0), transparent 60%),
+    radial-gradient(6px 6px at 32% 20%, rgba(248, 250, 252, 1.0), transparent 60%),
+    radial-gradient(5px 5px at 55% 18%, rgba(255, 255, 255, 1.0), transparent 60%),
+    radial-gradient(7px 7px at 78% 22%, rgba(226, 232, 240, 1.0), transparent 60%),
+
+    radial-gradient(6px 6px at 18% 45%, rgba(248, 250, 252, 1.0), transparent 60%),
+    radial-gradient(5px 5px at 45% 40%, rgba(255, 255, 255, 1.0), transparent 60%),
+    radial-gradient(7px 7px at 70% 48%, rgba(226, 232, 240, 1.0), transparent 60%),
+    radial-gradient(6px 6px at 90% 42%, rgba(255, 255, 255, 1.0), transparent 60%),
+
+    radial-gradient(5px 5px at 22% 72%, rgba(248, 250, 252, 1.0), transparent 60%),
+    radial-gradient(7px 7px at 52% 78%, rgba(255, 255, 255, 1.0), transparent 60%),
+    radial-gradient(6px 6px at 78% 74%, rgba(226, 232, 240, 1.0), transparent 60%);
+}
+
+</style>
+</head>
+<body class="theme-default">
+  <h1>주사위 보드게임</h1>
+  <p style="text-align:center; font-size:12px; opacity:0.7; margin-top:-4px; margin-bottom:10px;">
+    만든 이: 서민재
+  </p>
+
+  <div class="game-container">
+    <div class="top-panel">
+      <div class="status-block">
+        <div class="status">
+          현재 차례: <span id="currentPlayer"></span><br />
+          말 위치: <span id="positions"></span>
+        </div>
+        <div class="config">
+          <label>
+            인원 수:
+            <select id="playerCount">
+              <option value="1">1명</option>
+              <option value="2" selected>2명</option>
+              <option value="3">3명</option>
+              <option value="4">4명</option>
+              <option value="5">5명</option>
+              <option value="6">6명</option>
+            </select>
+          </label>
+           <label>
+            전체 칸수:
+            <input type="number" id="boardSizeInput" min="6" max="200" value="30" />
+          </label>
+          <label>
+            테마:
+            <select id="themeSelect">
+              <option value="default">기본</option>
+              <option value="space">우주</option>
+              <option value="forest">숲</option>
+              <option value="desert">사막</option>
+              <option value="neon">네온</option>
+            </select>
+          </label>
+
+          <button id="startBtn">게임 시작 / 리셋</button>
+  <button id="soundToggleBtn" type="button">🔊 효과음 켜짐</button>
+        </div>
+      </div>
+
+      <div class="dice-box">
+<div class="dice-row">
+  <button id="rollBtn">🎲 주사위 굴리기</button>
+  <button id="skipBtn">⏭️ 턴 스킵</button>
+  <div class="dice-visual" id="diceVisual">-</div>
+  <div class="cheat-badge">
+    <span id="cheatText">치트: 없음</span>
+  </div>
+
+  <!-- 🔽 치트 커맨드 입력창을 여기로 이동 -->
+  <label class="cheat-input">
+    커맨드:
+    <input type="text" id="secretCodeInput" placeholder="치트 코드" />
+  </label>
+</div>
+
+        <div class="dice-value" id="diceInfo">
+          게임을 시작한 뒤 주사위를 굴려 보세요.
+        </div>
+      </div>
+    </div>
+
+    <div class="board" id="board"></div>
+
+     <!-- 🔽 칸 편집 모드 카드 (접기/펼치기 가능 버전) -->
+    <div class="cell-edit-card" id="cellEditCard">
+      <div class="cell-edit-header">
+        <div class="cell-edit-title">
+          <span class="cell-edit-title-icon">🛠</span>
+          <span>칸 편집 모드</span>
+        </div>
+
+        <!-- 접기 / 펼치기 버튼 -->
+        <button type="button"
+                class="cell-edit-toggle"
+                id="cellEditToggleBtn">
+          칸 편집 접기 ▲
+        </button>
+
+        <div class="cell-edit-sub">
+          버튼을 고른 뒤, 위 보드 칸을 클릭해서 특수 칸으로 설정하세요.
+        </div>
+      </div>
+
+      <!-- 이 안쪽 부분 전체가 접혔다/펼쳐짐 -->
+      <div class="cell-edit-body" id="cellEditBody">
+        <div class="cell-edit-panel">
+          <button type="button" class="cell-edit-btn active" data-mode="off">
+            <span class="cell-edit-btn-icon">🚫</span>
+            <span>편집 끔</span>
+          </button>
+          <button type="button" class="cell-edit-btn" data-mode="x2">
+            <span class="cell-edit-btn-icon">🚀</span>
+            <span>x2</span>
+          </button>
+          <button type="button" class="cell-edit-btn" data-mode="half">
+            <span class="cell-edit-btn-icon">🐢</span>
+            <span>1/2</span>
+          </button>
+          <button type="button" class="cell-edit-btn" data-mode="trap">
+            <span class="cell-edit-btn-icon">💣</span>
+            <span>함정</span>
+          </button>
+          <button type="button" class="cell-edit-btn" data-mode="gkey">
+            <span class="cell-edit-btn-icon">✨</span>
+            <span>황금열쇠</span>
+          </button>
+          <button type="button" class="cell-edit-btn" data-mode="clear">
+            <span class="cell-edit-btn-icon">⛔</span>
+            <span>지우기</span>
+          </button>
+        </div>
+
+        <div class="cell-edit-hint">
+          • 출발(0), 도착 칸은 편집할 수 없습니다. <br />
+          • 같은 칸에 x2/1/2/함정/황금열쇠를 겹쳐서 설정하지 않도록 주의하세요. <br />
+          • 아래 입력칸에서 숫자로도 직접 특수 칸을 설정할 수 있습니다.
+        </div>
+
+        <!-- 🔧 x2 / 1/2 / 함정 / 황금열쇠 칸 범위 설정 입력 -->
+        <div class="cell-range-edit">
+          <label>
+            x2 칸:
+            <input type="text" id="x2CellsInput" placeholder="예: 2,5,9 또는 2~4" />
+          </label>
+          <label>
+            1/2 칸:
+            <input type="text" id="halfCellsInput" placeholder="예: 4,6 또는 7~9" />
+          </label>
+          <label>
+            함정 칸(출발로):
+            <input type="text" id="resetCellsInput" placeholder="예: 1,3,5 또는 10~12" />
+          </label>
+          <label>
+            황금열쇠 칸:
+            <input type="text" id="gKeyCellsInput" placeholder="예: 2,7 또는 10~12" />
+          </label>
+        </div>
+      </div>
+    </div>
+    <!-- 🔼 칸 편집 모드 카드 끝 -->
+
+
+    <div class="players-legend" id="playersLegend"></div>
+
+    <div class="log-box" id="log"></div>
+  </div>
+
+  <div id="goldenKeyOverlay">
+    <div id="goldenKeyPopup">
+      <span>🔑</span>
+      <span>황금열쇠!</span>
+    </div>
+    <div id="cheatPopup">
+      <span id="cheatPopupIcon">✨</span>
+      <span id="cheatPopupText">치트 발동!</span>
+    </div>
+  </div>
+
+  <!-- 🎵 효과음 -->
+  <audio id="seClick"  src="game/click.mp3"  preload="auto"></audio>
+  <audio id="seDice"   src="game/dice.mp3"   preload="auto"></audio>
+  <audio id="seTrap"   src="game/trap.mp3"   preload="auto"></audio>
+  <audio id="seGolden" src="game/golden.mp3" preload="auto"></audio>
+  <audio id="seCheat"  src="game/cheat.mp3"  preload="auto"></audio>
+  <audio id="seWin"    src="game/win.mp3"    preload="auto"></audio>
+  <audio id="seShield" src="game/shield.mp3" preload="auto"></audio>
+  <audio id="seSpeed"  src="game/speed.mp3"  preload="auto"></audio>
+  <audio id="seSpeedHalf" src="game/speed_half.mp3" preload="auto"></audio>
+
+  <script>
+    let BOARD_SIZE = 30;
+    let specialZones = [];
+    let resetCells = [];
+    let goldenKeyCells = [];
+    let cellEditMode = "off";
+
+    const PLAYER_COLORS = [
+      "#ef4444",
+      "#3b82f6",
+      "#22c55e",
+      "#f97316",
+      "#a855f7",
+      "#eab308"
+    ];
+
+    const CHEAT_DEFS = [
+      { code: "3025", name: "황금 15", desc: "주사위 눈을 15로 고정" },
+      { code: "1357", name: "이동 2배", desc: "이동 거리 2배" },
+      { code: "2468", name: "함정 영구 무시", desc: "남은 게임 동안 함정 칸 무시" },
+      { code: "4444", name: "2회 보호막", desc: "해로운 효과 2번 방어" },
+      { code: "9999", name: "추가 턴", desc: "이동 후 한 번 더 턴" },
+      { code: "1111", name: "선두 바로 뒤 워프", desc: "선두 바로 뒤 칸으로 이동" },
+      { code: "2222", name: "선두와 교환", desc: "선두와 위치 바꾸기" },
+      { code: "3333", name: "다른 사람 -1칸", desc: "나 빼고 모두 1칸 뒤로" },
+      { code: "5555", name: "재굴림(큰 수)", desc: "두 번 굴려 더 큰 수 사용" },
+      { code: "6666", name: "선두 워프+턴 스킵", desc: "선두 위치로 이동, 다음 자기 턴 스킵" },
+      { code: "7777", name: "±3 랜덤", desc: "+3 또는 -3 랜덤 이동" },
+      { code: "8888", name: "중앙 워프", desc: "보드 중앙으로 이동" }
+    ];
+
+    let players = [];
+    let currentPlayerIndex = 0;
+    let gameOver = false;
+    let isAnimating = false;
+    let isRollingDice = false;
+
+    const cellTokenEls = [];
+
+    const boardEl = document.getElementById("board");
+    const gameContainerEl = document.querySelector(".game-container");
+    const rollBtn = document.getElementById("rollBtn");
+    const skipBtn = document.getElementById("skipBtn");
+    const diceInfoEl = document.getElementById("diceInfo");
+    const diceVisualEl = document.getElementById("diceVisual");
+    const currentPlayerEl = document.getElementById("currentPlayer");
+    const positionsEl = document.getElementById("positions");
+    const logEl = document.getElementById("log");
+    const playersLegendEl = document.getElementById("playersLegend");
+    const playerCountSelect = document.getElementById("playerCount");
+    const startBtn = document.getElementById("startBtn");
+    const boardSizeInput = document.getElementById("boardSizeInput");
+    const x2CellsInput = document.getElementById("x2CellsInput");
+    const halfCellsInput = document.getElementById("halfCellsInput");
+    const resetCellsInput = document.getElementById("resetCellsInput");
+    const gKeyCellsInput = document.getElementById("gKeyCellsInput");
+    const secretCodeInput = document.getElementById("secretCodeInput");
+    const boostRangeText = document.getElementById("boostRangeText");
+    const slowRangeText = document.getElementById("slowRangeText");
+    const resetRangeText = document.getElementById("resetRangeText");
+    const gKeyRangeText = document.getElementById("gKeyRangeText");
+    const cheatTextEl = document.getElementById("cheatText");
+    const goldenKeyOverlayEl = document.getElementById("goldenKeyOverlay");
+    const goldenKeyPopupEl = document.getElementById("goldenKeyPopup");
+    const cheatPopupEl = document.getElementById("cheatPopup");
+    const cheatPopupTextEl = document.getElementById("cheatPopupText");
+    const cheatPopupIconEl = document.getElementById("cheatPopupIcon");
+    const themeSelect = document.getElementById("themeSelect");
+    const cellEditButtons = document.querySelectorAll(".cell-edit-btn");
+    const cellEditCardEl = document.getElementById("cellEditCard");
+    const soundToggleBtn = document.getElementById("soundToggleBtn");
+    const cellEditBodyEl = document.getElementById("cellEditBody");
+    const cellEditToggleBtn = document.getElementById("cellEditToggleBtn");
+
+    const THEME_CLASS_LIST = [
+      "theme-default",
+      "theme-space",
+      "theme-forest",
+      "theme-desert",
+      "theme-neon"
+    ];
+
+    function applyTheme(themeName) {
+      const body = document.body;
+      THEME_CLASS_LIST.forEach((cls) => body.classList.remove(cls));
+      body.classList.add("theme-" + themeName);
+    }
+
+    // 🎵 효과음 매핑
+    const soundMap = {
+      click:  document.getElementById("seClick"),
+      dice:   document.getElementById("seDice"),
+      trap:   document.getElementById("seTrap"),
+      golden: document.getElementById("seGolden"),
+      cheat:  document.getElementById("seCheat"),
+      win:    document.getElementById("seWin"),
+      shield: document.getElementById("seShield"),
+      speed:  document.getElementById("seSpeed"),
+      speedHalf: document.getElementById("seSpeedHalf")
+    };
+
+    function playSound(name) {
+      // 🔇 효과음이 꺼져 있으면 아무 소리도 재생하지 않음
+      if (!isSoundOn) return;
+
+      const audio = soundMap[name];
+      if (!audio) return;
+      try {
+        audio.currentTime = 0;
+        audio.play();
+      } catch (e) {}
+    }
+
+
+    let popupTimerId = null;
+    let isSoundOn = true; // 효과음 켜짐/꺼짐 상태
+
+    // ⭐ HEX → rgba 변환 (네온 그라데이션용)
+    function hexToRgba(hex, alpha) {
+      if (!hex) return "";
+      let h = hex.trim();
+      if (h[0] === "#") h = h.slice(1);
+      if (h.length === 3) {
+        h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
+      }
+      if (h.length !== 6) return hex;
+      const r = parseInt(h.slice(0, 2), 16);
+      const g = parseInt(h.slice(2, 4), 16);
+      const b = parseInt(h.slice(4, 6), 16);
+      if ([r, g, b].some(v => Number.isNaN(v))) return hex;
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+
+    function setDiceFace(value) {
+      diceVisualEl.innerHTML = "";
+
+      if (value >= 1 && value <= 6) {
+        const pipMap = {
+          1: [4],
+          2: [0, 8],
+          3: [0, 4, 8],
+          4: [0, 2, 6, 8],
+          5: [0, 2, 4, 6, 8],
+          6: [0, 2, 3, 5, 6, 8]
+        };
+        const positions = pipMap[value] || [];
+
+        const grid = document.createElement("div");
+        grid.className = "dice-pip-grid";
+
+        for (let i = 0; i < 9; i++) {
+          const cell = document.createElement("div");
+          cell.className = "dice-cell";
+          if (positions.includes(i)) {
+            const pip = document.createElement("div");
+            pip.className = "dice-pip";
+            cell.appendChild(pip);
+          }
+          grid.appendChild(cell);
+        }
+
+        diceVisualEl.appendChild(grid);
+      } else {
+        diceVisualEl.textContent = String(value);
+      }
+    }
+
+    function log(message) {
+      const div = document.createElement("div");
+      div.className = "log-entry";
+      div.textContent = message;
+      logEl.prepend(div);
+    }
+
+    function findZone(pos) {
+      return specialZones.find((z) => pos >= z.start && pos <= z.end) || null;
+    }
+
+    function getMultiplierInfo(pos) {
+      const zone = findZone(pos);
+      if (!zone) return { multiplier: 1, label: "일반 구간" };
+      return {
+        multiplier: zone.multiplier,
+        label:
+          zone.multiplier > 1
+            ? `${zone.multiplier}배 속도 구간`
+            : `${zone.multiplier}배 느려지는 구간`
+      };
+    }
+
+    function resetDiceStyle() {
+      diceVisualEl.classList.remove("cheat-active");
+      diceVisualEl.style.borderColor = "";
+      diceVisualEl.style.background = "";
+      diceVisualEl.style.color = "";
+      diceVisualEl.style.boxShadow = "";
+    }
+
+    // ✅ 변경: 플레이어 말 색 기반 네온을 좀 더 연하게 표현
+    function setDiceNeonForColor(color) {
+      if (!color) {
+        resetDiceStyle();
+        return;
+      }
+      const softOuter = hexToRgba(color, 0.25); // 바깥쪽 은은한 색
+      const softInner = hexToRgba(color, 0.10); // 안쪽 더 연한 색
+
+      diceVisualEl.style.borderColor = softOuter;
+      diceVisualEl.style.background =
+        `radial-gradient(circle at 30% 20%, #ffffff 0%, ${softInner} 50%, ${softOuter} 100%)`;
+      diceVisualEl.style.color = "#111827";
+      diceVisualEl.style.boxShadow = `0 0 10px ${softOuter}`;
+    }
+
+    function parseCellList(raw, boardSize) {
+      const result = [];
+      if (!raw || raw.trim().length === 0) return result;
+
+      const tokens = raw
+        .split(/[,\s]+/)
+        .map((t) => t.trim())
+        .filter(Boolean);
+
+      tokens.forEach((token) => {
+        const rangeMatch = token.match(/^(\d+)\s*~\s*(\d+)$/);
+        if (rangeMatch) {
+          let a = parseInt(rangeMatch[1], 10);
+          let b = parseInt(rangeMatch[2], 10);
+          if (isNaN(a) || isNaN(b)) return;
+          if (a > b) {
+            const tmp = a;
+            a = b;
+            b = tmp;
+          }
+          for (let n = a; n <= b; n++) {
+            if (n > 0 && n < boardSize - 1) result.push(n);
+          }
+          return;
+        }
+
+        const n = parseInt(token, 10);
+        if (!isNaN(n) && n > 0 && n < boardSize - 1) {
+          result.push(n);
+        }
+      });
+
+      return Array.from(new Set(result)).sort((a, b) => a - b);
+    }
+
+    function getCheatsForCurrentRoll() {
+      const cheats = {
+        goldenTen: false,
+        doubleStep: false,
+        trapImmune: false,
+        extraTurn: false,
+        leadFollow: false,
+        swapLead: false,
+        warpLeadSkip: false,
+        pushOthersBack: false,
+        shield2turn: false,
+        rerollHigher: false,
+        randomPlusMinus3: false,
+        warpMiddle: false,
+        triggered: []
+      };
+
+      const currentPlayer = players[currentPlayerIndex];
+
+      let rawCodes = [];
+      const raw = secretCodeInput.value;
+      if (raw && raw.trim().length > 0) {
+        rawCodes = raw.split(/[,\s]+/).map(c => c.trim()).filter(Boolean);
+      }
+
+      if (currentPlayer && currentPlayer.storedCheatCode) {
+        rawCodes.push(currentPlayer.storedCheatCode);
+        currentPlayer.storedCheatCode = null;
+      }
+
+      if (rawCodes.length === 0) return cheats;
+
+      const codes = Array.from(new Set(rawCodes));
+      let hasUnknown = false;
+
+      codes.forEach((code) => {
+        const def = CHEAT_DEFS.find(d => d.code === code);
+        if (!def) {
+          hasUnknown = true;
+          return;
+        }
+
+        cheats.triggered.push(def);
+
+        if (code === "3025")      cheats.goldenTen = true;
+        else if (code === "1357") cheats.doubleStep = true;
+        else if (code === "2468") cheats.trapImmune = true;
+        else if (code === "9999") cheats.extraTurn = true;
+        else if (code === "1111") cheats.leadFollow = true;
+        else if (code === "2222") cheats.swapLead = true;
+        else if (code === "6666") cheats.warpLeadSkip = true;
+        else if (code === "3333") cheats.pushOthersBack = true;
+        else if (code === "4444") cheats.shield2turn = true;
+        else if (code === "5555") cheats.rerollHigher = true;
+        else if (code === "7777") cheats.randomPlusMinus3 = true;
+        else if (code === "8888") cheats.warpMiddle = true;
+      });
+
+      if (hasUnknown) {
+        log("❓ 알 수 없는 코드가 있어 무시되었습니다.");
+      }
+
+if (cheats.triggered.length > 0) {
+  const txt = cheats.triggered
+    .map(d => d.name)
+    .join(", ");
+  log(`✨ 치트 발동: ${txt}`);
+}
+
+
+      return cheats;
+    }
+
+    function spawnSparkles(baseColor) {
+      const color = baseColor || "#facc15";
+      const oldSparkles = goldenKeyOverlayEl.querySelectorAll(".sparkle");
+      oldSparkles.forEach((el) => el.remove());
+
+      const SPARKLE_COUNT = 90;
+      for (let i = 0; i < SPARKLE_COUNT; i++) {
+        const s = document.createElement("div");
+        s.className = "sparkle";
+
+        const topPercent = Math.random() * 100;
+        const leftPercent = Math.random() * 100;
+        const scale = 0.3 + Math.random() * 2.0;
+        const delay = Math.random() * 0.7;
+        const duration = 0.8 + Math.random() * 1.0;
+
+        s.style.top = topPercent + "%";
+        s.style.left = leftPercent + "%";
+        s.style.transform = `scale(${scale})`;
+        s.style.animationDelay = `${delay}s`;
+        s.style.animationDuration = `${duration}s`;
+        s.style.background = `radial-gradient(circle, #fefce8 0%, ${color} 40%, transparent 70%)`;
+        s.style.boxShadow = `0 0 14px ${color}cc`;
+
+        goldenKeyOverlayEl.appendChild(s);
+      }
+    }
+
+    function showCheatPopup(style, labelText, prefixLabel = "치트", icon = "✨", durationMs = 2000) {
+      if (prefixLabel === "치트")         playSound("cheat");
+      else if (prefixLabel === "함정")    playSound("trap");
+      else if (prefixLabel === "방어")    playSound("shield");
+      else if (prefixLabel === "x2 배속") playSound("speed");
+      else if (prefixLabel === "1/2 배속") playSound("speedHalf");
+
+      goldenKeyOverlayEl.classList.remove("show");
+      goldenKeyPopupEl.classList.remove("show");
+      cheatPopupEl.classList.remove("show");
+
+      if (popupTimerId !== null) {
+        clearTimeout(popupTimerId);
+        popupTimerId = null;
+      }
+
+      const color = style && style.color ? style.color : "#f97316";
+      const bg = style && style.bg ? style.bg : "#fff7ed";
+
+      cheatPopupEl.style.background = bg;
+      cheatPopupEl.style.color = color;
+
+      const popupSeconds = durationMs / 1000;
+      cheatPopupEl.style.animationDuration = popupSeconds + "s";
+      goldenKeyOverlayEl.style.animationDuration = popupSeconds + "s";
+
+      cheatPopupIconEl.textContent = icon;
+
+      if (labelText && labelText.length > 0) {
+        if (prefixLabel) {
+          cheatPopupTextEl.textContent = `${prefixLabel}: ${labelText}`;
+        } else {
+          cheatPopupTextEl.textContent = labelText;
+        }
+      } else {
+        cheatPopupTextEl.textContent = prefixLabel ? `${prefixLabel}: 효과 발동!` : "효과 발동!";
+      }
+
+      void goldenKeyOverlayEl.offsetWidth;
+
+      goldenKeyOverlayEl.classList.add("show");
+      spawnSparkles(color);
+      cheatPopupEl.classList.add("show");
+
+      popupTimerId = setTimeout(() => {
+        goldenKeyOverlayEl.classList.remove("show");
+        cheatPopupEl.classList.remove("show");
+        const remain = goldenKeyOverlayEl.querySelectorAll(".sparkle");
+        remain.forEach((el) => el.remove());
+        popupTimerId = null;
+      }, durationMs);
+    }
+
+    // ⭐ 치트 텍스트 + 주사위 색/네온 동기화
+    function showCheatText(cheats) {
+      let firedText = null;
+      if (cheats.triggered && cheats.triggered.length > 0) {
+        firedText = cheats.triggered
+          .map(d => `${d.name} 발동`)
+          .join(" / ");
+        cheatTextEl.textContent = "치트: " + firedText;
+      } else {
+        cheatTextEl.textContent = "치트: 없음";
+      }
+
+      diceVisualEl.classList.remove("cheat-active");
+
+      const styleMap = {
+        goldenTen:       { color: "#f59e0b", bg: "#fffbeb", border: "#fbbf24" },
+        doubleStep:      { color: "#3b82f6", bg: "#eff6ff", border: "#bfdbfe" },
+        trapImmune:      { color: "#22c55e", bg: "#ecfdf3", border: "#bbf7d0" },
+        extraTurn:       { color: "#a855f7", bg: "#faf5ff", border: "#e9d5ff" },
+        leadFollow:      { color: "#ec4899", bg: "#fdf2f8", border: "#f9a8d4" },
+        swapLead:        { color: "#06b6d4", bg: "#ecfeff", border: "#a5f3fc" },
+        warpLeadSkip:    { color: "#0f766e", bg: "#ecfdf5", border: "#5eead4" },
+        pushOthersBack:  { color: "#f97316", bg: "#fff7ed", border: "#fed7aa" },
+        shield2turn:     { color: "#4f46e5", bg: "#eef2ff", border: "#c7d2fe" },
+        rerollHigher:    { color: "#10b981", bg: "#ecfdf5", border: "#6ee7b7" },
+        randomPlusMinus3:{ color: "#ef4444", bg: "#fef2f2", border: "#fecaca" },
+        warpMiddle:      { color: "#8b5cf6", bg: "#f5f3ff", border: "#ddd6fe" }
+      };
+
+      const priority = [
+        "goldenTen",
+        "doubleStep",
+        "trapImmune",
+        "extraTurn",
+        "leadFollow",
+        "swapLead",
+        "warpLeadSkip",
+        "pushOthersBack",
+        "shield2turn",
+        "rerollHigher",
+        "randomPlusMinus3",
+        "warpMiddle"
+      ];
+
+      let mainKey = null;
+      for (const k of priority) {
+        if (cheats[k]) {
+          mainKey = k;
+          break;
+        }
+      }
+
+      if (!mainKey) {
+        resetDiceStyle();
+        cheatTextEl.style.color = "#4b5563";
+        return;
+      }
+
+      const s = styleMap[mainKey];
+      if (s) {
+        const softGlow = hexToRgba(s.color, 0.6);
+        diceVisualEl.style.borderColor = s.border;
+        diceVisualEl.style.background = s.bg;
+        diceVisualEl.style.color = s.color;
+        diceVisualEl.style.boxShadow =
+          `0 0 20px ${s.color}, 0 0 40px ${softGlow}`;
+        cheatTextEl.style.color = s.color;
+        diceVisualEl.classList.add("cheat-active");
+
+        showCheatPopup(s, firedText, "치트", "✨", 2000);
+      } else {
+        resetDiceStyle();
+        cheatTextEl.style.color = "#4b5563";
+      }
+    }
+
+    function updateStatusText() {
+      if (players.length === 0) {
+        currentPlayerEl.textContent = "-";
+        currentPlayerEl.style.color = "#111827";
+        positionsEl.textContent = "-";
+        return;
+      }
+
+      const current = players[currentPlayerIndex];
+      currentPlayerEl.textContent = current.name;
+      currentPlayerEl.style.color = current.color;
+
+      const posText = players
+        .map((p) => `${p.name}: ${p.position}칸`)
+        .join(" / ");
+      positionsEl.textContent = posText;
+
+      const pills = playersLegendEl.querySelectorAll(".player-pill");
+      pills.forEach((pill, idx) => {
+        pill.classList.toggle("current-turn", idx === currentPlayerIndex);
+      });
+    }
+
+    function renderPlayersLegend() {
+      playersLegendEl.innerHTML = "";
+      players.forEach((p, idx) => {
+        const pill = document.createElement("div");
+        pill.className = "player-pill";
+        pill.innerHTML = `
+          <span class="player-dot" style="background:${p.color}"></span>
+          <span>${p.name}</span>
+        `;
+        if (idx === currentPlayerIndex) {
+          pill.classList.add("current-turn");
+        }
+        playersLegendEl.appendChild(pill);
+      });
+    }
+
+    function renderBoard() {
+      boardEl.innerHTML = "";
+      cellTokenEls.length = 0;
+
+      for (let i = 0; i < BOARD_SIZE; i++) {
+        const cell = document.createElement("div");
+        cell.className = "cell";
+
+        const zone = findZone(i);
+        const isReset = resetCells.includes(i);
+        const isGKey = goldenKeyCells.includes(i);
+
+        if (zone) {
+          if (zone.multiplier > 1) cell.classList.add("zone-boost");
+          else if (zone.multiplier < 1) cell.classList.add("zone-slow");
+        }
+        if (isReset) cell.classList.add("zone-reset");
+        if (isGKey) cell.classList.add("zone-gkey");
+
+        let indexLabel = `${i}`;
+        if (i === 0) {
+          indexLabel = "🚩 출발(0)";
+          cell.classList.add("start-cell");
+        } else if (i === BOARD_SIZE - 1) {
+          indexLabel = `🏁 도착(${i})`;
+          cell.classList.add("finish-cell");
+        }
+
+        const labels = [];
+        if (zone && zone.multiplier !== 1) labels.push(`${zone.multiplier}배`);
+        if (isReset) labels.push("함정");
+        if (isGKey) labels.push("황금열쇠");
+
+        const labelText = labels.join(" / ");
+
+        cell.innerHTML = `
+          <div class="cell-index">${indexLabel}</div>
+          <div class="cell-zone-label">${labelText}</div>
+          <div class="token-container"></div>
+        `;
+
+        // 보드 칸 클릭 시 편집 모드 동작
+        cell.addEventListener("click", () => {
+          handleCellClick(i);
+        });
+
+        boardEl.appendChild(cell);
+        const tokenContainer = cell.querySelector(".token-container");
+        cellTokenEls.push(tokenContainer);
+      }
+    }
+
+    function renderTokens() {
+      cellTokenEls.forEach((el) => (el.innerHTML = ""));
+
+      players.forEach((p, idx) => {
+        const pos = p.position;
+        if (pos < 0 || pos >= BOARD_SIZE) return;
+        const container = cellTokenEls[pos];
+        if (!container) return;
+
+        const token = document.createElement("div");
+        token.className = "token";
+        token.style.background = p.color;
+        token.title = p.name;
+
+        if (idx === currentPlayerIndex) {
+          token.classList.add("current-turn");
+        }
+
+        if (p.isFastMoving) {
+          token.classList.add("token-fast");
+        }
+
+        container.appendChild(token);
+      });
+    }
+
+    function cellsToText(arr) {
+      if (!arr || arr.length === 0) return "없음";
+      return arr.join(", ") + "번 칸";
+    }
+
+   function updateLegendText() {
+  // ⚠ 범례 표시용 DOM 요소(텍스트)가 현재 화면에 없으므로
+  //    없으면 그냥 아무 것도 하지 않고 빠져나오도록 예외 처리
+  if (!boostRangeText || !slowRangeText || !resetRangeText || !gKeyRangeText) {
+    return;
+  }
+
+  const boostCells = [];
+  const slowCells = [];
+
+  for (let i = 0; i < BOARD_SIZE; i++) {
+    const zone = findZone(i);
+    if (!zone) continue;
+    if (zone.multiplier > 1) boostCells.push(i);
+    else if (zone.multiplier < 1) slowCells.push(i);
+  }
+
+  boostRangeText.textContent = cellsToText(boostCells);
+  slowRangeText.textContent = cellsToText(slowCells);
+  resetRangeText.textContent = resetCells.length
+    ? resetCells.join(", ") + "번 칸"
+    : "없음";
+  gKeyRangeText.textContent = goldenKeyCells.length
+    ? goldenKeyCells.join(", ") + "번 칸"
+    : "없음";
+}
+
+    function setCellMultiplierSingle(index, multiplier) {
+      // 해당 칸의 배속 정보를 단일 칸 기준으로 관리
+      specialZones = specialZones.filter((z) => !(z.start === index && z.end === index));
+      if (multiplier === 1) return;
+      const label = multiplier > 1 ? "x2 칸" : "1/2 칸";
+      specialZones.push({ start: index, end: index, multiplier, label });
+    }
+
+    function toggleValueInArray(arr, value) {
+      const idx = arr.indexOf(value);
+      if (idx >= 0) {
+        arr.splice(idx, 1);
+        return false;
+      } else {
+        arr.push(value);
+        arr.sort((a, b) => a - b);
+        return true;
+      }
+    }
+
+    function syncInputsFromState() {
+      const x2Arr = [];
+      const halfArr = [];
+      specialZones.forEach((z) => {
+        if (z.start === z.end) {
+          if (z.multiplier > 1) x2Arr.push(z.start);
+          else if (z.multiplier < 1) halfArr.push(z.start);
+        }
+      });
+
+      const uniqSorted = (arr) => Array.from(new Set(arr)).sort((a, b) => a - b);
+
+      if (typeof x2CellsInput !== "undefined" && x2CellsInput) {
+        x2CellsInput.value = uniqSorted(x2Arr).join(", ");
+      }
+      if (typeof halfCellsInput !== "undefined" && halfCellsInput) {
+        halfCellsInput.value = uniqSorted(halfArr).join(", ");
+      }
+      if (typeof resetCellsInput !== "undefined" && resetCellsInput) {
+        resetCellsInput.value = uniqSorted(resetCells).join(", ");
+      }
+      if (typeof gKeyCellsInput !== "undefined" && gKeyCellsInput) {
+        gKeyCellsInput.value = uniqSorted(goldenKeyCells).join(", ");
+      }
+
+      updateLegendText();
+    }
+
+        function handleCellClick(index) {
+      // 편집 모드가 아니면 아무 일도 하지 않음
+      if (cellEditMode === "off") return;
+      // 출발(0), 도착(BOARD_SIZE-1)은 편집 불가
+      if (index <= 0 || index >= BOARD_SIZE - 1) return;
+
+      // 현재 보드 크기 기준으로 입력값을 다시 해석
+      let sizeVal = parseInt(boardSizeInput.value, 10);
+      if (isNaN(sizeVal) || sizeVal < 6) sizeVal = 30;
+      const boardSize = Math.max(6, Math.min(sizeVal, 200));
+
+      const x2Arr = parseCellList(x2CellsInput.value, boardSize);
+      const halfArr = parseCellList(halfCellsInput.value, boardSize);
+      const trapArr = parseCellList(resetCellsInput.value, boardSize);
+      const gkeyArr = parseCellList(gKeyCellsInput.value, boardSize);
+
+      const x2Set = new Set(x2Arr);
+      const halfSet = new Set(halfArr);
+      const trapSet = new Set(trapArr);
+      const gkeySet = new Set(gkeyArr);
+
+      let changed = false;
+
+      if (cellEditMode === "x2") {
+        if (x2Set.has(index)) {
+          x2Set.delete(index);
+        } else {
+          x2Set.add(index);
+        }
+        // x2와 1/2는 동시에 있을 수 없도록 1/2 쪽에서 제거
+        halfSet.delete(index);
+        changed = true;
+      } else if (cellEditMode === "half") {
+        if (halfSet.has(index)) {
+          halfSet.delete(index);
+        } else {
+          halfSet.add(index);
+        }
+        // 1/2를 설정하면 x2는 제거
+        x2Set.delete(index);
+        changed = true;
+      } else if (cellEditMode === "trap") {
+        if (trapSet.has(index)) {
+          trapSet.delete(index);
+        } else {
+          trapSet.add(index);
+        }
+        changed = true;
+      } else if (cellEditMode === "gkey") {
+        if (gkeySet.has(index)) {
+          gkeySet.delete(index);
+        } else {
+          gkeySet.add(index);
+        }
+        changed = true;
+      } else if (cellEditMode === "clear") {
+        const before =
+          x2Set.size + halfSet.size + trapSet.size + gkeySet.size;
+        x2Set.delete(index);
+        halfSet.delete(index);
+        trapSet.delete(index);
+        gkeySet.delete(index);
+        const after =
+          x2Set.size + halfSet.size + trapSet.size + gkeySet.size;
+        changed = before !== after;
+      }
+
+      if (!changed) return;
+
+      const sortArr = (set) => Array.from(set).sort((a, b) => a - b);
+
+      const x2New = sortArr(x2Set);
+      const halfNew = sortArr(halfSet);
+      const trapNew = sortArr(trapSet);
+      const gkeyNew = sortArr(gkeySet);
+
+      // 입력창 문자열 갱신
+      x2CellsInput.value = x2New.join(", ");
+      halfCellsInput.value = halfNew.join(", ");
+      resetCellsInput.value = trapNew.join(", ");
+      gKeyCellsInput.value = gkeyNew.join(", ");
+
+      // 실제 게임 상태(specialZones, resetCells, goldenKeyCells)도 다시 구성
+      specialZones = [];
+      x2New.forEach((n) => {
+        specialZones.push({ start: n, end: n, multiplier: 2, label: "x2 칸" });
+      });
+      halfNew.forEach((n) => {
+        specialZones.push({ start: n, end: n, multiplier: 0.5, label: "1/2 칸" });
+      });
+      resetCells = trapNew;
+      goldenKeyCells = gkeyNew;
+
+      // 보드/말 및 범례 갱신
+      renderBoard();
+      renderTokens();
+      updateLegendText();
+    }
+
+
+
+    function animateMove(player, steps, onComplete) {
+      if (steps <= 0) {
+        onComplete();
+        return;
+      }
+      isAnimating = true;
+      let moved = 0;
+
+      function step() {
+        if (moved >= steps) {
+          isAnimating = false;
+
+          const landingCell = boardEl.children[player.position];
+          if (landingCell) {
+            landingCell.classList.add("landing");
+            setTimeout(() => {
+              landingCell.classList.remove("landing");
+            }, 350);
+          }
+
+          onComplete();
+          return;
+        }
+
+        let newPos = player.position + 1;
+        const finishPos = BOARD_SIZE - 1;
+        if (newPos >= finishPos) newPos = finishPos;
+
+        player.position = newPos;
+        renderTokens();
+        updateStatusText();
+        moved++;
+
+        if (player.position === finishPos || moved >= steps) {
+          isAnimating = false;
+
+          const landingCell = boardEl.children[player.position];
+          if (landingCell) {
+            landingCell.classList.add("landing");
+            setTimeout(() => {
+              landingCell.classList.remove("landing");
+            }, 350);
+          }
+
+          onComplete();
+          return;
+        }
+
+        setTimeout(step, 250);
+      }
+
+      step();
+    }
+
+    function showGoldenKeyPopup() {
+      playSound("golden");
+
+      goldenKeyOverlayEl.classList.remove("show");
+      goldenKeyPopupEl.classList.remove("show");
+      cheatPopupEl.classList.remove("show");
+
+      if (popupTimerId !== null) {
+        clearTimeout(popupTimerId);
+        popupTimerId = null;
+      }
+
+      const durationMs = 2000;
+      const seconds = durationMs / 1000;
+      goldenKeyPopupEl.style.animationDuration = seconds + "s";
+      goldenKeyOverlayEl.style.animationDuration = seconds + "s";
+
+      void goldenKeyOverlayEl.offsetWidth;
+
+      goldenKeyOverlayEl.classList.add("show");
+      spawnSparkles("#facc15");
+      goldenKeyPopupEl.classList.add("show");
+
+      popupTimerId = setTimeout(() => {
+        goldenKeyOverlayEl.classList.remove("show");
+        goldenKeyPopupEl.classList.remove("show");
+        const remain = goldenKeyOverlayEl.querySelectorAll(".sparkle");
+        remain.forEach((el) => el.remove());
+        popupTimerId = null;
+      }, durationMs);
+    }
+
+    function grantRandomCheatFromGoldenKey(player) {
+      if (!CHEAT_DEFS.length) return;
+      const idx = Math.floor(Math.random() * CHEAT_DEFS.length);
+      const picked = CHEAT_DEFS[idx];
+
+      player.storedCheatCode = picked.code;
+
+const msg =
+  `🔑 황금열쇠! 다음 턴에 특수한 효과가 적용됩니다. ` +
+  `(다음 ${player.name}의 자기 턴에 1회 자동 적용)`;
+log(msg);
+
+
+      diceInfoEl.textContent = "황금열쇠: 다음 턴에 특수한 효과가 적용됩니다.";
+
+      showGoldenKeyPopup();
+    }
+
+    function useShield(player, context) {
+      if (!player.shieldChargesRemaining || player.shieldChargesRemaining <= 0) return false;
+      player.shieldChargesRemaining--;
+      const usedCount = 2 - player.shieldChargesRemaining;
+      const usedText = ` (2회중 ${usedCount}번 사용)`;
+
+      let msg;
+      switch (context) {
+        case "trap":
+          msg = `🛡 ${player.name}이(가) 함정으로 인한 해로운 효과를 방어했습니다.${usedText}`;
+          break;
+        case "swap":
+          msg = `🛡 ${player.name}이(가) 자리 교환으로 인한 해로운 효과를 방어했습니다.${usedText}`;
+          break;
+        case "pushBack":
+          msg = `🛡 ${player.name}이(가) 뒤로 밀리는 해로운 효과를 방어했습니다.${usedText}`;
+          break;
+        case "minus3":
+          msg = `🛡 ${player.name}이(가) -3칸 이동 해로운 효과를 방어했습니다.${usedText}`;
+          break;
+        default:
+          msg = `🛡 ${player.name}이(가) 해로운 효과를 방어했습니다.${usedText}`;
+      }
+      log(msg);
+
+      const popupLabel = `해로운 효과가 무효화되었습니다. (2회중 ${usedCount}번 사용)`;
+      showCheatPopup(
+        { color: "#bbf7d0", bg: "#064e3b" },
+        popupLabel,
+        "방어",
+        "🛡",
+        2000
+      );
+
+      return true;
+    }
+
+    function afterMoveCheck(player, cheats) {
+      renderTokens();
+      updateStatusText();
+
+      const finishPos = BOARD_SIZE - 1;
+
+      if (player.position === finishPos) {
+        playSound("win");
+        log(`🎉 ${player.name}이(가) 도착 지점에 먼저 도달했습니다! 게임 종료!`);
+        diceInfoEl.textContent = `${player.name} 승리! 게임이 끝났습니다.`;
+        gameOver = true;
+        rollBtn.disabled = true;
+        skipBtn.disabled = true;
+        isRollingDice = false;
+        isAnimating = false;
+        return;
+      }
+
+      if (cheats.trapImmune) {
+        player.trapImmune = true;
+        log(`🧲 치트: ${player.name}이(가) 남은 게임 동안 함정 칸을 모두 무시합니다.`);
+      }
+
+      if (cheats.shield2turn) {
+        player.shieldChargesRemaining = 2;
+        log(`🛡 치트: ${player.name}이(가) 해로운 효과를 2번까지 막아주는 보호막을 얻었습니다.`);
+      }
+
+      if (resetCells.includes(player.position)) {
+        const trapPos = player.position;
+
+        if (player.trapImmune) {
+          log(`🧲 함정 칸(${trapPos})에 도착했지만, 함정 무시 효과로 안전합니다.`);
+        } else if (player.shieldChargesRemaining && player.shieldChargesRemaining > 0) {
+          useShield(player, "trap");
+        } else {
+          log(`⚠ ${player.name}이(가) 함정 칸(${trapPos})에 도착하여 출발점으로 되돌아갑니다.`);
+
+          showCheatPopup(
+            { color: "#fee2e2", bg: "#111827" },
+            `함정 칸(${trapPos})! 출발점으로 되돌아갑니다.`,
+            "함정",
+            "⚠",
+            2000
+          );
+
+          if (gameContainerEl) {
+            gameContainerEl.classList.add("shake");
+            setTimeout(() => {
+              gameContainerEl.classList.remove("shake");
+            }, 400);
+          }
+
+          player.position = 0;
+          renderTokens();
+          updateStatusText();
+        }
+      }
+
+      if (cheats.leadFollow) {
+        let maxPos = -1;
+        players.forEach((pl) => {
+          if (pl.position > maxPos) maxPos = pl.position;
+        });
+        if (maxPos > 0) {
+          const target = Math.max(0, Math.min(maxPos - 1, finishPos));
+          if (target > player.position) {
+            log(`🏃 치트: ${player.name}이(가) 선두 바로 뒤 칸(${target})으로 이동했습니다.`);
+            player.position = target;
+            renderTokens();
+            updateStatusText();
+          } else {
+            log("🏃 치트: 이미 선두에 가까워 효과가 없습니다.");
+          }
+        }
+      }
+
+      if (cheats.swapLead) {
+        let leader = players[0];
+        players.forEach((pl) => {
+          if (pl.position > leader.position) leader = pl;
+        });
+
+        if (leader === player) {
+          log("🔄 치트: 이미 선두라 교환 효과가 없습니다.");
+        } else if (leader.shieldChargesRemaining && leader.shieldChargesRemaining > 0) {
+          useShield(leader, "swap");
+        } else {
+          const tmp = player.position;
+          player.position = leader.position;
+          leader.position = tmp;
+          log(`🔄 치트: ${player.name}과(와) ${leader.name}의 위치를 교환했습니다.`);
+          renderTokens();
+          updateStatusText();
+        }
+      }
+
+      if (cheats.pushOthersBack) {
+        players.forEach((pl) => {
+          if (pl === player) return;
+          if (pl.position > 0) {
+            if (pl.shieldChargesRemaining && pl.shieldChargesRemaining > 0) {
+              useShield(pl, "pushBack");
+            } else {
+              pl.position = pl.position - 1;
+            }
+          }
+        });
+        log(`⬅ 치트: ${player.name}을(를) 제외한 다른 플레이어가 1칸씩 뒤로 밀렸습니다.`);
+        renderTokens();
+        updateStatusText();
+      }
+
+      if (cheats.randomPlusMinus3) {
+        const sign = Math.random() < 0.5 ? -1 : 1;
+        const delta = 3 * sign;
+
+        if (delta < 0 && player.shieldChargesRemaining && player.shieldChargesRemaining > 0) {
+          useShield(player, "minus3");
+        } else {
+          const before = player.position;
+          let after = before + delta;
+          if (after < 0) after = 0;
+          if (after > finishPos) after = finishPos;
+          log(`🎲 치트: ${delta > 0 ? "+3" : "-3"}칸 이동으로 ${before} → ${after}`);
+          player.position = after;
+          renderTokens();
+          updateStatusText();
+        }
+      }
+
+      if (cheats.warpMiddle) {
+        const middle = Math.floor(finishPos / 2);
+        if (player.position !== middle) {
+          log(`✨ 치트: ${player.name}이(가) 중앙 칸(${middle})으로 워프했습니다.`);
+          player.position = middle;
+          renderTokens();
+          updateStatusText();
+        } else {
+          log("✨ 치트: 이미 중앙 칸에 있어 효과가 없습니다.");
+        }
+      }
+
+      if (cheats.warpLeadSkip) {
+        let leader = players[0];
+        players.forEach((pl) => {
+          if (pl.position > leader.position) leader = pl;
+        });
+
+        if (leader === player) {
+          log("🔥 치트: 이미 선두라 선두 워프 효과가 없습니다.");
+        } else {
+          const target = leader.position;
+          log(`🔥 치트: ${player.name}이(가) 선두 위치(${target})로 워프합니다. (다음 자기 차례는 자동 스킵)`);
+          player.position = target;
+          renderTokens();
+          updateStatusText();
+          player.skipTurnsRemaining = (player.skipTurnsRemaining || 0) + 1;
+        }
+      }
+
+      if (player.position === finishPos) {
+        playSound("win");
+        log(`🎉 ${player.name}이(가) 치트 효과로 도착 지점에 도달했습니다! 게임 종료!`);
+        diceInfoEl.textContent = `${player.name} 승리! 게임이 끝났습니다.`;
+        gameOver = true;
+        rollBtn.disabled = true;
+        skipBtn.disabled = true;
+        isRollingDice = false;
+        isAnimating = false;
+        return;
+      }
+
+      if (goldenKeyCells.includes(player.position)) {
+        grantRandomCheatFromGoldenKey(player);
+      }
+
+      if (cheats.extraTurn) {
+        log(`🔁 치트 효과로 ${player.name}이(가) 한 번 더 턴을 얻었습니다.`);
+        isRollingDice = false;
+        rollBtn.disabled = false;
+        skipBtn.disabled = false;
+        updateStatusText();
+        return;
+      }
+
+      currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
+      refreshUI();
+      isRollingDice = false;
+      rollBtn.disabled = false;
+      skipBtn.disabled = false;
+    }
+
+    function performMove(roll, cheats) {
+      if (players.length === 0) return;
+      const player = players[currentPlayerIndex];
+      const startPos = player.position;
+      const { multiplier, label } = getMultiplierInfo(startPos);
+
+      if ((!cheats.triggered || cheats.triggered.length === 0) && multiplier !== 1) {
+        const isBoost = multiplier > 1;
+        const style = isBoost
+          ? { color: "#fed7aa", bg: "#7c2d12" }
+          : { color: "#bfdbfe", bg: "#020617" };
+        const prefix = isBoost ? "x2 배속" : "1/2 배속";
+        const msg = isBoost ? "빠르게 전진합니다!" : "느리게 이동합니다.";
+        const icon = isBoost ? "⚡" : "🐢";
+        showCheatPopup(style, msg, prefix, icon, 2000);
+      }
+
+      let extraFactor = cheats.doubleStep ? 2 : 1;
+      if (cheats.doubleStep) {
+        log("🚀 치트로 이번 이동 거리가 2배가 됩니다.");
+      }
+
+      const isFast = (multiplier > 1) || cheats.doubleStep;
+      player.isFastMoving = isFast;
+
+      const effectiveSteps = Math.floor(roll * multiplier * extraFactor);
+
+      const finishPos = BOARD_SIZE - 1;
+      let targetPos = startPos + effectiveSteps;
+      if (targetPos >= finishPos) targetPos = finishPos;
+      const stepsToMove = targetPos - startPos;
+
+      const baseMsg = `${player.name}이(가) 주사위 ${roll}이(가) 나왔습니다. (${label})`;
+      const moveMsg =
+        stepsToMove <= 0
+          ? `배수 적용 후 이동 칸: 0칸 (제자리)`
+          : `배수 적용 후 이동 칸: ${stepsToMove}칸 → ${startPos} → ${targetPos}`;
+      diceInfoEl.textContent = `${baseMsg} / ${moveMsg}`;
+      log(`${baseMsg} ${moveMsg}`);
+
+      if (stepsToMove <= 0) {
+        player.isFastMoving = false;
+        renderTokens();
+        afterMoveCheck(player, cheats);
+      } else {
+        animateMove(player, stepsToMove, () => {
+          player.isFastMoving = false;
+          renderTokens();
+          afterMoveCheck(player, cheats);
+        });
+      }
+    }
+
+    function refreshUI() {
+      renderTokens();
+      updateStatusText();
+    }
+
+    function resetTopPanel() {
+      logEl.innerHTML = "";
+      diceVisualEl.textContent = "-";
+      resetDiceStyle();
+      diceInfoEl.textContent = "🎲 주사위를 굴려 게임을 시작해 보세요.";
+      secretCodeInput.value = "";
+      cheatTextEl.textContent = "치트: 없음";
+      cheatTextEl.style.color = "#4b5563";
+      rollBtn.disabled = false;
+      skipBtn.disabled = false;
+    }
+
+    // 🎲 주사위 굴리기
+    function startRoll() {
+      if (gameOver || isAnimating || isRollingDice || players.length === 0) return;
+
+      const player = players[currentPlayerIndex];
+      if (player.skipTurnsRemaining && player.skipTurnsRemaining > 0) {
+        player.skipTurnsRemaining--;
+        log(`⏭️ 치트 효과로 ${player.name}의 턴이 자동으로 스킵됩니다.`);
+        currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
+        refreshUI();
+        return;
+      }
+
+      const cheats = getCheatsForCurrentRoll();
+      showCheatText(cheats);
+
+      const hasCheat = cheats.triggered && cheats.triggered.length > 0;
+
+      // 치트가 없을 때 → 말 색깔 기반 연한 네온
+      if (!hasCheat && player) {
+        resetDiceStyle();
+        setDiceNeonForColor(player.color);
+      }
+
+      if (!hasCheat) {
+        playSound("dice");
+      }
+
+      isRollingDice = true;
+      rollBtn.disabled = true;
+      skipBtn.disabled = true;
+
+      diceVisualEl.classList.remove("rolling");
+      void diceVisualEl.offsetWidth;
+      diceVisualEl.classList.add("rolling");
+
+      let ticks = 0;
+      const maxTicks = 10;
+      const intervalMs = 80;
+
+      const intervalId = setInterval(() => {
+        const tempRoll = Math.floor(Math.random() * 6) + 1;
+        setDiceFace(tempRoll);
+        ticks++;
+        if (ticks >= maxTicks) {
+          clearInterval(intervalId);
+
+          let finalRoll;
+          if (cheats.goldenTen) {
+            finalRoll = 15;
+            log("✨ 치트: 황금 주사위(15)가 적용되었습니다.");
+          } else if (cheats.rerollHigher) {
+            const r1 = Math.floor(Math.random() * 6) + 1;
+            const r2 = Math.floor(Math.random() * 6) + 1;
+            finalRoll = Math.max(r1, r2);
+            log(`🎲 치트: 재굴림 (${r1}, ${r2}) 중 ${finalRoll} 사용.`);
+          } else {
+            finalRoll = Math.floor(Math.random() * 6) + 1;
+          }
+
+          setDiceFace(finalRoll);
+          performMove(finalRoll, cheats);
+
+          secretCodeInput.value = "";
+        }
+      }, intervalMs);
+    }
+
+    function skipTurn() {
+      if (gameOver || isAnimating || isRollingDice || players.length === 0) return;
+
+      const player = players[currentPlayerIndex];
+
+      if (player.skipTurnsRemaining && player.skipTurnsRemaining > 0) {
+        player.skipTurnsRemaining--;
+        log(`⏭️ 치트 효과로 ${player.name}의 턴이 자동으로 스킵됩니다.`);
+      } else {
+        log(`⏭️ ${player.name}이(가) 이번 턴을 건너뜁니다.`);
+      }
+
+      currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
+      renderTokens();
+      updateStatusText();
+    }
+
+    function setupGame() {
+      let sizeVal = parseInt(boardSizeInput.value, 10);
+      if (isNaN(sizeVal) || sizeVal < 6) sizeVal = 30;
+      BOARD_SIZE = Math.max(6, Math.min(sizeVal, 200));
+
+      specialZones = [];
+
+      const x2Cells = parseCellList(x2CellsInput.value, BOARD_SIZE);
+      x2Cells.forEach((n) => {
+        specialZones.push({ start: n, end: n, multiplier: 2, label: "x2 칸" });
+      });
+
+      const halfCells = parseCellList(halfCellsInput.value, BOARD_SIZE);
+      halfCells.forEach((n) => {
+        specialZones.push({ start: n, end: n, multiplier: 0.5, label: "1/2 칸" });
+      });
+
+      resetCells = parseCellList(resetCellsInput.value, BOARD_SIZE);
+      goldenKeyCells = parseCellList(gKeyCellsInput.value, BOARD_SIZE);
+
+      const count = parseInt(playerCountSelect.value, 10);
+      players = [];
+      for (let i = 0; i < count; i++) {
+        players.push({
+          name: `플레이어 ${i + 1}`,
+          position: 0,
+          color: PLAYER_COLORS[i % PLAYER_COLORS.length],
+          shieldChargesRemaining: 0,
+          skipTurnsRemaining: 0,
+          trapImmune: false,
+          storedCheatCode: null,
+          isFastMoving: false
+        });
+      }
+
+      currentPlayerIndex = 0;
+      gameOver = false;
+      isAnimating = false;
+      isRollingDice = false;
+
+      renderBoard();
+      renderTokens();
+      renderPlayersLegend();
+      updateLegendText();
+      updateStatusText();
+      resetTopPanel();
+      applyTheme(themeSelect.value);
+    }
+
+    rollBtn.addEventListener("click", () => {
+      startRoll();
+    });
+
+    skipBtn.addEventListener("click", () => {
+      playSound("click");
+      skipTurn();
+    });
+
+    startBtn.addEventListener("click", () => {
+      playSound("click");
+      setupGame();
+    });
+
+    themeSelect.addEventListener("change", (e) => {
+      applyTheme(e.target.value);
+    });
+
+    if (cellEditButtons && cellEditButtons.length) {
+      cellEditButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          cellEditButtons.forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+          cellEditMode = btn.dataset.mode || "off";
+          playSound("click");
+        });
+      });
+    }
+    // 🔊 / 🔇 효과음 켜기/끄기 토글
+    if (soundToggleBtn) {
+      soundToggleBtn.addEventListener("click", () => {
+        isSoundOn = !isSoundOn;
+        soundToggleBtn.textContent = isSoundOn
+          ? "🔊 효과음 켜짐"
+          : "🔇 효과음 꺼짐";
+        // 켜진 상태로 바뀔 때만 살짝 클릭 소리 내고 싶으면 아래 한 줄 주석 해제
+        // if (isSoundOn) playSound("click");
+      });
+
+      // 처음 로드 시 버튼 텍스트 초기화
+      soundToggleBtn.textContent = "🔊 효과음 켜짐";
+    }
+
+  // 🔽 칸 편집 모드 접기 / 펼치기
+    if (cellEditToggleBtn && cellEditCardEl && cellEditBodyEl) {
+      cellEditToggleBtn.addEventListener("click", () => {
+        const collapsed = cellEditCardEl.classList.toggle("collapsed");
+        if (collapsed) {
+          cellEditToggleBtn.textContent = "칸 편집 열기 ▼";
+        } else {
+          cellEditToggleBtn.textContent = "칸 편집 접기 ▲";
+        }
+        playSound("click");
+      });
+    }
+
+    applyTheme(themeSelect.value);
+    setupGame();
+  </script>
+</body>
+</html>
