@@ -5002,6 +5002,24 @@ log(msg);
         log(`🛡 치트: ${player.name}이(가) 해로운 효과를 2번까지 막아주는 보호막을 얻었습니다.`);
       }
 
+      if (cheats.randomPlusMinus3) {
+        const sign = Math.random() < 0.5 ? -1 : 1;
+        const delta = 3 * sign;
+
+        if (delta < 0 && player.shieldChargesRemaining && player.shieldChargesRemaining > 0) {
+          useShield(player, "minus3");
+        } else {
+          const before = player.position;
+          let after = before + delta;
+          if (after < 0) after = 0;
+          if (after > finishPos) after = finishPos;
+          log(`🎲 치트: ${delta > 0 ? "+3" : "-3"}칸 이동으로 ${before} → ${after}`);
+          player.position = after;
+          renderTokens();
+          updateStatusText();
+        }
+      }
+
       if (resetCells.includes(player.position)) {
         const trapPos = player.position;
 
@@ -5108,24 +5126,6 @@ log(msg);
         log(`⬅ 치트: ${player.name}을(를) 제외한 다른 플레이어가 1칸씩 뒤로 밀렸습니다.`);
         renderTokens();
         updateStatusText();
-      }
-
-      if (cheats.randomPlusMinus3) {
-        const sign = Math.random() < 0.5 ? -1 : 1;
-        const delta = 3 * sign;
-
-        if (delta < 0 && player.shieldChargesRemaining && player.shieldChargesRemaining > 0) {
-          useShield(player, "minus3");
-        } else {
-          const before = player.position;
-          let after = before + delta;
-          if (after < 0) after = 0;
-          if (after > finishPos) after = finishPos;
-          log(`🎲 치트: ${delta > 0 ? "+3" : "-3"}칸 이동으로 ${before} → ${after}`);
-          player.position = after;
-          renderTokens();
-          updateStatusText();
-        }
       }
 
       if (cheats.warpMiddle) {
