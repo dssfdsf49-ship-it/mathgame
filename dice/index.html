@@ -200,6 +200,20 @@ body.dice-item-select-active .dice-item-select-screen {
   transform: translateY(-1px);
 }
 
+.ai-difficulty-option.locked {
+  cursor: not-allowed;
+  opacity: 0.48;
+  filter: grayscale(0.35);
+}
+
+.ai-difficulty-option.locked:hover {
+  transform: none;
+}
+
+.ai-difficulty-option.locked span::after {
+  content: " 🔒";
+}
+
 .ai-difficulty-option:active {
   transform: translateY(1px);
 }
@@ -2591,6 +2605,10 @@ body.theme-desert .cell.zone-island::after { content: "🏝"; }
           <div class="ai-win-status-card">
             <span class="ai-win-status-title">AI 클리어 기록</span>
             <span class="ai-win-status-row">
+              <span>쉬움 AI</span>
+              <span class="ai-win-status-count" id="easyAiWinCount">0승</span>
+            </span>
+            <span class="ai-win-status-row">
               <span>보통 AI</span>
               <span class="ai-win-status-count" id="normalAiWinCount">0승</span>
             </span>
@@ -2971,6 +2989,7 @@ body.theme-desert .cell.zone-island::after { content: "🏝"; }
     const diceItemOptions = document.querySelectorAll(".dice-item-option");
     const diceItemStartBtn = document.getElementById("diceItemStartBtn");
     const diceItemBackBtn = document.getElementById("diceItemBackBtn");
+    const easyAiWinCountEl = document.getElementById("easyAiWinCount");
     const normalAiWinCountEl = document.getElementById("normalAiWinCount");
     const hardAiWinCountEl = document.getElementById("hardAiWinCount");
     const aiWinResetBtn = document.getElementById("aiWinResetBtn");
@@ -4073,21 +4092,66 @@ log(msg);
       return "쉬움";
     }
 
+    function getAiDifficultyLabelById(difficulty) {
+      if (difficulty === "hard") return "어려움";
+      if (difficulty === "normal") return "보통";
+      return "쉬움";
+    }
+
+    function isAiDifficultyUnlocked(difficulty) {
+      if (difficulty === "easy") return true;
+      if (difficulty === "normal") {
+        return (aiRewardWins.easy || 0) >= 1 ||
+          (aiRewardWins.normal || 0) >= 1 ||
+          (aiRewardWins.hard || 0) >= 1;
+      }
+      if (difficulty === "hard") {
+        return (aiRewardWins.normal || 0) >= 1 ||
+          (aiRewardWins.hard || 0) >= 1;
+      }
+      return false;
+    }
+
+    function getAiDifficultyLockText(difficulty) {
+      if (difficulty === "normal") return "쉬움 AI 1승 필요";
+      if (difficulty === "hard") return "보통 AI 1승 필요";
+      return "사용 가능";
+    }
+
+    function ensureUnlockedAiDifficultySelected() {
+      const selectedInput = document.querySelector("input[name=\"aiDifficulty\"]:checked");
+      if (selectedInput && isAiDifficultyUnlocked(selectedInput.value)) {
+        aiDifficulty = selectedInput.value;
+        return selectedInput.value;
+      }
+
+      const easyInput = document.querySelector("input[name=\"aiDifficulty\"][value=\"easy\"]");
+      if (easyInput) easyInput.checked = true;
+      aiDifficulty = "easy";
+      return "easy";
+    }
+
     function updateAiDifficultyButtons() {
       if (!aiDifficultyInputs || !aiDifficultyInputs.length) return;
+      ensureUnlockedAiDifficultySelected();
       aiDifficultyInputs.forEach((input) => {
         const option = input.closest(".ai-difficulty-option");
+        const unlocked = isAiDifficultyUnlocked(input.value);
+        input.disabled = !unlocked;
         if (option) {
           option.classList.toggle("selected", input.checked);
+          option.classList.toggle("locked", !unlocked);
+          option.title = unlocked ? "" : getAiDifficultyLockText(input.value);
         }
       });
     }
 
     function loadAiRewardWins() {
-      const fallback = { normal: 0, hard: 0 };
+      const fallback = { easy: 0, normal: 0, hard: 0 };
       try {
         const saved = JSON.parse(localStorage.getItem(AI_REWARD_STORAGE_KEY) || "{}");
         return {
+          easy: Math.max(0, parseInt(saved.easy, 10) || 0),
           normal: Math.max(0, parseInt(saved.normal, 10) || 0),
           hard: Math.max(0, parseInt(saved.hard, 10) || 0)
         };
@@ -4106,9 +4170,10 @@ log(msg);
       const shouldReset = window.confirm("AI 클리어 기록을 모두 초기화할까요? 해금된 주사위도 다시 잠깁니다.");
       if (!shouldReset) return;
 
-      aiRewardWins = { normal: 0, hard: 0 };
+      aiRewardWins = { easy: 0, normal: 0, hard: 0 };
       selectedDiceItem = "basic";
       saveAiRewardWins();
+      updateAiDifficultyButtons();
       updateDiceItemButtons();
       playSound("click");
     }
@@ -4210,6 +4275,9 @@ log(msg);
     }
 
     function updateAiWinStatus() {
+      if (easyAiWinCountEl) {
+        easyAiWinCountEl.textContent = `${aiRewardWins.easy || 0}승`;
+      }
       if (normalAiWinCountEl) {
         normalAiWinCountEl.textContent = `${aiRewardWins.normal || 0}승`;
       }
@@ -4240,8 +4308,8 @@ log(msg);
 
     function showDiceItemSelectScreen() {
       gameMode = "single-ai";
-      const selectedDifficulty = document.querySelector("input[name=\"aiDifficulty\"]:checked");
-      aiDifficulty = selectedDifficulty ? selectedDifficulty.value : "easy";
+      updateAiDifficultyButtons();
+      aiDifficulty = ensureUnlockedAiDifficultySelected();
       selectedDiceItem = "basic";
       updateDiceItemButtons();
       document.body.classList.add("mode-select-active", "dice-item-select-active");
@@ -4250,8 +4318,7 @@ log(msg);
 
     function startSingleAiGame() {
       gameMode = "single-ai";
-      const selectedDifficulty = document.querySelector("input[name=\"aiDifficulty\"]:checked");
-      aiDifficulty = selectedDifficulty ? selectedDifficulty.value : "easy";
+      aiDifficulty = ensureUnlockedAiDifficultySelected();
       if (!isDiceItemUnlocked(selectedDiceItem)) {
         selectedDiceItem = "basic";
         updateDiceItemButtons();
@@ -4558,15 +4625,38 @@ log(msg);
 
     function recordAiClearReward(winner) {
       if (gameMode !== "single-ai" || !winner || winner.isAi) return;
-      if (aiDifficulty !== "normal" && aiDifficulty !== "hard") return;
+      if (aiDifficulty !== "easy" && aiDifficulty !== "normal" && aiDifficulty !== "hard") return;
 
       const before = aiRewardWins[aiDifficulty] || 0;
       const after = before + 1;
       aiRewardWins[aiDifficulty] = after;
       saveAiRewardWins();
+      updateAiDifficultyButtons();
       updateDiceItemButtons();
 
       log(`🏆 ${getAiDifficultyLabel()} AI 클리어 ${after}승 기록!`);
+
+      if (aiDifficulty === "easy" && before < 1 && after >= 1) {
+        log("🔓 보통 AI 난이도가 해금되었습니다.");
+        showCheatPopup(
+          { color: "#1d4ed8", bg: "#dbeafe" },
+          "보통 AI 난이도가 해금되었습니다.",
+          "난이도 해금",
+          "🔓",
+          2400
+        );
+      }
+
+      if (aiDifficulty === "normal" && before < 1 && after >= 1) {
+        log("🔓 어려움 AI 난이도가 해금되었습니다.");
+        showCheatPopup(
+          { color: "#be123c", bg: "#ffe4e6" },
+          "어려움 AI 난이도가 해금되었습니다.",
+          "난이도 해금",
+          "🔓",
+          2400
+        );
+      }
 
       Object.keys(DICE_ITEM_UNLOCKS).forEach((itemId) => {
         const unlock = DICE_ITEM_UNLOCKS[itemId];
@@ -5268,6 +5358,11 @@ log(msg);
     if (aiDifficultyInputs && aiDifficultyInputs.length) {
       aiDifficultyInputs.forEach((input) => {
         input.addEventListener("change", (e) => {
+          if (!isAiDifficultyUnlocked(e.target.value)) {
+            ensureUnlockedAiDifficultySelected();
+            updateAiDifficultyButtons();
+            return;
+          }
           aiDifficulty = e.target.value;
           updateAiDifficultyButtons();
           playSound("click");
