@@ -3557,6 +3557,31 @@ body.theme-desert .cell.zone-island::after { content: "🏝"; }
       return Array.from(new Set(result)).sort((a, b) => a - b);
     }
 
+    function activateGoldTestForPlayer(player) {
+      if (!player || goldenKeyCells.length === 0) return;
+
+      aiRewardWins.goldenHunter = true;
+      saveAiRewardWins();
+      updateDiceItemButtons();
+
+      player.diceItem = "golden-hunter";
+      player.diceItemChargesRemaining = getDiceItemInitialCharges("golden-hunter");
+      player.diceItemReserved = false;
+
+      const finishPos = BOARD_SIZE - 1;
+      const targets = goldenKeyCells
+        .filter((pos) => pos > 0 && pos < finishPos)
+        .sort((a, b) => a - b);
+      if (targets.length === 0) return;
+
+      const nextTarget = targets.find((pos) => pos > player.position) || targets[0];
+      player.position = Math.max(0, nextTarget - 1);
+      renderTokens();
+      updateStatusText();
+      updateDiceItemStatus();
+      log(`goldtest: ${player.name}을(를) 황금열쇠 직전 칸(${player.position})으로 이동했습니다.`);
+    }
+
     function getCheatsForCurrentRoll() {
       const cheats = {
         goldenTen: false,
@@ -3572,6 +3597,8 @@ body.theme-desert .cell.zone-island::after { content: "🏝"; }
         randomPlusMinus3: false,
         warpMiddle: false,
         positionStorm: false,
+        goldTest: false,
+        forcedRoll: null,
         triggered: []
       };
 
@@ -3594,6 +3621,14 @@ body.theme-desert .cell.zone-island::after { content: "🏝"; }
       let hasUnknown = false;
 
       codes.forEach((code) => {
+        const normalizedCode = code.toLowerCase();
+        if (normalizedCode === "goldtest") {
+          cheats.goldTest = true;
+          cheats.forcedRoll = 1;
+          activateGoldTestForPlayer(currentPlayer);
+          return;
+        }
+
         const def = CHEAT_DEFS.find(d => d.code === code);
         if (!def) {
           hasUnknown = true;
@@ -3721,6 +3756,9 @@ if (cheats.triggered.length > 0) {
           .map(d => `${d.name} 발동`)
           .join(" / ");
         cheatTextEl.textContent = "치트: " + firedText;
+      } else if (cheats.goldTest) {
+        firedText = "goldtest 발동";
+        cheatTextEl.textContent = "치트: " + firedText;
       } else {
         cheatTextEl.textContent = "치트: 없음";
       }
@@ -3740,7 +3778,8 @@ if (cheats.triggered.length > 0) {
         rerollHigher:    { color: "#10b981", bg: "#ecfdf5", border: "#6ee7b7" },
         randomPlusMinus3:{ color: "#ef4444", bg: "#fef2f2", border: "#fecaca" },
         warpMiddle:      { color: "#8b5cf6", bg: "#f5f3ff", border: "#ddd6fe" },
-        positionStorm:   { color: "#0ea5e9", bg: "#f0f9ff", border: "#7dd3fc" }
+        positionStorm:   { color: "#0ea5e9", bg: "#f0f9ff", border: "#7dd3fc" },
+        goldTest:        { color: "#d97706", bg: "#fffbeb", border: "#facc15" }
       };
 
       const priority = [
@@ -3756,7 +3795,8 @@ if (cheats.triggered.length > 0) {
         "rerollHigher",
         "randomPlusMinus3",
         "warpMiddle",
-        "positionStorm"
+        "positionStorm",
+        "goldTest"
       ];
 
       let mainKey = null;
@@ -5434,6 +5474,11 @@ log(msg);
         label = "1/2 칸 무시";
       }
 
+      if (cheats.goldTest) {
+        multiplier = 1;
+        label = "goldtest";
+      }
+
       if ((!cheats.triggered || cheats.triggered.length === 0) && multiplier !== 1) {
         const isBoost = multiplier > 1;
         const style = isBoost
@@ -5551,7 +5596,10 @@ log(msg);
           clearInterval(intervalId);
 
           let finalRoll;
-          if (cheats.goldenTen) {
+          if (cheats.goldTest && cheats.forcedRoll) {
+            finalRoll = cheats.forcedRoll;
+            log(`goldtest: 테스트 주사위 ${finalRoll}이 적용되었습니다.`);
+          } else if (cheats.goldenTen) {
             finalRoll = 15;
             log("✨ 치트: 황금 주사위(15)가 적용되었습니다.");
           } else if (cheats.rerollHigher) {
