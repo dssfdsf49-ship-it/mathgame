@@ -2634,7 +2634,7 @@ body.theme-desert .cell.zone-island::after { content: "🏝"; }
         <h2 class="dice-item-section-title">보통 AI 보상</h2>
         <div class="dice-item-grid normal-reward-grid">
           <button type="button" class="dice-item-option" data-item="weak-dash" disabled>
-            <span class="dice-item-icon">💨</span>
+            <span class="dice-item-icon">⚡</span>
             <span class="dice-item-name">약한 질주 주사위</span>
             <span class="dice-item-desc">주사위 값 +1을 1회 사용</span>
             <span class="dice-item-lock">보통 AI 3승 필요</span>
@@ -4229,7 +4229,7 @@ log(msg);
 
     function getDiceItemIconById(itemId) {
       if (itemId === "weak-stable") return "🧭";
-      if (itemId === "weak-dash") return "💨";
+      if (itemId === "weak-dash") return "⚡";
       if (itemId === "weak-shield") return "🛡️";
       if (itemId === "shield") return "🛡️";
       if (itemId === "dash") return "⚡";
@@ -4602,12 +4602,12 @@ log(msg);
         const boosted = roll + 1;
         player.diceItemReserved = false;
         const remaining = consumeDiceItemCharge(player);
-        log(`💨 약한 질주 주사위: ${roll} → ${boosted}. 남은 사용 ${remaining}회`);
+        log(`⚡ 약한 질주 주사위: ${roll} → ${boosted}. 남은 사용 ${remaining}회`);
         showCheatPopup(
           { color: "#0369a1", bg: "#e0f2fe" },
           `주사위 ${roll} +1 → ${boosted}칸 이동`,
           "약한 질주",
-          "💨",
+          "⚡",
           1800
         );
         return {
