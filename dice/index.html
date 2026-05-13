@@ -54,6 +54,11 @@ body.dice-item-select-active .dice-item-select-screen {
   display: block;
 }
 
+body.single-ai-active .player-count-setting,
+body.single-ai-active .board-size-setting {
+  display: none;
+}
+
 .mode-select-screen {
   max-width: 760px;
   margin: 8vh auto 0;
@@ -1862,6 +1867,10 @@ body.theme-neon .players-legend .player-pill.current-turn {
       flex-direction: column;
       gap: 6px;
     }
+
+    .cell-edit-card[hidden] {
+      display: none;
+    }
     /* 🔽 칸 편집 모드 접기/펼치기 버튼 */
     .cell-edit-toggle {
       margin-left: 8px;             /* 제목 오른쪽에 살짝만 띄우기 */
@@ -2688,7 +2697,7 @@ body.theme-desert .cell.zone-island::after { content: "🏝"; }
           말 위치: <span id="positions"></span>
         </div>
         <div class="config">
-          <label>
+          <label class="player-count-setting">
             인원 수:
             <select id="playerCount">
               <option value="1">1명</option>
@@ -2699,7 +2708,7 @@ body.theme-desert .cell.zone-island::after { content: "🏝"; }
               <option value="6">6명</option>
             </select>
           </label>
-           <label>
+           <label class="board-size-setting">
             전체 칸수:
             <input type="number" id="boardSizeInput" min="6" max="200" value="30" />
           </label>
@@ -2965,6 +2974,33 @@ body.theme-desert .cell.zone-island::after { content: "🏝"; }
       revenge: { difficulty: "hard", wins: 10 }
     };
 
+    const AI_CHALLENGE_MAPS = {
+      easy: {
+        boardSize: 25,
+        x2: "5, 14, 21",
+        half: "9",
+        trap: "12",
+        gKey: "7, 18",
+        island: "16"
+      },
+      normal: {
+        boardSize: 30,
+        x2: "6, 13, 22",
+        half: "8, 17",
+        trap: "10, 20",
+        gKey: "5, 15, 24",
+        island: "12, 26"
+      },
+      hard: {
+        boardSize: 35,
+        x2: "7, 18, 29",
+        half: "5, 14, 23",
+        trap: "9, 21, 31",
+        gKey: "11, 19, 27",
+        island: "16, 25"
+      }
+    };
+
     const AI_REWARD_STORAGE_KEY = "diceBoardAiRewardWins";
 
     let players = [];
@@ -2979,6 +3015,7 @@ body.theme-desert .cell.zone-island::after { content: "🏝"; }
     let aiTurnTimerId = null;
     let rewardUnlockQueue = [];
     let isRewardUnlockPopupOpen = false;
+    let customBoardSettings = null;
 
     const cellTokenEls = [];
 
@@ -3815,7 +3852,8 @@ if (cheats.triggered.length > 0) {
       updateLegendText();
     }
 
-        function handleCellClick(index) {
+    function handleCellClick(index) {
+      if (gameMode === "single-ai") return;
       // 편집 모드가 아니면 아무 일도 하지 않음
       if (cellEditMode === "off") return;
       // 출발(0), 도착(BOARD_SIZE-1)은 편집 불가
@@ -4306,8 +4344,71 @@ log(msg);
       });
     }
 
+    function getCurrentBoardSettings() {
+      return {
+        boardSize: boardSizeInput ? boardSizeInput.value : "30",
+        x2: x2CellsInput ? x2CellsInput.value : "",
+        half: halfCellsInput ? halfCellsInput.value : "",
+        trap: resetCellsInput ? resetCellsInput.value : "",
+        gKey: gKeyCellsInput ? gKeyCellsInput.value : "",
+        island: islandCellsInput ? islandCellsInput.value : ""
+      };
+    }
+
+    function applyBoardSettings(settings) {
+      if (!settings) return;
+      if (boardSizeInput) boardSizeInput.value = settings.boardSize;
+      if (x2CellsInput) x2CellsInput.value = settings.x2;
+      if (halfCellsInput) halfCellsInput.value = settings.half;
+      if (resetCellsInput) resetCellsInput.value = settings.trap;
+      if (gKeyCellsInput) gKeyCellsInput.value = settings.gKey;
+      if (islandCellsInput) islandCellsInput.value = settings.island;
+    }
+
+    function captureCustomBoardSettings() {
+      if (gameMode === "single-ai") return;
+      customBoardSettings = getCurrentBoardSettings();
+    }
+
+    function restoreCustomBoardSettings() {
+      if (!customBoardSettings) return;
+      applyBoardSettings(customBoardSettings);
+    }
+
+    function getAiChallengeMap(difficulty = aiDifficulty) {
+      return AI_CHALLENGE_MAPS[difficulty] || AI_CHALLENGE_MAPS.easy;
+    }
+
+    function applyAiChallengeMapSettings() {
+      const map = getAiChallengeMap();
+      applyBoardSettings(map);
+    }
+
+    function setCellEditModeOff() {
+      cellEditMode = "off";
+      if (!cellEditButtons || !cellEditButtons.length) return;
+      cellEditButtons.forEach((button) => {
+        button.classList.toggle("active", button.dataset.mode === "off");
+      });
+    }
+
+    function updateModeEditingControls() {
+      const isSingleAi = gameMode === "single-ai";
+      document.body.classList.toggle("single-ai-active", isSingleAi);
+      if (playerCountSelect) playerCountSelect.disabled = isSingleAi;
+      if (boardSizeInput) boardSizeInput.disabled = isSingleAi;
+      [x2CellsInput, halfCellsInput, resetCellsInput, gKeyCellsInput, islandCellsInput].forEach((input) => {
+        if (input) input.disabled = isSingleAi;
+      });
+      if (cellEditCardEl) cellEditCardEl.hidden = isSingleAi;
+      if (isSingleAi) setCellEditModeOff();
+      if (startBtn) startBtn.textContent = isSingleAi ? "챌린지 재시작" : "게임 시작 / 리셋";
+    }
+
     function showDiceItemSelectScreen() {
+      captureCustomBoardSettings();
       gameMode = "single-ai";
+      updateModeEditingControls();
       updateAiDifficultyButtons();
       aiDifficulty = ensureUnlockedAiDifficultySelected();
       selectedDiceItem = "basic";
@@ -4324,11 +4425,12 @@ log(msg);
         updateDiceItemButtons();
       }
       playerCountSelect.value = "2";
-      playerCountSelect.disabled = true;
+      applyAiChallengeMapSettings();
+      updateModeEditingControls();
       document.body.classList.remove("mode-select-active", "dice-item-select-active");
       if (modeSelectMessageEl) modeSelectMessageEl.textContent = "";
       setupGame();
-      log(`🤖 싱글 AI 모드로 시작했습니다. 난이도: ${getAiDifficultyLabel()}. 선택 주사위: ${getDiceItemLabel()}. AI는 자기 차례에 자동으로 주사위를 굴립니다.`);
+      log(`🤖 싱글 AI 챌린지로 시작했습니다. 난이도: ${getAiDifficultyLabel()}. 공식 ${BOARD_SIZE}칸 맵이 적용됩니다. 선택 주사위: ${getDiceItemLabel()}. AI는 자기 차례에 자동으로 주사위를 굴립니다.`);
     }
 
     function getDiceItemInitialCharges(itemId) {
@@ -5222,6 +5324,12 @@ log(msg);
 
     function setupGame() {
       clearAiTurnTimer();
+      if (gameMode === "single-ai") {
+        aiDifficulty = ensureUnlockedAiDifficultySelected();
+        playerCountSelect.value = "2";
+        applyAiChallengeMapSettings();
+      }
+      updateModeEditingControls();
       let sizeVal = parseInt(boardSizeInput.value, 10);
       if (isNaN(sizeVal) || sizeVal < 6) sizeVal = 30;
       BOARD_SIZE = Math.max(6, Math.min(sizeVal, 200));
@@ -5301,7 +5409,8 @@ log(msg);
     if (coopModeBtn) {
       coopModeBtn.addEventListener("click", () => {
         gameMode = "coop";
-        playerCountSelect.disabled = false;
+        restoreCustomBoardSettings();
+        updateModeEditingControls();
         selectedDiceItem = "basic";
         document.body.classList.remove("mode-select-active", "dice-item-select-active");
         if (modeSelectMessageEl) modeSelectMessageEl.textContent = "";
@@ -5409,6 +5518,7 @@ log(msg);
     if (cellEditButtons && cellEditButtons.length) {
       cellEditButtons.forEach((btn) => {
         btn.addEventListener("click", () => {
+          if (gameMode === "single-ai") return;
           cellEditButtons.forEach((b) => b.classList.remove("active"));
           btn.classList.add("active");
           cellEditMode = btn.dataset.mode || "off";
