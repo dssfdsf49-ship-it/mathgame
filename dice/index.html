@@ -480,6 +480,132 @@ body.single-ai-active .board-size-setting {
   transform: translateY(1px);
 }
 
+.achievement-catalog-panel {
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid #dbeafe;
+  background: #f8fafc;
+  color: #111827;
+}
+
+.achievement-catalog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.achievement-catalog-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 900;
+  color: #1e3a8a;
+}
+
+.achievement-catalog-count {
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #e0f2fe;
+  color: #0369a1;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.achievement-catalog-toggle {
+  min-height: 30px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 1px solid #bfdbfe;
+  background: #ffffff;
+  color: #1d4ed8;
+  font-size: 11px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.achievement-catalog-panel.collapsed .achievement-catalog-body {
+  display: none;
+}
+
+.achievement-catalog-body {
+  margin-top: 10px;
+}
+
+.achievement-catalog-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.achievement-entry {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+  min-height: 60px;
+  padding: 9px 10px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+}
+
+.achievement-entry.done {
+  border-color: #86efac;
+  background: #f0fdf4;
+}
+
+.achievement-entry.locked {
+  opacity: 0.78;
+}
+
+.achievement-entry-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #eef2ff;
+  font-size: 20px;
+}
+
+.achievement-entry.done .achievement-entry-icon {
+  background: #dcfce7;
+}
+
+.achievement-entry-title {
+  display: block;
+  font-size: 12px;
+  font-weight: 900;
+  color: #111827;
+}
+
+.achievement-entry-desc {
+  display: block;
+  margin-top: 2px;
+  font-size: 10px;
+  line-height: 1.35;
+  color: #6b7280;
+}
+
+.achievement-entry-progress {
+  justify-self: end;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #f3f4f6;
+  color: #4b5563;
+  font-size: 10px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.achievement-entry.done .achievement-entry-progress {
+  background: #22c55e;
+  color: #ffffff;
+}
+
 .dice-item-actions {
   display: flex;
   justify-content: center;
@@ -522,6 +648,10 @@ body.single-ai-active .board-size-setting {
   .dice-item-grid.basic-reward-grid,
   .dice-item-grid.normal-reward-grid,
   .dice-item-grid.hard-reward-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .achievement-catalog-list {
     grid-template-columns: 1fr;
   }
 
@@ -2436,14 +2566,18 @@ body.theme-space::before {
 body.theme-space .cell-edit-card,
 body.theme-space .cell-edit-card *,
 body.theme-space .golden-key-catalog-panel,
-body.theme-space .golden-key-catalog-panel * {
+body.theme-space .golden-key-catalog-panel *,
+body.theme-space .achievement-catalog-panel,
+body.theme-space .achievement-catalog-panel * {
   color: #111827;
 }
 
 body.theme-neon .cell-edit-card,
 body.theme-neon .cell-edit-card *,
 body.theme-neon .golden-key-catalog-panel,
-body.theme-neon .golden-key-catalog-panel * {
+body.theme-neon .golden-key-catalog-panel *,
+body.theme-neon .achievement-catalog-panel,
+body.theme-neon .achievement-catalog-panel * {
   color: #111827;
 }
 
@@ -2732,6 +2866,24 @@ body.theme-desert .cell.zone-island::after { content: "🏝"; }
             </span>
             <button type="button" class="ai-win-reset-btn" id="aiWinResetBtn">클리어 기록 초기화</button>
           </div>
+        </div>
+      </section>
+
+      <section class="achievement-catalog-panel collapsed" id="achievementCatalogPanel">
+        <div class="achievement-catalog-header">
+          <div class="achievement-catalog-title">
+            <span>🏅 업적 도감</span>
+            <span class="achievement-catalog-count" id="achievementCatalogCount">0/0</span>
+          </div>
+          <button type="button"
+                  class="achievement-catalog-toggle"
+                  id="achievementCatalogToggleBtn"
+                  aria-expanded="false">
+            업적 도감 열기 ▼
+          </button>
+        </div>
+        <div class="achievement-catalog-body" id="achievementCatalogBody">
+          <div class="achievement-catalog-list" id="achievementCatalogList"></div>
         </div>
       </section>
 
@@ -3181,6 +3333,10 @@ body.theme-desert .cell.zone-island::after { content: "🏝"; }
     const hardBasicAiWinCountEl = document.getElementById("hardBasicAiWinCount");
     const nightmareAiWinCountEl = document.getElementById("nightmareAiWinCount");
     const aiWinResetBtn = document.getElementById("aiWinResetBtn");
+    const achievementCatalogPanelEl = document.getElementById("achievementCatalogPanel");
+    const achievementCatalogToggleBtn = document.getElementById("achievementCatalogToggleBtn");
+    const achievementCatalogListEl = document.getElementById("achievementCatalogList");
+    const achievementCatalogCountEl = document.getElementById("achievementCatalogCount");
     const modeSelectMessageEl = document.getElementById("modeSelectMessage");
     const boardEl = document.getElementById("board");
     const gameContainerEl = document.querySelector(".game-container");
@@ -4540,6 +4696,107 @@ log(msg);
       return `${label} ${unlock.wins}승 보상 · 다음 싱글 AI 모드부터 선택 가능`;
     }
 
+    function getAchievementProgress(current, target) {
+      return `${Math.min(Math.max(current || 0, 0), target)}/${target}`;
+    }
+
+    function createDiceRewardAchievement(itemId) {
+      const unlock = DICE_ITEM_UNLOCKS[itemId];
+      const difficulty = unlock && unlock.difficulty;
+      const wins = unlock && unlock.wins ? unlock.wins : 0;
+      return {
+        id: `dice-${itemId}`,
+        icon: getDiceItemIconById(itemId),
+        title: getDiceItemLabelById(itemId),
+        desc: `${getAiDifficultyLabelById(difficulty)} AI ${wins}승`,
+        done: isDiceItemUnlocked(itemId),
+        progress: getAchievementProgress(aiRewardWins[difficulty], wins)
+      };
+    }
+
+    function getAchievementCatalogDefs() {
+      return [
+        {
+          id: "unlock-normal-ai",
+          icon: "🔓",
+          title: "보통 AI 해금",
+          desc: "쉬움 AI 1승",
+          done: isAiDifficultyUnlocked("normal"),
+          progress: getAchievementProgress(aiRewardWins.easy, 1)
+        },
+        {
+          id: "unlock-hard-ai",
+          icon: "🔓",
+          title: "어려움 AI 해금",
+          desc: "보통 AI 1승",
+          done: isAiDifficultyUnlocked("hard"),
+          progress: getAchievementProgress(aiRewardWins.normal, 1)
+        },
+        {
+          id: "unlock-nightmare-ai",
+          icon: "🌑",
+          title: "악몽 AI 해금",
+          desc: `어려움 AI 기본 주사위 ${NIGHTMARE_UNLOCK_BASIC_HARD_CLEARS}승`,
+          done: isAiDifficultyUnlocked("nightmare"),
+          progress: getAchievementProgress(aiRewardWins.hardBasic, NIGHTMARE_UNLOCK_BASIC_HARD_CLEARS)
+        },
+        createDiceRewardAchievement("weak-dash"),
+        createDiceRewardAchievement("weak-shield"),
+        createDiceRewardAchievement("dash"),
+        createDiceRewardAchievement("shield"),
+        createDiceRewardAchievement("reroll"),
+        createDiceRewardAchievement("revenge"),
+        {
+          id: "golden-hunter",
+          icon: getDiceItemIconById("golden-hunter"),
+          title: getDiceItemLabelById("golden-hunter"),
+          desc: "한 판에서 황금열쇠 3개 이상 획득 후 승리",
+          done: !!aiRewardWins.goldenHunter,
+          progress: aiRewardWins.goldenHunter ? "완료" : "미달성"
+        }
+      ];
+    }
+
+    function renderAchievementCatalog() {
+      if (!achievementCatalogListEl) return;
+
+      const achievements = getAchievementCatalogDefs();
+      const completedCount = achievements.filter((achievement) => achievement.done).length;
+      achievementCatalogListEl.innerHTML = "";
+
+      achievements.forEach((achievement) => {
+        const entry = document.createElement("div");
+        entry.className = `achievement-entry ${achievement.done ? "done" : "locked"}`;
+
+        const icon = document.createElement("span");
+        icon.className = "achievement-entry-icon";
+        icon.textContent = achievement.icon;
+
+        const text = document.createElement("span");
+        const title = document.createElement("span");
+        title.className = "achievement-entry-title";
+        title.textContent = achievement.title;
+        const desc = document.createElement("span");
+        desc.className = "achievement-entry-desc";
+        desc.textContent = achievement.desc;
+        text.appendChild(title);
+        text.appendChild(desc);
+
+        const progress = document.createElement("span");
+        progress.className = "achievement-entry-progress";
+        progress.textContent = achievement.progress;
+
+        entry.appendChild(icon);
+        entry.appendChild(text);
+        entry.appendChild(progress);
+        achievementCatalogListEl.appendChild(entry);
+      });
+
+      if (achievementCatalogCountEl) {
+        achievementCatalogCountEl.textContent = `${completedCount}/${achievements.length}`;
+      }
+    }
+
     function showNextRewardUnlockPopup() {
       if (isRewardUnlockPopupOpen || rewardUnlockQueue.length === 0) return;
       const itemId = rewardUnlockQueue.shift();
@@ -4593,6 +4850,7 @@ log(msg);
       if (nightmareAiWinCountEl) {
         nightmareAiWinCountEl.textContent = `${aiRewardWins.nightmare || 0}승`;
       }
+      renderAchievementCatalog();
     }
 
     function updateDiceItemButtons() {
@@ -5898,7 +6156,19 @@ log(msg);
       });
     }
 
+    if (achievementCatalogToggleBtn && achievementCatalogPanelEl) {
+      achievementCatalogToggleBtn.addEventListener("click", () => {
+        const collapsed = achievementCatalogPanelEl.classList.toggle("collapsed");
+        achievementCatalogToggleBtn.textContent = collapsed
+          ? "업적 도감 열기 ▼"
+          : "업적 도감 접기 ▲";
+        achievementCatalogToggleBtn.setAttribute("aria-expanded", String(!collapsed));
+        playSound("click");
+      });
+    }
+
     renderGoldenKeyCatalog();
+    renderAchievementCatalog();
     updateAiDifficultyButtons();
     updateDiceItemButtons();
     applyTheme(themeSelect.value);
