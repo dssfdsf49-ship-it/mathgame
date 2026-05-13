@@ -3094,10 +3094,10 @@ body.theme-desert .cell.zone-island::after { content: "🏝"; }
       { code: "9999", name: "추가 턴", desc: "이동 후 한 번 더 턴" },
       { code: "1111", name: "선두 바로 뒤 워프", desc: "선두 바로 뒤 칸으로 이동" },
       { code: "2222", name: "선두와 교환", desc: "선두와 위치 바꾸기" },
-      { code: "3333", name: "다른 사람 -1칸", desc: "나 빼고 모두 1칸 뒤로" },
+      { code: "3333", name: "다른 사람 -2칸", desc: "나 빼고 모두 2칸 뒤로" },
       { code: "5555", name: "재굴림(큰 수)", desc: "두 번 굴려 더 큰 수 사용" },
       { code: "6666", name: "선두 워프+턴 스킵", desc: "선두 위치로 이동, 다음 자기 턴 스킵" },
-      { code: "7777", name: "±3 랜덤", desc: "+3 또는 -3 랜덤 이동" },
+      { code: "7777", name: "+3~+6 랜덤", desc: "+3~+6칸 랜덤 이동" },
       { code: "8888", name: "중앙 워프", desc: "보드 중앙으로 이동" },
       { code: "1212", name: "자리 폭풍", desc: "모든 플레이어의 위치를 무작위로 섞기" }
     ];
@@ -3594,7 +3594,7 @@ body.theme-desert .cell.zone-island::after { content: "🏝"; }
         pushOthersBack: false,
         shield2turn: false,
         rerollHigher: false,
-        randomPlusMinus3: false,
+        randomPlus3To6: false,
         warpMiddle: false,
         positionStorm: false,
         goldTest: false,
@@ -3647,7 +3647,7 @@ body.theme-desert .cell.zone-island::after { content: "🏝"; }
         else if (code === "3333") cheats.pushOthersBack = true;
         else if (code === "4444") cheats.shield2turn = true;
         else if (code === "5555") cheats.rerollHigher = true;
-        else if (code === "7777") cheats.randomPlusMinus3 = true;
+        else if (code === "7777") cheats.randomPlus3To6 = true;
         else if (code === "8888") cheats.warpMiddle = true;
         else if (code === "1212") cheats.positionStorm = true;
       });
@@ -3776,7 +3776,7 @@ if (cheats.triggered.length > 0) {
         pushOthersBack:  { color: "#f97316", bg: "#fff7ed", border: "#fed7aa" },
         shield2turn:     { color: "#4f46e5", bg: "#eef2ff", border: "#c7d2fe" },
         rerollHigher:    { color: "#10b981", bg: "#ecfdf5", border: "#6ee7b7" },
-        randomPlusMinus3:{ color: "#ef4444", bg: "#fef2f2", border: "#fecaca" },
+        randomPlus3To6:  { color: "#ef4444", bg: "#fef2f2", border: "#fecaca" },
         warpMiddle:      { color: "#8b5cf6", bg: "#f5f3ff", border: "#ddd6fe" },
         positionStorm:   { color: "#0ea5e9", bg: "#f0f9ff", border: "#7dd3fc" },
         goldTest:        { color: "#d97706", bg: "#fffbeb", border: "#facc15" }
@@ -3793,7 +3793,7 @@ if (cheats.triggered.length > 0) {
         "pushOthersBack",
         "shield2turn",
         "rerollHigher",
-        "randomPlusMinus3",
+        "randomPlus3To6",
         "warpMiddle",
         "positionStorm",
         "goldTest"
@@ -5236,22 +5236,15 @@ log(msg);
         log(`🛡 치트: ${player.name}이(가) 해로운 효과를 2번까지 막아주는 보호막을 얻었습니다.`);
       }
 
-      if (cheats.randomPlusMinus3) {
-        const sign = Math.random() < 0.5 ? -1 : 1;
-        const delta = 3 * sign;
-
-        if (delta < 0 && player.shieldChargesRemaining && player.shieldChargesRemaining > 0) {
-          useShield(player, "minus3");
-        } else {
-          const before = player.position;
-          let after = before + delta;
-          if (after < 0) after = 0;
-          if (after > finishPos) after = finishPos;
-          log(`🎲 치트: ${delta > 0 ? "+3" : "-3"}칸 이동으로 ${before} → ${after}`);
-          player.position = after;
-          renderTokens();
-          updateStatusText();
-        }
+      if (cheats.randomPlus3To6) {
+        const delta = Math.floor(Math.random() * 4) + 3;
+        const before = player.position;
+        let after = before + delta;
+        if (after > finishPos) after = finishPos;
+        log(`🎲 치트: +${delta}칸 랜덤 이동으로 ${before} → ${after}`);
+        player.position = after;
+        renderTokens();
+        updateStatusText();
       }
 
       if (resetCells.includes(player.position)) {
@@ -5353,11 +5346,11 @@ log(msg);
             if (pl.shieldChargesRemaining && pl.shieldChargesRemaining > 0) {
               useShield(pl, "pushBack");
             } else {
-              pl.position = pl.position - 1;
+              pl.position = Math.max(0, pl.position - 2);
             }
           }
         });
-        log(`⬅ 치트: ${player.name}을(를) 제외한 다른 플레이어가 1칸씩 뒤로 밀렸습니다.`);
+        log(`⬅ 치트: ${player.name}을(를) 제외한 다른 플레이어가 2칸씩 뒤로 밀렸습니다.`);
         renderTokens();
         updateStatusText();
       }
