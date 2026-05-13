@@ -181,7 +181,7 @@ body.single-ai-active .board-size-setting {
 
 .ai-difficulty-options {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 6px;
 }
 
@@ -252,6 +252,12 @@ body.single-ai-active .board-size-setting {
   color: #be123c;
 }
 
+.ai-difficulty-nightmare {
+  background: #f5f3ff;
+  border-color: #ddd6fe;
+  color: #6d28d9;
+}
+
 .ai-difficulty-easy.selected {
   background: linear-gradient(135deg, #10b981, #059669);
   border-color: #047857;
@@ -271,6 +277,13 @@ body.single-ai-active .board-size-setting {
   border-color: #be123c;
   color: #ffffff;
   box-shadow: 0 8px 18px rgba(225, 29, 72, 0.24);
+}
+
+.ai-difficulty-nightmare.selected {
+  background: linear-gradient(135deg, #111827, #7c3aed);
+  border-color: #4c1d95;
+  color: #ffffff;
+  box-shadow: 0 8px 18px rgba(76, 29, 149, 0.26);
 }
 
 .mode-select-message {
@@ -2589,6 +2602,10 @@ body.theme-desert .cell.zone-island::after { content: "🏝"; }
                 <input type="radio" name="aiDifficulty" value="hard" />
                 <span>어려움</span>
               </label>
+              <label class="ai-difficulty-option ai-difficulty-nightmare">
+                <input type="radio" name="aiDifficulty" value="nightmare" />
+                <span>악몽</span>
+              </label>
             </div>
           </div>
         </div>
@@ -2624,6 +2641,14 @@ body.theme-desert .cell.zone-island::after { content: "🏝"; }
             <span class="ai-win-status-row">
               <span>어려움 AI</span>
               <span class="ai-win-status-count" id="hardAiWinCount">0승</span>
+            </span>
+            <span class="ai-win-status-row">
+              <span>어려움 기본 주사위</span>
+              <span class="ai-win-status-count" id="hardBasicAiWinCount">0/3</span>
+            </span>
+            <span class="ai-win-status-row">
+              <span>악몽 AI</span>
+              <span class="ai-win-status-count" id="nightmareAiWinCount">0승</span>
             </span>
             <button type="button" class="ai-win-reset-btn" id="aiWinResetBtn">클리어 기록 초기화</button>
           </div>
@@ -2998,10 +3023,19 @@ body.theme-desert .cell.zone-island::after { content: "🏝"; }
         trap: "9, 21, 31",
         gKey: "11, 19, 27",
         island: "16, 25"
+      },
+      nightmare: {
+        boardSize: 40,
+        x2: "8, 19, 31",
+        half: "6, 15, 24, 34",
+        trap: "10, 18, 27, 36",
+        gKey: "5, 22, 33",
+        island: "13, 29"
       }
     };
 
     const AI_REWARD_STORAGE_KEY = "diceBoardAiRewardWins";
+    const NIGHTMARE_UNLOCK_BASIC_HARD_CLEARS = 3;
 
     let players = [];
     let currentPlayerIndex = 0;
@@ -3016,6 +3050,7 @@ body.theme-desert .cell.zone-island::after { content: "🏝"; }
     let rewardUnlockQueue = [];
     let isRewardUnlockPopupOpen = false;
     let customBoardSettings = null;
+    let aiNightmareRollCount = 0;
 
     const cellTokenEls = [];
 
@@ -3029,6 +3064,8 @@ body.theme-desert .cell.zone-island::after { content: "🏝"; }
     const easyAiWinCountEl = document.getElementById("easyAiWinCount");
     const normalAiWinCountEl = document.getElementById("normalAiWinCount");
     const hardAiWinCountEl = document.getElementById("hardAiWinCount");
+    const hardBasicAiWinCountEl = document.getElementById("hardBasicAiWinCount");
+    const nightmareAiWinCountEl = document.getElementById("nightmareAiWinCount");
     const aiWinResetBtn = document.getElementById("aiWinResetBtn");
     const modeSelectMessageEl = document.getElementById("modeSelectMessage");
     const boardEl = document.getElementById("board");
@@ -4125,12 +4162,14 @@ log(msg);
     }
 
     function getAiDifficultyLabel() {
+      if (aiDifficulty === "nightmare") return "악몽";
       if (aiDifficulty === "hard") return "어려움";
       if (aiDifficulty === "normal") return "보통";
       return "쉬움";
     }
 
     function getAiDifficultyLabelById(difficulty) {
+      if (difficulty === "nightmare") return "악몽";
       if (difficulty === "hard") return "어려움";
       if (difficulty === "normal") return "보통";
       return "쉬움";
@@ -4141,11 +4180,17 @@ log(msg);
       if (difficulty === "normal") {
         return (aiRewardWins.easy || 0) >= 1 ||
           (aiRewardWins.normal || 0) >= 1 ||
-          (aiRewardWins.hard || 0) >= 1;
+          (aiRewardWins.hard || 0) >= 1 ||
+          (aiRewardWins.nightmare || 0) >= 1;
       }
       if (difficulty === "hard") {
         return (aiRewardWins.normal || 0) >= 1 ||
-          (aiRewardWins.hard || 0) >= 1;
+          (aiRewardWins.hard || 0) >= 1 ||
+          (aiRewardWins.nightmare || 0) >= 1;
+      }
+      if (difficulty === "nightmare") {
+        return (aiRewardWins.hardBasic || 0) >= NIGHTMARE_UNLOCK_BASIC_HARD_CLEARS ||
+          (aiRewardWins.nightmare || 0) >= 1;
       }
       return false;
     }
@@ -4153,6 +4198,7 @@ log(msg);
     function getAiDifficultyLockText(difficulty) {
       if (difficulty === "normal") return "쉬움 AI 1승 필요";
       if (difficulty === "hard") return "보통 AI 1승 필요";
+      if (difficulty === "nightmare") return `어려움 AI를 기본 주사위로 ${NIGHTMARE_UNLOCK_BASIC_HARD_CLEARS}승 필요`;
       return "사용 가능";
     }
 
@@ -4185,13 +4231,15 @@ log(msg);
     }
 
     function loadAiRewardWins() {
-      const fallback = { easy: 0, normal: 0, hard: 0 };
+      const fallback = { easy: 0, normal: 0, hard: 0, nightmare: 0, hardBasic: 0 };
       try {
         const saved = JSON.parse(localStorage.getItem(AI_REWARD_STORAGE_KEY) || "{}");
         return {
           easy: Math.max(0, parseInt(saved.easy, 10) || 0),
           normal: Math.max(0, parseInt(saved.normal, 10) || 0),
-          hard: Math.max(0, parseInt(saved.hard, 10) || 0)
+          hard: Math.max(0, parseInt(saved.hard, 10) || 0),
+          nightmare: Math.max(0, parseInt(saved.nightmare, 10) || 0),
+          hardBasic: Math.max(0, parseInt(saved.hardBasic, 10) || 0)
         };
       } catch (e) {
         return fallback;
@@ -4208,7 +4256,7 @@ log(msg);
       const shouldReset = window.confirm("AI 클리어 기록을 모두 초기화할까요? 해금된 주사위도 다시 잠깁니다.");
       if (!shouldReset) return;
 
-      aiRewardWins = { easy: 0, normal: 0, hard: 0 };
+      aiRewardWins = { easy: 0, normal: 0, hard: 0, nightmare: 0, hardBasic: 0 };
       selectedDiceItem = "basic";
       saveAiRewardWins();
       updateAiDifficultyButtons();
@@ -4265,14 +4313,14 @@ log(msg);
       const unlock = DICE_ITEM_UNLOCKS[itemId];
       if (!unlock) return "사용 불가";
       if (!unlock.difficulty || isDiceItemUnlocked(itemId)) return "사용 가능";
-      const label = unlock.difficulty === "hard" ? "어려움 AI" : "보통 AI";
+      const label = `${getAiDifficultyLabelById(unlock.difficulty)} AI`;
       return `${label} ${unlock.wins}승 필요`;
     }
 
     function getDiceItemRewardMeta(itemId) {
       const unlock = DICE_ITEM_UNLOCKS[itemId];
       if (!unlock || !unlock.difficulty) return "다음 싱글 AI 모드부터 선택할 수 있습니다.";
-      const label = unlock.difficulty === "hard" ? "어려움 AI" : "보통 AI";
+      const label = `${getAiDifficultyLabelById(unlock.difficulty)} AI`;
       return `${label} ${unlock.wins}승 보상 · 다음 싱글 AI 모드부터 선택 가능`;
     }
 
@@ -4321,6 +4369,13 @@ log(msg);
       }
       if (hardAiWinCountEl) {
         hardAiWinCountEl.textContent = `${aiRewardWins.hard || 0}승`;
+      }
+      if (hardBasicAiWinCountEl) {
+        const hardBasic = Math.min(aiRewardWins.hardBasic || 0, NIGHTMARE_UNLOCK_BASIC_HARD_CLEARS);
+        hardBasicAiWinCountEl.textContent = `${hardBasic}/${NIGHTMARE_UNLOCK_BASIC_HARD_CLEARS}`;
+      }
+      if (nightmareAiWinCountEl) {
+        nightmareAiWinCountEl.textContent = `${aiRewardWins.nightmare || 0}승`;
       }
     }
 
@@ -4727,16 +4782,42 @@ log(msg);
 
     function recordAiClearReward(winner) {
       if (gameMode !== "single-ai" || !winner || winner.isAi) return;
-      if (aiDifficulty !== "easy" && aiDifficulty !== "normal" && aiDifficulty !== "hard") return;
+      if (aiDifficulty !== "easy" &&
+        aiDifficulty !== "normal" &&
+        aiDifficulty !== "hard" &&
+        aiDifficulty !== "nightmare") return;
 
       const before = aiRewardWins[aiDifficulty] || 0;
       const after = before + 1;
+      const hardBasicBefore = aiRewardWins.hardBasic || 0;
+      const clearedHardWithBasicDice = aiDifficulty === "hard" && winner.diceItem === "basic";
+
       aiRewardWins[aiDifficulty] = after;
+      if (clearedHardWithBasicDice) {
+        aiRewardWins.hardBasic = hardBasicBefore + 1;
+      }
       saveAiRewardWins();
       updateAiDifficultyButtons();
       updateDiceItemButtons();
 
       log(`🏆 ${getAiDifficultyLabel()} AI 클리어 ${after}승 기록!`);
+
+      if (clearedHardWithBasicDice) {
+        const hardBasicAfter = aiRewardWins.hardBasic || 0;
+        const hardBasicProgress = Math.min(hardBasicAfter, NIGHTMARE_UNLOCK_BASIC_HARD_CLEARS);
+        log(`🌑 어려움 AI 기본 주사위 클리어 ${hardBasicProgress}/${NIGHTMARE_UNLOCK_BASIC_HARD_CLEARS}`);
+        if (hardBasicBefore < NIGHTMARE_UNLOCK_BASIC_HARD_CLEARS &&
+          hardBasicAfter >= NIGHTMARE_UNLOCK_BASIC_HARD_CLEARS) {
+          log("🔓 악몽 AI 난이도가 해금되었습니다.");
+          showCheatPopup(
+            { color: "#4c1d95", bg: "#ede9fe" },
+            "악몽 AI 난이도가 해금되었습니다.",
+            "난이도 해금",
+            "🌑",
+            2600
+          );
+        }
+      }
 
       if (aiDifficulty === "easy" && before < 1 && after >= 1) {
         log("🔓 보통 AI 난이도가 해금되었습니다.");
@@ -4782,6 +4863,7 @@ log(msg);
     }
 
     function getAiStrategyChance() {
+      if (aiDifficulty === "nightmare") return 0.85;
       if (aiDifficulty === "hard") return 0.65;
       if (aiDifficulty === "normal") return 0.3;
       return 0;
@@ -4839,6 +4921,24 @@ log(msg);
     function chooseAiRoll(cheats) {
       const strategyChance = getAiStrategyChance();
       const randomRoll = () => Math.floor(Math.random() * 6) + 1;
+
+      if (aiDifficulty === "nightmare") {
+        aiNightmareRollCount++;
+        if (aiNightmareRollCount % 3 === 0) {
+          const firstRoll = randomRoll();
+          const secondRoll = randomRoll();
+          const pairCandidates = [firstRoll, secondRoll].map((roll) => ({
+            roll,
+            score: scoreAiRoll(roll, cheats)
+          }));
+          const bestPairScore = Math.max(...pairCandidates.map((item) => item.score));
+          const bestPairCandidates = pairCandidates.filter((item) => item.score === bestPairScore);
+          const pickedPair = bestPairCandidates[Math.floor(Math.random() * bestPairCandidates.length)];
+
+          log(`🌑 악몽 AI 추가 주사위: ${firstRoll}, ${secondRoll} 중 ${pickedPair.roll}을 선택했습니다.`);
+          return pickedPair.roll;
+        }
+      }
 
       if (strategyChance <= 0 || Math.random() >= strategyChance) {
         return randomRoll();
@@ -5380,6 +5480,7 @@ log(msg);
       gameOver = false;
       isAnimating = false;
       isRollingDice = false;
+      aiNightmareRollCount = 0;
 
       renderBoard();
       renderTokens();
