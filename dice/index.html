@@ -1319,7 +1319,8 @@ body.theme-neon .status span {
       100% { transform: scale(0.4); opacity: 0; }
     }
 
-    #rerollChoiceOverlay {
+    #rerollChoiceOverlay,
+    #goldenKeyChoiceOverlay {
       position: fixed;
       inset: 0;
       display: none;
@@ -1329,7 +1330,8 @@ body.theme-neon .status span {
       z-index: 10000;
     }
 
-    #rerollChoiceOverlay.show {
+    #rerollChoiceOverlay.show,
+    #goldenKeyChoiceOverlay.show {
       display: flex;
     }
 
@@ -1386,6 +1388,84 @@ body.theme-neon .status span {
 
     .reroll-choice-btn:active {
       transform: translateY(1px);
+    }
+
+    .golden-key-choice-panel {
+      width: min(620px, calc(100vw - 36px));
+      padding: 18px;
+      border-radius: 16px;
+      background: #fffbeb;
+      border: 1px solid #facc15;
+      box-shadow: 0 18px 50px rgba(15, 23, 42, 0.38);
+      color: #92400e;
+      text-align: center;
+    }
+
+    .golden-key-choice-title {
+      display: block;
+      font-size: 20px;
+      font-weight: 900;
+      margin-bottom: 6px;
+    }
+
+    .golden-key-choice-sub {
+      display: block;
+      font-size: 12px;
+      font-weight: 800;
+      margin-bottom: 14px;
+      color: #b45309;
+    }
+
+    .golden-key-choice-buttons {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .golden-key-choice-btn {
+      min-height: 112px;
+      padding: 10px;
+      border-radius: 14px;
+      border: 2px solid #f59e0b;
+      background: #ffffff;
+      color: #92400e;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(245, 158, 11, 0.18);
+      transition: transform 0.12s ease, box-shadow 0.12s ease;
+    }
+
+    .golden-key-choice-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px rgba(245, 158, 11, 0.28);
+    }
+
+    .golden-key-choice-btn:active {
+      transform: translateY(1px);
+    }
+
+    .golden-key-choice-name {
+      display: block;
+      font-size: 15px;
+      font-weight: 900;
+      margin-bottom: 6px;
+    }
+
+    .golden-key-choice-desc {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1.35;
+      color: #b45309;
+    }
+
+    @media (max-width: 560px) {
+      .golden-key-choice-buttons {
+        grid-template-columns: 1fr;
+      }
+
+      .golden-key-choice-btn {
+        min-height: 76px;
+      }
     }
 
     #shieldChoiceOverlay {
@@ -2702,6 +2782,18 @@ body.theme-desert .cell.zone-island::after { content: "🏝"; }
           </button>
         </div>
       </section>
+
+      <section class="dice-item-section">
+        <h2 class="dice-item-section-title">조건 보상</h2>
+        <div class="dice-item-grid hard-reward-grid">
+          <button type="button" class="dice-item-option" data-item="golden-hunter" disabled>
+            <span class="dice-item-icon">🔑</span>
+            <span class="dice-item-name">황금 사냥꾼 주사위</span>
+            <span class="dice-item-desc">황금열쇠 카드 3장 중 선택</span>
+            <span class="dice-item-lock">한 판 황금열쇠 3회 획득 후 승리</span>
+          </button>
+        </div>
+      </section>
     </div>
     <div class="dice-item-actions">
       <button type="button" class="dice-item-back-btn" id="diceItemBackBtn">뒤로</button>
@@ -2933,6 +3025,27 @@ body.theme-desert .cell.zone-island::after { content: "🏝"; }
     </div>
   </div>
 
+  <div id="goldenKeyChoiceOverlay">
+    <div class="golden-key-choice-panel">
+      <span class="golden-key-choice-title">🔑 황금열쇠 선택</span>
+      <span class="golden-key-choice-sub">이번에 받을 카드를 선택하세요.</span>
+      <div class="golden-key-choice-buttons">
+        <button type="button" class="golden-key-choice-btn">
+          <span class="golden-key-choice-name">카드</span>
+          <span class="golden-key-choice-desc">효과</span>
+        </button>
+        <button type="button" class="golden-key-choice-btn">
+          <span class="golden-key-choice-name">카드</span>
+          <span class="golden-key-choice-desc">효과</span>
+        </button>
+        <button type="button" class="golden-key-choice-btn">
+          <span class="golden-key-choice-name">카드</span>
+          <span class="golden-key-choice-desc">효과</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <div id="rewardUnlockOverlay">
     <div class="reward-unlock-panel">
       <span class="reward-unlock-badge">새 보상 획득</span>
@@ -2996,7 +3109,8 @@ body.theme-desert .cell.zone-island::after { content: "🏝"; }
       dash: { difficulty: "hard", wins: 3 },
       shield: { difficulty: "hard", wins: 5 },
       reroll: { difficulty: "hard", wins: 7 },
-      revenge: { difficulty: "hard", wins: 10 }
+      revenge: { difficulty: "hard", wins: 10 },
+      "golden-hunter": { achievement: "goldenHunter" }
     };
 
     const AI_CHALLENGE_MAPS = {
@@ -3109,6 +3223,8 @@ body.theme-desert .cell.zone-island::after { content: "🏝"; }
     const shieldChoiceTextEl = document.getElementById("shieldChoiceText");
     const shieldChoiceUseBtn = document.getElementById("shieldChoiceUse");
     const shieldChoiceSkipBtn = document.getElementById("shieldChoiceSkip");
+    const goldenKeyChoiceOverlayEl = document.getElementById("goldenKeyChoiceOverlay");
+    const goldenKeyChoiceButtons = document.querySelectorAll(".golden-key-choice-btn");
     const rewardUnlockOverlayEl = document.getElementById("rewardUnlockOverlay");
     const rewardUnlockIconEl = document.getElementById("rewardUnlockIcon");
     const rewardUnlockTitleEl = document.getElementById("rewardUnlockTitle");
@@ -4090,20 +4206,73 @@ if (cheats.triggered.length > 0) {
       }, durationMs);
     }
 
-    function grantRandomCheatFromGoldenKey(player) {
+    function getRandomGoldenKeyChoices(count = 3) {
+      const pool = CHEAT_DEFS.slice();
+      for (let i = pool.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const tmp = pool[i];
+        pool[i] = pool[j];
+        pool[j] = tmp;
+      }
+      return pool.slice(0, Math.min(count, pool.length));
+    }
+
+    function chooseGoldenKeyCard(player) {
+      return new Promise((resolve) => {
+        if (!goldenKeyChoiceOverlayEl || !goldenKeyChoiceButtons || goldenKeyChoiceButtons.length === 0) {
+          const fallback = CHEAT_DEFS[Math.floor(Math.random() * CHEAT_DEFS.length)];
+          resolve(fallback);
+          return;
+        }
+
+        const choices = getRandomGoldenKeyChoices(3);
+        const cleanupFns = [];
+
+        goldenKeyChoiceButtons.forEach((button, idx) => {
+          const choice = choices[idx];
+          button.hidden = !choice;
+          if (!choice) return;
+
+          const nameEl = button.querySelector(".golden-key-choice-name");
+          const descEl = button.querySelector(".golden-key-choice-desc");
+          if (nameEl) nameEl.textContent = choice.name;
+          if (descEl) descEl.textContent = choice.desc;
+
+          const onClick = () => {
+            goldenKeyChoiceOverlayEl.classList.remove("show");
+            cleanupFns.forEach((cleanup) => cleanup());
+            resolve(choice);
+          };
+          button.addEventListener("click", onClick);
+          cleanupFns.push(() => button.removeEventListener("click", onClick));
+        });
+
+        goldenKeyChoiceOverlayEl.classList.add("show");
+        if (goldenKeyChoiceButtons[0]) goldenKeyChoiceButtons[0].focus();
+      });
+    }
+
+    async function grantRandomCheatFromGoldenKey(player) {
       if (!CHEAT_DEFS.length) return;
-      const idx = Math.floor(Math.random() * CHEAT_DEFS.length);
-      const picked = CHEAT_DEFS[idx];
+      player.goldenKeysCollected = (player.goldenKeysCollected || 0) + 1;
+
+      const canChooseCard = gameMode === "single-ai" &&
+        player &&
+        !player.isAi &&
+        player.diceItem === "golden-hunter";
+      const picked = canChooseCard
+        ? await chooseGoldenKeyCard(player)
+        : CHEAT_DEFS[Math.floor(Math.random() * CHEAT_DEFS.length)];
 
       player.storedCheatCode = picked.code;
 
 const msg =
-  `🔑 황금열쇠! 다음 턴에 특수한 효과가 적용됩니다. ` +
+  `🔑 황금열쇠! 다음 턴에 ${picked.name} 효과가 적용됩니다. ` +
   `(다음 ${player.name}의 자기 턴에 1회 자동 적용)`;
 log(msg);
 
 
-      diceInfoEl.textContent = "황금열쇠: 다음 턴에 특수한 효과가 적용됩니다.";
+      diceInfoEl.textContent = `황금열쇠: 다음 턴에 ${picked.name} 효과가 적용됩니다.`;
 
       showGoldenKeyPopup();
     }
@@ -4231,7 +4400,7 @@ log(msg);
     }
 
     function loadAiRewardWins() {
-      const fallback = { easy: 0, normal: 0, hard: 0, nightmare: 0, hardBasic: 0 };
+      const fallback = { easy: 0, normal: 0, hard: 0, nightmare: 0, hardBasic: 0, goldenHunter: false };
       try {
         const saved = JSON.parse(localStorage.getItem(AI_REWARD_STORAGE_KEY) || "{}");
         return {
@@ -4239,7 +4408,8 @@ log(msg);
           normal: Math.max(0, parseInt(saved.normal, 10) || 0),
           hard: Math.max(0, parseInt(saved.hard, 10) || 0),
           nightmare: Math.max(0, parseInt(saved.nightmare, 10) || 0),
-          hardBasic: Math.max(0, parseInt(saved.hardBasic, 10) || 0)
+          hardBasic: Math.max(0, parseInt(saved.hardBasic, 10) || 0),
+          goldenHunter: !!saved.goldenHunter
         };
       } catch (e) {
         return fallback;
@@ -4256,7 +4426,7 @@ log(msg);
       const shouldReset = window.confirm("AI 클리어 기록을 모두 초기화할까요? 해금된 주사위도 다시 잠깁니다.");
       if (!shouldReset) return;
 
-      aiRewardWins = { easy: 0, normal: 0, hard: 0, nightmare: 0, hardBasic: 0 };
+      aiRewardWins = { easy: 0, normal: 0, hard: 0, nightmare: 0, hardBasic: 0, goldenHunter: false };
       selectedDiceItem = "basic";
       saveAiRewardWins();
       updateAiDifficultyButtons();
@@ -4272,6 +4442,7 @@ log(msg);
       if (itemId === "dash") return "질주 주사위";
       if (itemId === "reroll") return "재굴림 주사위";
       if (itemId === "revenge") return "복수 주사위";
+      if (itemId === "golden-hunter") return "황금 사냥꾼 주사위";
       return "기본 주사위";
     }
 
@@ -4283,6 +4454,7 @@ log(msg);
       if (itemId === "dash") return "⚡";
       if (itemId === "reroll") return "🔁";
       if (itemId === "revenge") return "🔥";
+      if (itemId === "golden-hunter") return "🔑";
       return "🎲";
     }
 
@@ -4293,6 +4465,7 @@ log(msg);
       if (itemId === "shield") return "함정/무인도 효과를 3회 방어합니다.";
       if (itemId === "reroll") return "예약하면 두 주사위 눈 중 하나를 선택합니다. 3회 사용.";
       if (itemId === "revenge") return "꼴찌일 때 주사위 값 +3.";
+      if (itemId === "golden-hunter") return "황금열쇠 칸에서 카드 3장 중 하나를 선택합니다.";
       return "새로운 주사위를 사용할 수 있습니다.";
     }
 
@@ -4304,6 +4477,7 @@ log(msg);
       if (itemId === "basic") return true;
       const unlock = DICE_ITEM_UNLOCKS[itemId];
       if (!unlock) return false;
+      if (unlock.achievement) return !!aiRewardWins[unlock.achievement];
       if (!unlock.difficulty) return true;
       return (aiRewardWins[unlock.difficulty] || 0) >= unlock.wins;
     }
@@ -4312,6 +4486,9 @@ log(msg);
       if (itemId === "basic") return "사용 가능";
       const unlock = DICE_ITEM_UNLOCKS[itemId];
       if (!unlock) return "사용 불가";
+      if (unlock.achievement) {
+        return isDiceItemUnlocked(itemId) ? "사용 가능" : "한 판 황금열쇠 3회 획득 후 승리";
+      }
       if (!unlock.difficulty || isDiceItemUnlocked(itemId)) return "사용 가능";
       const label = `${getAiDifficultyLabelById(unlock.difficulty)} AI`;
       return `${label} ${unlock.wins}승 필요`;
@@ -4319,7 +4496,9 @@ log(msg);
 
     function getDiceItemRewardMeta(itemId) {
       const unlock = DICE_ITEM_UNLOCKS[itemId];
-      if (!unlock || !unlock.difficulty) return "다음 싱글 AI 모드부터 선택할 수 있습니다.";
+      if (!unlock) return "다음 싱글 AI 모드부터 선택할 수 있습니다.";
+      if (unlock.achievement) return "조건 보상 · 다음 싱글 AI 모드부터 선택 가능";
+      if (!unlock.difficulty) return "다음 싱글 AI 모드부터 선택할 수 있습니다.";
       const label = `${getAiDifficultyLabelById(unlock.difficulty)} AI`;
       return `${label} ${unlock.wins}승 보상 · 다음 싱글 AI 모드부터 선택 가능`;
     }
@@ -4503,7 +4682,12 @@ log(msg);
       if (itemId === "dash") return `+3 이동 ${charges}회`;
       if (itemId === "reroll") return `재굴림 ${charges}회`;
       if (itemId === "revenge") return `꼴찌 +3 ${charges}회`;
+      if (itemId === "golden-hunter") return "황금열쇠 3장 선택";
       return "효과 없음";
+    }
+
+    function isDiceItemPassive(itemId) {
+      return itemId === "golden-hunter";
     }
 
     function isDiceItemReservable(itemId) {
@@ -4531,7 +4715,7 @@ log(msg);
       }
 
       const charges = player.diceItemChargesRemaining || 0;
-      const isOn = charges > 0;
+      const isOn = isDiceItemPassive(player.diceItem) || charges > 0;
       const reservable = isDiceItemReservable(player.diceItem) && isOn;
       diceItemStatusEl.hidden = false;
       if (diceItemStatusNameEl) diceItemStatusNameEl.textContent = getDiceItemLabelById(player.diceItem);
@@ -4791,10 +4975,15 @@ log(msg);
       const after = before + 1;
       const hardBasicBefore = aiRewardWins.hardBasic || 0;
       const clearedHardWithBasicDice = aiDifficulty === "hard" && winner.diceItem === "basic";
+      const unlockedGoldenHunter = !aiRewardWins.goldenHunter &&
+        (winner.goldenKeysCollected || 0) >= 3;
 
       aiRewardWins[aiDifficulty] = after;
       if (clearedHardWithBasicDice) {
         aiRewardWins.hardBasic = hardBasicBefore + 1;
+      }
+      if (unlockedGoldenHunter) {
+        aiRewardWins.goldenHunter = true;
       }
       saveAiRewardWins();
       updateAiDifficultyButtons();
@@ -4839,6 +5028,11 @@ log(msg);
           "🔓",
           2400
         );
+      }
+
+      if (unlockedGoldenHunter) {
+        log("🎁 조건 보상 해금: 황금 사냥꾼 주사위");
+        queueRewardUnlockPopup("golden-hunter");
       }
 
       Object.keys(DICE_ITEM_UNLOCKS).forEach((itemId) => {
@@ -5214,7 +5408,7 @@ log(msg);
       }
 
       if (goldenKeyCells.includes(player.position)) {
-        grantRandomCheatFromGoldenKey(player);
+        await grantRandomCheatFromGoldenKey(player);
       }
 
       if (cheats.extraTurn) {
@@ -5471,6 +5665,7 @@ log(msg);
           skipTurnsRemaining: 0,
           trapImmune: false,
           storedCheatCode: null,
+          goldenKeysCollected: 0,
           isFastMoving: false,
           isAi: gameMode === "single-ai" && i === 1
         });
