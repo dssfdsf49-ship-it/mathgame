@@ -1,0 +1,1445 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>사이클로이드 사고실험</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #172033;
+      --muted: #64748b;
+      --line: #d8e0ec;
+      --panel: #ffffff;
+      --soft: #f4f7fb;
+      --blue: #2563eb;
+      --cyan: #0891b2;
+      --green: #16a34a;
+      --orange: #ea580c;
+      --pink: #db2777;
+      --shadow: 0 18px 45px rgba(23, 32, 51, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Pretendard", "Segoe UI", Arial, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 12% 12%, rgba(37, 99, 235, 0.12), transparent 30%),
+        linear-gradient(180deg, #edf4ff 0%, #f8fafc 48%, #eef7f1 100%);
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    .app {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 20px 0 28px;
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: end;
+      gap: 16px;
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 30px;
+      letter-spacing: 0;
+      color: #0f172a;
+    }
+
+    .subtitle {
+      margin: 5px 0 0;
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .mode-tabs {
+      display: inline-flex;
+      gap: 6px;
+      padding: 5px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.85);
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+    }
+
+    .tab-btn {
+      min-width: 98px;
+      min-height: 36px;
+      border: none;
+      border-radius: 999px;
+      background: transparent;
+      color: #475569;
+      font-size: 13px;
+      font-weight: 900;
+      cursor: pointer;
+      transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
+    }
+
+    .tab-btn:hover {
+      transform: translateY(-1px);
+      color: var(--blue);
+    }
+
+    .tab-btn.active {
+      background: #2563eb;
+      color: #ffffff;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .stage-panel,
+    .control-panel,
+    .mission-panel {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.92);
+      box-shadow: var(--shadow);
+    }
+
+    .stage-panel {
+      overflow: hidden;
+    }
+
+    .canvas-wrap {
+      position: relative;
+      height: clamp(500px, 66vh, 760px);
+      min-height: 500px;
+      background:
+        linear-gradient(90deg, rgba(148, 163, 184, 0.12) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(148, 163, 184, 0.12) 1px, transparent 1px),
+        linear-gradient(180deg, #f8fbff 0%, #eef6ff 100%);
+      background-size: 40px 40px, 40px 40px, 100% 100%;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .formula-card {
+      position: absolute;
+      left: 18px;
+      bottom: 18px;
+      max-width: min(420px, calc(100% - 36px));
+      padding: 12px 14px;
+      border: 1px solid rgba(37, 99, 235, 0.18);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.1);
+    }
+
+    .formula-title {
+      display: block;
+      font-size: 12px;
+      font-weight: 900;
+      color: var(--blue);
+      margin-bottom: 6px;
+    }
+
+    .formula-line {
+      display: block;
+      font-family: "Cascadia Code", Consolas, monospace;
+      font-size: 14px;
+      line-height: 1.55;
+      color: #0f172a;
+    }
+
+    .control-panel {
+      padding: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: stretch;
+      gap: 12px;
+    }
+
+    .panel-title {
+      flex: 0 0 120px;
+      align-self: center;
+      margin: 0;
+      font-size: 16px;
+      font-weight: 900;
+    }
+
+    .control-group {
+      flex: 1 1 180px;
+      display: grid;
+      gap: 8px;
+      min-width: 180px;
+      padding: 0 12px 0 0;
+      border-top: none;
+      border-right: 1px solid #eef2f7;
+    }
+
+    .control-group:first-of-type {
+      border-top: none;
+      padding-top: 0;
+    }
+
+    .control-label {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 13px;
+      font-weight: 900;
+      color: #334155;
+    }
+
+    .control-value {
+      color: var(--blue);
+      white-space: nowrap;
+    }
+
+    .quiz-side-panel {
+      flex: 1 1 520px;
+      display: none;
+      gap: 12px;
+      padding: 14px;
+      border: 1px solid rgba(219, 39, 119, 0.16);
+      border-radius: 14px;
+      background: linear-gradient(180deg, #fdf2f8, #ffffff);
+    }
+
+    .quiz-side-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      font-size: 13px;
+      font-weight: 900;
+      color: #831843;
+    }
+
+    .quiz-side-score {
+      padding: 4px 9px;
+      border-radius: 999px;
+      background: #ffffff;
+      color: var(--pink);
+      border: 1px solid rgba(219, 39, 119, 0.16);
+      white-space: nowrap;
+    }
+
+    .quiz-progress-bar {
+      height: 10px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #fce7f3;
+      border: 1px solid #fbcfe8;
+    }
+
+    .quiz-progress-fill {
+      display: block;
+      width: 25%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(135deg, #db2777, #2563eb);
+      transition: width 0.18s ease;
+    }
+
+    .quiz-side-hint {
+      padding: 12px;
+      border-radius: 12px;
+      background: #ffffff;
+      border: 1px solid #fbcfe8;
+    }
+
+    .quiz-side-label {
+      display: block;
+      margin-bottom: 7px;
+      color: var(--pink);
+      font-size: 11px;
+      font-weight: 900;
+    }
+
+    .quiz-side-line {
+      display: block;
+      margin-top: 4px;
+      color: #0f172a;
+      font-size: 13px;
+      line-height: 1.45;
+      font-weight: 900;
+    }
+
+    .quiz-side-guide {
+      margin: 0;
+      color: #64748b;
+      font-size: 12px;
+      line-height: 1.55;
+      font-weight: 800;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--blue);
+    }
+
+    .toggle-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    .toggle-btn {
+      min-height: 36px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #ffffff;
+      color: #475569;
+      font-size: 12px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .toggle-btn.active {
+      border-color: rgba(37, 99, 235, 0.35);
+      background: #eff6ff;
+      color: var(--blue);
+    }
+
+    .action-row {
+      flex: 0 0 250px;
+      align-self: center;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 0;
+    }
+
+    .primary-btn,
+    .secondary-btn {
+      min-height: 42px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .primary-btn {
+      border: none;
+      background: linear-gradient(135deg, #2563eb, #0891b2);
+      color: #ffffff;
+      box-shadow: 0 12px 22px rgba(37, 99, 235, 0.2);
+    }
+
+    .secondary-btn {
+      border: 1px solid var(--line);
+      background: #ffffff;
+      color: #334155;
+    }
+
+    .metric-grid {
+      flex: 1 1 330px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 0;
+    }
+
+    .metric {
+      padding: 10px;
+      border-radius: 12px;
+      background: var(--soft);
+      border: 1px solid #e2e8f0;
+    }
+
+    .metric-name {
+      display: block;
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    .metric-value {
+      display: block;
+      margin-top: 4px;
+      font-size: 16px;
+      font-weight: 900;
+      color: #0f172a;
+    }
+
+    .mission-panel {
+      padding: 16px;
+    }
+
+    .mission-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .mission-card {
+      padding: 14px;
+      border-radius: 14px;
+      border: 1px solid #e2e8f0;
+      background: #ffffff;
+    }
+
+    .mission-card h2 {
+      margin: 0 0 8px;
+      font-size: 15px;
+    }
+
+    .mission-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .quiz-options {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .quiz-btn {
+      min-height: 38px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: #f8fafc;
+      color: #334155;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .quiz-btn.correct {
+      border-color: rgba(22, 163, 74, 0.45);
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .quiz-btn.wrong {
+      border-color: rgba(220, 38, 38, 0.4);
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .quiz-feedback {
+      min-height: 24px;
+      margin-top: 10px;
+      font-size: 13px;
+      font-weight: 900;
+      color: var(--blue);
+    }
+
+    .quiz-feedback.correct {
+      color: var(--green);
+    }
+
+    .quiz-feedback.wrong {
+      color: #dc2626;
+    }
+
+    body[data-mode="race"] .formula-card .formula-title {
+      color: var(--green);
+    }
+
+    body[data-mode="race"] .tab-btn.active {
+      background: var(--green);
+    }
+
+    body[data-mode="race"] .control-group {
+      display: none;
+    }
+
+    body[data-mode="quiz"] .tab-btn.active {
+      background: var(--pink);
+    }
+
+    body[data-mode="quiz"] .formula-card .formula-title {
+      color: var(--pink);
+    }
+
+    body[data-mode="quiz"] .control-group {
+      display: none;
+    }
+
+    body[data-mode="quiz"] .quiz-side-panel {
+      display: grid;
+      grid-template-columns: minmax(120px, 160px) minmax(180px, 1fr) minmax(240px, 1.2fr) minmax(240px, 1fr);
+      align-items: center;
+    }
+
+    body[data-mode="quiz"] .primary-btn {
+      background: linear-gradient(135deg, #db2777, #2563eb);
+    }
+
+    @media (max-width: 940px) {
+      .topbar,
+      .workspace,
+      .mission-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .mode-tabs {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .tab-btn {
+        min-width: 0;
+        flex: 1;
+      }
+
+      .control-panel {
+        align-items: stretch;
+      }
+
+      body[data-mode="quiz"] .quiz-side-panel {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 620px) {
+      .app {
+        width: min(100% - 18px, 1180px);
+        padding-top: 12px;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+
+      .canvas-wrap {
+        height: 460px;
+        min-height: 460px;
+      }
+
+      .metric-grid,
+      .toggle-row,
+      .action-row,
+      .quiz-options {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body data-mode="cycloid">
+  <main class="app">
+    <header class="topbar">
+      <div>
+        <h1>사이클로이드 사고실험</h1>
+        <p class="subtitle">굴러가는 원의 한 점이 만드는 곡선과 최단강하 성질을 직접 비교합니다.</p>
+      </div>
+      <nav class="mode-tabs" aria-label="실험 모드">
+        <button class="tab-btn active" type="button" data-mode="cycloid">곡선 실험</button>
+        <button class="tab-btn" type="button" data-mode="race">최단강하</button>
+        <button class="tab-btn" type="button" data-mode="quiz">탐구 퀴즈</button>
+      </nav>
+    </header>
+
+    <section class="workspace">
+      <section class="stage-panel">
+        <div class="canvas-wrap">
+          <canvas id="sceneCanvas"></canvas>
+          <div class="formula-card" id="formulaCard">
+            <span class="formula-title" id="formulaTitle">현재 곡선</span>
+            <span class="formula-line" id="formulaLineX">x = r(t - sin t)</span>
+            <span class="formula-line" id="formulaLineY">y = r(1 - cos t)</span>
+          </div>
+        </div>
+      </section>
+
+      <aside class="control-panel">
+        <h2 class="panel-title" id="controlTitle">곡선 조절</h2>
+
+        <div class="quiz-side-panel" id="quizSidePanel">
+          <div class="quiz-side-top">
+            <span id="quizSideProgress">문제 1/4</span>
+            <span class="quiz-side-score" id="quizSideScore">점수 0/4</span>
+          </div>
+          <div class="quiz-progress-bar" aria-hidden="true">
+            <span class="quiz-progress-fill" id="quizProgressFill"></span>
+          </div>
+          <div class="quiz-side-hint">
+            <span class="quiz-side-label">현재 힌트</span>
+            <span class="quiz-side-line" id="quizSideHintX">한 바퀴 = 원둘레</span>
+            <span class="quiz-side-line" id="quizSideHintY">가로 이동거리 = 2πr</span>
+          </div>
+          <p class="quiz-side-guide" id="quizSideGuide">보기 중 하나를 선택하면 바로 채점됩니다. 다음 문제 버튼으로 넘어가세요.</p>
+        </div>
+
+        <div class="control-group">
+          <label class="control-label" for="radiusSlider">
+            원 반지름
+            <span class="control-value" id="radiusValue">64</span>
+          </label>
+          <input id="radiusSlider" type="range" min="36" max="94" value="64">
+        </div>
+
+        <div class="control-group">
+          <label class="control-label" for="pointSlider">
+            점의 위치
+            <span class="control-value" id="pointValue">100%</span>
+          </label>
+          <input id="pointSlider" type="range" min="30" max="150" value="100">
+        </div>
+
+        <div class="control-group">
+          <label class="control-label" for="speedSlider">
+            애니메이션 속도
+            <span class="control-value" id="speedValue">1.0x</span>
+          </label>
+          <input id="speedSlider" type="range" min="40" max="180" value="100">
+        </div>
+
+        <div class="control-group">
+          <span class="control-label">표시</span>
+          <div class="toggle-row">
+            <button class="toggle-btn active" type="button" data-toggle="wheel">원</button>
+            <button class="toggle-btn active" type="button" data-toggle="trace">자취</button>
+            <button class="toggle-btn active" type="button" data-toggle="grid">격자</button>
+            <button class="toggle-btn active" type="button" data-toggle="formula">수식</button>
+          </div>
+        </div>
+
+        <div class="action-row">
+          <button class="primary-btn" type="button" id="playBtn">일시정지</button>
+          <button class="secondary-btn" type="button" id="resetBtn">처음으로</button>
+        </div>
+
+        <div class="metric-grid">
+          <div class="metric">
+            <span class="metric-name" id="widthMetricName">한 바퀴 이동</span>
+            <span class="metric-value" id="widthMetric">402</span>
+          </div>
+          <div class="metric">
+            <span class="metric-name" id="heightMetricName">최고 높이</span>
+            <span class="metric-value" id="heightMetric">128</span>
+          </div>
+          <div class="metric">
+            <span class="metric-name" id="thetaMetricName">현재 t</span>
+            <span class="metric-value" id="thetaMetric">0.00</span>
+          </div>
+          <div class="metric">
+            <span class="metric-name" id="curveMetricName">곡선 종류</span>
+            <span class="metric-value" id="curveMetric">사이클로이드</span>
+          </div>
+        </div>
+      </aside>
+
+      <section class="mission-panel">
+        <div class="mission-layout">
+          <article class="mission-card">
+            <h2 id="missionTitle">관찰 미션</h2>
+            <p id="missionText">점의 위치를 100%보다 작게 또는 크게 바꿔 보세요. 뾰족한 바닥점이 사라지거나 고리가 생기는 순간을 찾을 수 있습니다.</p>
+          </article>
+          <article class="mission-card">
+            <h2 id="quizTitle">빠른 질문</h2>
+            <p id="quizQuestion">원 위의 점이 한 바퀴 굴렀을 때 가로로 이동한 거리는 무엇과 같을까요?</p>
+            <div class="quiz-options">
+              <button class="quiz-btn" type="button" data-answer="radius">반지름</button>
+              <button class="quiz-btn" type="button" data-answer="diameter">지름</button>
+              <button class="quiz-btn" type="button" data-answer="circumference">원둘레</button>
+            </div>
+            <div class="quiz-feedback" id="quizFeedback"></div>
+          </article>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const canvas = document.getElementById("sceneCanvas");
+    const ctx = canvas.getContext("2d");
+    const radiusSlider = document.getElementById("radiusSlider");
+    const pointSlider = document.getElementById("pointSlider");
+    const speedSlider = document.getElementById("speedSlider");
+    const radiusValue = document.getElementById("radiusValue");
+    const pointValue = document.getElementById("pointValue");
+    const speedValue = document.getElementById("speedValue");
+    const playBtn = document.getElementById("playBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const widthMetric = document.getElementById("widthMetric");
+    const heightMetric = document.getElementById("heightMetric");
+    const thetaMetric = document.getElementById("thetaMetric");
+    const curveMetric = document.getElementById("curveMetric");
+    const widthMetricName = document.getElementById("widthMetricName");
+    const heightMetricName = document.getElementById("heightMetricName");
+    const thetaMetricName = document.getElementById("thetaMetricName");
+    const curveMetricName = document.getElementById("curveMetricName");
+    const formulaCard = document.getElementById("formulaCard");
+    const formulaTitle = document.getElementById("formulaTitle");
+    const formulaLineX = document.getElementById("formulaLineX");
+    const formulaLineY = document.getElementById("formulaLineY");
+    const controlTitle = document.getElementById("controlTitle");
+    const quizSideProgress = document.getElementById("quizSideProgress");
+    const quizSideScore = document.getElementById("quizSideScore");
+    const quizProgressFill = document.getElementById("quizProgressFill");
+    const quizSideHintX = document.getElementById("quizSideHintX");
+    const quizSideHintY = document.getElementById("quizSideHintY");
+    const quizSideGuide = document.getElementById("quizSideGuide");
+    const missionTitle = document.getElementById("missionTitle");
+    const missionText = document.getElementById("missionText");
+    const quizTitle = document.getElementById("quizTitle");
+    const quizQuestion = document.getElementById("quizQuestion");
+    const quizFeedback = document.getElementById("quizFeedback");
+    const tabButtons = document.querySelectorAll(".tab-btn");
+    const toggleButtons = document.querySelectorAll(".toggle-btn");
+    const quizButtons = document.querySelectorAll(".quiz-btn");
+
+    const state = {
+      mode: "cycloid",
+      radius: 64,
+      pointRatio: 1,
+      speed: 1,
+      theta: 0,
+      running: true,
+      lastTime: 0,
+      showWheel: true,
+      showTrace: true,
+      showGrid: true,
+      showFormula: true,
+      raceStarted: false,
+      raceStartTime: 0,
+      quizIndex: 0,
+      quizScore: 0,
+      quizAnswered: false
+    };
+
+    const racePaths = [
+      { name: "직선", color: "#ea580c", duration: 4.2 },
+      { name: "원호", color: "#0891b2", duration: 3.5 },
+      { name: "사이클로이드", color: "#16a34a", duration: 2.8 }
+    ];
+
+    const QUIZ_QUESTIONS = [
+      {
+        title: "한 바퀴 이동거리",
+        mission: "원은 미끄러지지 않고 굴러갑니다. 한 바퀴가 끝났을 때 중심이 얼마나 이동했는지 그림에서 찾아보세요.",
+        question: "원 위의 점이 한 바퀴 굴렀을 때 가로 이동거리는 무엇과 같을까요?",
+        options: [
+          { value: "radius", label: "반지름 r" },
+          { value: "diameter", label: "지름 2r" },
+          { value: "circumference", label: "원둘레 2πr" }
+        ],
+        correct: "circumference",
+        hintX: "한 바퀴 = 원둘레",
+        hintY: "가로 이동거리 = 2πr",
+        success: "정답입니다. 원이 한 바퀴 굴러가면 원둘레 2πr만큼 이동합니다.",
+        fail: "아직 아니에요. 원이 미끄러지지 않고 한 바퀴 굴러간 거리를 떠올려 보세요.",
+        diagram: "distance"
+      },
+      {
+        title: "최고 높이",
+        mission: "원 위의 점은 처음에 바닥에 있다가 원의 꼭대기까지 올라갑니다. 바닥에서 꼭대기까지의 높이를 비교해 보세요.",
+        question: "원 위의 점이 한 바퀴 중 가장 높이 올라갔을 때 높이는 얼마일까요?",
+        options: [
+          { value: "radius", label: "r" },
+          { value: "diameter", label: "2r" },
+          { value: "circumference", label: "2πr" }
+        ],
+        correct: "diameter",
+        hintX: "바닥점 → 꼭대기점",
+        hintY: "최고 높이 = 2r",
+        success: "정답입니다. 바닥에서 원의 꼭대기까지는 지름 2r입니다.",
+        fail: "다시 생각해 보세요. 원 위의 점은 원의 아래쪽에서 위쪽까지 이동합니다.",
+        diagram: "height"
+      },
+      {
+        title: "트로코이드 구분",
+        mission: "점의 위치가 원 위가 아니라 안쪽 또는 바깥쪽이면 곡선 이름이 달라집니다.",
+        question: "점의 위치가 150%처럼 원 바깥쪽에 있을 때 생기는 곡선은 무엇일까요?",
+        options: [
+          { value: "cycloid", label: "사이클로이드" },
+          { value: "short", label: "짧은 트로코이드" },
+          { value: "long", label: "긴 트로코이드" }
+        ],
+        correct: "long",
+        hintX: "d > r 이면 바깥쪽 점",
+        hintY: "고리가 생기는 긴 트로코이드",
+        success: "정답입니다. 점이 원 바깥쪽이면 고리가 생기는 긴 트로코이드가 됩니다.",
+        fail: "점이 원 위가 아니라 바깥쪽에 있다는 점을 다시 보세요.",
+        diagram: "trochoid"
+      },
+      {
+        title: "매개변수식",
+        mission: "사이클로이드는 시간처럼 변하는 t를 이용해 x좌표와 y좌표를 따로 나타낼 수 있습니다.",
+        question: "기본 사이클로이드의 x좌표 식은 무엇일까요?",
+        options: [
+          { value: "x", label: "x = r(t - sin t)" },
+          { value: "y", label: "x = r(1 - cos t)" },
+          { value: "line", label: "x = rt + cos t" }
+        ],
+        correct: "x",
+        hintX: "x = r(t - sin t)",
+        hintY: "y = r(1 - cos t)",
+        success: "정답입니다. 가로 좌표는 굴러간 거리 rt에서 회전 때문에 생긴 sin t를 뺍니다.",
+        fail: "힌트를 다시 보세요. 1 - cos t가 들어가는 쪽은 y좌표입니다.",
+        diagram: "formula"
+      }
+    ];
+
+    function resizeCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.max(1, Math.floor(rect.width * dpr));
+      canvas.height = Math.max(1, Math.floor(rect.height * dpr));
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    function canvasSize() {
+      const rect = canvas.getBoundingClientRect();
+      return { width: rect.width, height: rect.height };
+    }
+
+    function drawGrid(width, height) {
+      if (!state.showGrid) return;
+      ctx.save();
+      ctx.strokeStyle = "rgba(148, 163, 184, 0.18)";
+      ctx.lineWidth = 1;
+      for (let x = 0; x <= width; x += 40) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, height);
+        ctx.stroke();
+      }
+      for (let y = 0; y <= height; y += 40) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(width, y);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    function drawGround(y, width) {
+      ctx.save();
+      ctx.strokeStyle = "#94a3b8";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(width, y);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function cycloidPoint(theta, radius, pointDistance, originX, groundY) {
+      return {
+        x: originX + radius * theta - pointDistance * Math.sin(theta),
+        y: groundY - radius + pointDistance * Math.cos(theta)
+      };
+    }
+
+    function drawCycloid() {
+      const { width, height } = canvasSize();
+      ctx.clearRect(0, 0, width, height);
+      drawGrid(width, height);
+
+      const radius = state.radius;
+      const pointDistance = radius * state.pointRatio;
+      const groundY = Math.min(height - 68, Math.max(250, height * 0.7));
+      const originX = 52;
+      const maxTheta = Math.max(2 * Math.PI, (width - 120) / radius);
+      const theta = state.theta % maxTheta;
+      const centerX = originX + radius * theta;
+      const centerY = groundY - radius;
+      const marker = cycloidPoint(theta, radius, pointDistance, originX, groundY);
+
+      drawGround(groundY, width);
+
+      if (state.showTrace) {
+        ctx.save();
+        ctx.lineWidth = 4;
+        ctx.lineCap = "round";
+        ctx.strokeStyle = "#2563eb";
+        ctx.beginPath();
+        for (let t = 0; t <= maxTheta; t += 0.025) {
+          const p = cycloidPoint(t, radius, pointDistance, originX, groundY);
+          if (t === 0) ctx.moveTo(p.x, p.y);
+          else ctx.lineTo(p.x, p.y);
+        }
+        ctx.stroke();
+        ctx.strokeStyle = "rgba(37, 99, 235, 0.28)";
+        ctx.lineWidth = 10;
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      if (state.showWheel) {
+        ctx.save();
+        ctx.translate(centerX, centerY);
+        ctx.rotate(theta);
+        ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+        ctx.strokeStyle = "#0f172a";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(0, 0, radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.strokeStyle = "rgba(37, 99, 235, 0.35)";
+        ctx.lineWidth = 2;
+        for (let a = 0; a < Math.PI * 2; a += Math.PI / 3) {
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.lineTo(Math.cos(a) * radius, Math.sin(a) * radius);
+          ctx.stroke();
+        }
+
+        ctx.strokeStyle = "#db2777";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(0, pointDistance);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      ctx.save();
+      ctx.fillStyle = "#db2777";
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(marker.x, marker.y, 8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+
+      ctx.save();
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "900 13px Segoe UI, Arial";
+      ctx.fillText("굴러가는 원", Math.max(16, centerX - 42), centerY - radius - 14);
+      ctx.fillStyle = "#475569";
+      ctx.font = "800 12px Segoe UI, Arial";
+      ctx.fillText("한 바퀴 = 2πr", originX + 8, groundY + 24);
+      ctx.restore();
+    }
+
+    function easeOutCubic(x) {
+      return 1 - Math.pow(1 - x, 3);
+    }
+
+    function getRacePoint(pathName, progress, start, end) {
+      const p = Math.max(0, Math.min(1, progress));
+      if (pathName === "직선") {
+        return {
+          x: start.x + (end.x - start.x) * p,
+          y: start.y + (end.y - start.y) * p
+        };
+      }
+
+      if (pathName === "원호") {
+        const x = start.x + (end.x - start.x) * p;
+        const sag = Math.sin(Math.PI * p) * 78;
+        return {
+          x,
+          y: start.y + (end.y - start.y) * p + sag
+        };
+      }
+
+      const theta = Math.PI * p;
+      return {
+        x: start.x + (end.x - start.x) * (theta - Math.sin(theta)) / Math.PI,
+        y: start.y + (end.y - start.y) * (1 - Math.cos(theta)) / 2
+      };
+    }
+
+    function drawRacePath(pathName, start, end, color) {
+      ctx.save();
+      ctx.lineWidth = 5;
+      ctx.lineCap = "round";
+      ctx.strokeStyle = color;
+      ctx.beginPath();
+      for (let i = 0; i <= 120; i += 1) {
+        const p = getRacePoint(pathName, i / 120, start, end);
+        if (i === 0) ctx.moveTo(p.x, p.y);
+        else ctx.lineTo(p.x, p.y);
+      }
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawRace(now) {
+      const { width, height } = canvasSize();
+      ctx.clearRect(0, 0, width, height);
+      drawGrid(width, height);
+
+      const start = { x: Math.max(52, width * 0.08), y: Math.max(95, height * 0.2) };
+      const end = { x: Math.min(width - 62, width * 0.88), y: Math.min(height - 84, height * 0.72) };
+      const elapsed = state.raceStarted ? (now - state.raceStartTime) / 1000 : 0;
+
+      ctx.save();
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "900 16px Segoe UI, Arial";
+      ctx.fillText("같은 출발점과 도착점, 다른 경로", start.x, 34);
+      ctx.fillStyle = "#64748b";
+      ctx.font = "800 12px Segoe UI, Arial";
+      ctx.fillText("사이클로이드는 실제 최단강하 문제에서 특별한 곡선입니다.", start.x, 54);
+      ctx.restore();
+
+      racePaths.forEach((path, index) => {
+        const offsetY = (index - 1) * 12;
+        const shiftedStart = { x: start.x, y: start.y + offsetY };
+        const shiftedEnd = { x: end.x, y: end.y + offsetY };
+        drawRacePath(path.name, shiftedStart, shiftedEnd, path.color);
+        const progress = state.raceStarted ? easeOutCubic(Math.min(1, elapsed / path.duration)) : 0;
+        const ball = getRacePoint(path.name, progress, shiftedStart, shiftedEnd);
+
+        ctx.save();
+        ctx.fillStyle = path.color;
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(ball.x, ball.y, 10, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = "#0f172a";
+        ctx.font = "900 13px Segoe UI, Arial";
+        ctx.fillText(`${path.name} ${Math.min(elapsed, path.duration).toFixed(1)}초`, shiftedEnd.x - 116, shiftedEnd.y - 12);
+        ctx.restore();
+      });
+
+      const winner = elapsed >= 2.8 ? "사이클로이드 도착" : "레이스 대기";
+      widthMetric.textContent = winner;
+      heightMetric.textContent = state.raceStarted ? `${elapsed.toFixed(1)}초` : "0.0초";
+      thetaMetric.textContent = "비교";
+      curveMetric.textContent = "최단강하";
+    }
+
+    function drawWrappedText(text, x, y, maxWidth, lineHeight) {
+      let line = "";
+      let currentY = y;
+      [...text].forEach((char) => {
+        const nextLine = line + char;
+        if (ctx.measureText(nextLine).width > maxWidth && line) {
+          ctx.fillText(line, x, currentY);
+          line = char;
+          currentY += lineHeight;
+        } else {
+          line = nextLine;
+        }
+      });
+      if (line) ctx.fillText(line, x, currentY);
+      return currentY + lineHeight;
+    }
+
+    function getCurrentQuiz() {
+      return QUIZ_QUESTIONS[state.quizIndex % QUIZ_QUESTIONS.length];
+    }
+
+    function drawQuizDiagram(question, box) {
+      const centerX = box.x + box.width * 0.5;
+      const centerY = box.y + box.height * 0.55;
+      ctx.save();
+
+      if (question.diagram === "distance") {
+        const radius = Math.min(58, box.width * 0.11);
+        const leftX = box.x + box.width * 0.22;
+        const rightX = box.x + box.width * 0.78;
+        const groundY = centerY + radius;
+        drawGround(groundY, box.x + box.width);
+        [leftX, rightX].forEach((x, index) => {
+          ctx.fillStyle = index === 0 ? "rgba(37, 99, 235, 0.12)" : "rgba(22, 163, 74, 0.12)";
+          ctx.strokeStyle = index === 0 ? "#2563eb" : "#16a34a";
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.arc(x, groundY - radius, radius, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+        });
+        ctx.strokeStyle = "#db2777";
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(leftX, groundY + 30);
+        ctx.lineTo(rightX, groundY + 30);
+        ctx.stroke();
+        ctx.fillStyle = "#db2777";
+        ctx.font = "900 16px Segoe UI, Arial";
+        ctx.fillText("2πr", centerX - 18, groundY + 58);
+      } else if (question.diagram === "height") {
+        const radius = Math.min(82, box.height * 0.27);
+        const groundY = centerY + radius * 0.92;
+        ctx.fillStyle = "rgba(37, 99, 235, 0.1)";
+        ctx.strokeStyle = "#2563eb";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(centerX, groundY - radius, radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.strokeStyle = "#db2777";
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(centerX + radius + 30, groundY);
+        ctx.lineTo(centerX + radius + 30, groundY - radius * 2);
+        ctx.stroke();
+        ctx.fillStyle = "#db2777";
+        ctx.font = "900 17px Segoe UI, Arial";
+        ctx.fillText("2r", centerX + radius + 42, groundY - radius + 6);
+        drawGround(groundY, box.x + box.width);
+      } else if (question.diagram === "trochoid") {
+        const labels = [
+          { ratio: 0.65, label: "d < r", color: "#0891b2" },
+          { ratio: 1, label: "d = r", color: "#2563eb" },
+          { ratio: 1.45, label: "d > r", color: "#db2777" }
+        ];
+        labels.forEach((item, index) => {
+          const originX = box.x + 44;
+          const offsetY = box.y + 58 + index * 68;
+          ctx.strokeStyle = item.color;
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          for (let t = 0; t <= Math.PI * 2.2; t += 0.04) {
+            const px = originX + 30 * t - 30 * item.ratio * Math.sin(t);
+            const py = offsetY + 30 * item.ratio * Math.cos(t);
+            if (t === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+          }
+          ctx.stroke();
+          ctx.fillStyle = "#0f172a";
+          ctx.font = "900 14px Segoe UI, Arial";
+          ctx.fillText(item.label, box.x + box.width - 96, offsetY + 5);
+        });
+      } else {
+        ctx.fillStyle = "#f8fafc";
+        ctx.strokeStyle = "#cbd5e1";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(box.x + 28, box.y + 36, box.width - 56, box.height - 72, 18);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = "#0f172a";
+        ctx.font = "900 24px Cascadia Code, Consolas, monospace";
+        ctx.fillText("x = r(t - sin t)", box.x + 58, centerY - 12);
+        ctx.fillText("y = r(1 - cos t)", box.x + 58, centerY + 34);
+      }
+
+      ctx.restore();
+    }
+
+    function drawQuizScene() {
+      const { width, height } = canvasSize();
+      const question = getCurrentQuiz();
+      ctx.clearRect(0, 0, width, height);
+      drawGrid(width, height);
+
+      const card = {
+        x: Math.max(18, width * 0.05),
+        y: Math.max(28, height * 0.08),
+        width: Math.min(width - 36, width * 0.9),
+        height: Math.min(height - 92, height * 0.74)
+      };
+
+      ctx.save();
+      ctx.fillStyle = "rgba(255, 255, 255, 0.92)";
+      ctx.strokeStyle = "rgba(219, 39, 119, 0.22)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(card.x, card.y, card.width, card.height, 22);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = "#db2777";
+      ctx.font = "900 15px Segoe UI, Arial";
+      ctx.fillText(`탐구 퀴즈 ${state.quizIndex + 1}/${QUIZ_QUESTIONS.length}`, card.x + 24, card.y + 34);
+
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "900 30px Segoe UI, Arial";
+      ctx.fillText(question.title, card.x + 24, card.y + 76);
+
+      ctx.fillStyle = "#475569";
+      ctx.font = "800 17px Segoe UI, Arial";
+      const textBottom = drawWrappedText(question.question, card.x + 24, card.y + 112, card.width - 48, 28);
+
+      drawQuizDiagram(question, {
+        x: card.x + 20,
+        y: textBottom + 8,
+        width: card.width - 40,
+        height: card.y + card.height - textBottom - 32
+      });
+
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "900 13px Segoe UI, Arial";
+      ctx.fillText(`점수 ${state.quizScore}/${QUIZ_QUESTIONS.length}`, card.x + card.width - 108, card.y + 34);
+      ctx.restore();
+
+      widthMetric.textContent = `${state.quizScore}/${QUIZ_QUESTIONS.length}`;
+      heightMetric.textContent = state.quizAnswered ? "채점 완료" : "선택 대기";
+      thetaMetric.textContent = `${state.quizIndex + 1}/${QUIZ_QUESTIONS.length}`;
+      curveMetric.textContent = "탐구 퀴즈";
+    }
+
+    function updateLabels() {
+      const radius = Number(radiusSlider.value);
+      const pointRatio = Number(pointSlider.value) / 100;
+      const speed = Number(speedSlider.value) / 100;
+      state.radius = radius;
+      state.pointRatio = pointRatio;
+      state.speed = speed;
+
+      radiusValue.textContent = `${radius}`;
+      pointValue.textContent = `${Math.round(pointRatio * 100)}%`;
+      speedValue.textContent = `${speed.toFixed(1)}x`;
+
+      widthMetric.textContent = `${Math.round(2 * Math.PI * radius)}`;
+      heightMetric.textContent = `${Math.round(radius + radius * pointRatio)}`;
+      thetaMetric.textContent = `${(state.theta % (Math.PI * 2)).toFixed(2)}`;
+      curveMetric.textContent = getCurveName(pointRatio);
+
+      if (state.mode === "cycloid") {
+        if (pointRatio === 1) {
+          formulaLineX.textContent = "x = r(t - sin t)";
+          formulaLineY.textContent = "y = r(1 - cos t)";
+        } else {
+          formulaLineX.textContent = "x = rt - d sin t";
+          formulaLineY.textContent = "y = r - d cos t";
+        }
+      }
+    }
+
+    function getCurveName(pointRatio) {
+      if (Math.abs(pointRatio - 1) < 0.01) return "사이클로이드";
+      if (pointRatio < 1) return "짧은 트로코이드";
+      return "긴 트로코이드";
+    }
+
+    function setQuizOptions(options) {
+      quizButtons.forEach((button, index) => {
+        const option = options[index];
+        button.dataset.answer = option.value;
+        button.textContent = option.label;
+        button.classList.remove("correct", "wrong");
+      });
+    }
+
+    function setQuizFeedback(text, type) {
+      quizFeedback.textContent = text;
+      quizFeedback.classList.remove("correct", "wrong");
+      if (type) quizFeedback.classList.add(type);
+      if (quizSideGuide) quizSideGuide.textContent = text || "보기 중 하나를 선택하면 바로 채점됩니다. 다음 문제 버튼으로 넘어가세요.";
+    }
+
+    function setMetricLabels(first, second, third, fourth) {
+      widthMetricName.textContent = first;
+      heightMetricName.textContent = second;
+      thetaMetricName.textContent = third;
+      curveMetricName.textContent = fourth;
+    }
+
+    function updateQuizSidePanel() {
+      const question = getCurrentQuiz();
+      const total = QUIZ_QUESTIONS.length;
+      if (quizSideProgress) quizSideProgress.textContent = `문제 ${state.quizIndex + 1}/${total}`;
+      if (quizSideScore) quizSideScore.textContent = `점수 ${state.quizScore}/${total}`;
+      if (quizProgressFill) quizProgressFill.style.width = `${((state.quizIndex + 1) / total) * 100}%`;
+      if (quizSideHintX) quizSideHintX.textContent = question.hintX;
+      if (quizSideHintY) quizSideHintY.textContent = question.hintY;
+    }
+
+    function applyQuizQuestion() {
+      const question = getCurrentQuiz();
+      state.quizAnswered = false;
+      formulaTitle.textContent = "퀴즈 힌트";
+      formulaLineX.textContent = question.hintX;
+      formulaLineY.textContent = question.hintY;
+      missionTitle.textContent = `탐구 미션 ${state.quizIndex + 1}`;
+      missionText.textContent = question.mission;
+      quizTitle.textContent = `문제 ${state.quizIndex + 1}/${QUIZ_QUESTIONS.length}`;
+      quizQuestion.textContent = question.question;
+      setQuizOptions(question.options);
+      setQuizFeedback("보기 중 하나를 선택해 보세요.", "");
+      updateQuizSidePanel();
+      playBtn.textContent = "다음 문제";
+    }
+
+    function goToNextQuizQuestion() {
+      state.quizIndex = (state.quizIndex + 1) % QUIZ_QUESTIONS.length;
+      applyQuizQuestion();
+    }
+
+    function updateModeText() {
+      if (state.mode === "race") {
+        controlTitle.textContent = "레이스 진행";
+        setMetricLabels("1등", "경과 시간", "비교", "모드");
+        formulaTitle.textContent = "최단강하 비교";
+        formulaLineX.textContent = "직선 < 원호 < 사이클로이드?";
+        formulaLineY.textContent = "같은 높이에서 도착 시간을 비교";
+        missionTitle.textContent = "관찰 미션";
+        missionText.textContent = "레이스를 시작하고 세 공의 도착 순서를 비교하세요. 경로 길이가 가장 짧은 것과 시간이 가장 짧은 것이 항상 같지는 않습니다.";
+        quizTitle.textContent = "빠른 질문";
+        quizQuestion.textContent = "최단강하 문제에서 가장 빠른 경로로 알려진 곡선은 무엇일까요?";
+        setQuizOptions([
+          { value: "line", label: "직선" },
+          { value: "arc", label: "원호" },
+          { value: "cycloid", label: "사이클로이드" }
+        ]);
+      } else if (state.mode === "quiz") {
+        controlTitle.textContent = "퀴즈 진행";
+        setMetricLabels("점수", "상태", "문제", "모드");
+        applyQuizQuestion();
+      } else {
+        controlTitle.textContent = "곡선 조절";
+        setMetricLabels("한 바퀴 이동", "최고 높이", "현재 t", "곡선 종류");
+        formulaTitle.textContent = "현재 곡선";
+        missionTitle.textContent = "관찰 미션";
+        missionText.textContent = "점의 위치를 100%보다 작게 또는 크게 바꿔 보세요. 뾰족한 바닥점이 사라지거나 고리가 생기는 순간을 찾을 수 있습니다.";
+        quizTitle.textContent = "빠른 질문";
+        quizQuestion.textContent = "원 위의 점이 한 바퀴 굴렀을 때 가로로 이동한 거리는 무엇과 같을까요?";
+        setQuizOptions([
+          { value: "radius", label: "반지름" },
+          { value: "diameter", label: "지름" },
+          { value: "circumference", label: "원둘레" }
+        ]);
+        updateLabels();
+      }
+
+      if (state.mode === "quiz") {
+        playBtn.textContent = "다음 문제";
+      } else {
+        playBtn.textContent = state.mode === "race" ? "레이스 시작" : (state.running ? "일시정지" : "재생");
+      }
+    }
+
+    function setMode(mode) {
+      state.mode = mode;
+      document.body.dataset.mode = mode;
+      tabButtons.forEach((button) => {
+        button.classList.toggle("active", button.dataset.mode === mode);
+      });
+      state.raceStarted = false;
+      setQuizFeedback("", "");
+      updateModeText();
+    }
+
+    function animate(now) {
+      if (!state.lastTime) state.lastTime = now;
+      const delta = Math.min(0.05, (now - state.lastTime) / 1000);
+      state.lastTime = now;
+
+      if (state.running && state.mode !== "race") {
+        state.theta += delta * state.speed * 1.25;
+      }
+
+      updateLabels();
+
+      if (state.mode !== "cycloid" || state.showFormula) {
+        formulaCard.style.display = "block";
+      } else {
+        formulaCard.style.display = "none";
+      }
+
+      if (state.mode === "race") {
+        drawRace(now);
+      } else if (state.mode === "quiz") {
+        drawQuizScene();
+      } else {
+        drawCycloid();
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    radiusSlider.addEventListener("input", updateLabels);
+    pointSlider.addEventListener("input", updateLabels);
+    speedSlider.addEventListener("input", updateLabels);
+
+    playBtn.addEventListener("click", () => {
+      if (state.mode === "race") {
+        state.raceStarted = true;
+        state.raceStartTime = performance.now();
+        playBtn.textContent = "다시 시작";
+        return;
+      }
+      if (state.mode === "quiz") {
+        goToNextQuizQuestion();
+        return;
+      }
+      state.running = !state.running;
+      playBtn.textContent = state.running ? "일시정지" : "재생";
+    });
+
+    resetBtn.addEventListener("click", () => {
+      state.theta = 0;
+      state.raceStarted = false;
+      if (state.mode === "quiz") {
+        state.quizIndex = 0;
+        state.quizScore = 0;
+        applyQuizQuestion();
+        return;
+      }
+      setQuizFeedback("", "");
+      updateModeText();
+    });
+
+    tabButtons.forEach((button) => {
+      button.addEventListener("click", () => setMode(button.dataset.mode));
+    });
+
+    toggleButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        const key = button.dataset.toggle;
+        if (key === "wheel") state.showWheel = !state.showWheel;
+        if (key === "trace") state.showTrace = !state.showTrace;
+        if (key === "grid") state.showGrid = !state.showGrid;
+        if (key === "formula") state.showFormula = !state.showFormula;
+        button.classList.toggle("active");
+      });
+    });
+
+    quizButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        if (state.mode === "race") {
+          setQuizFeedback(
+            button.dataset.answer === "cycloid"
+              ? "정답입니다. 최단강하 문제의 대표 곡선은 사이클로이드입니다."
+              : "다시 생각해 보세요. 가장 짧아 보이는 길이 항상 가장 빠른 길은 아닙니다.",
+            button.dataset.answer === "cycloid" ? "correct" : "wrong"
+          );
+          return;
+        }
+        if (state.mode === "quiz") {
+          const question = getCurrentQuiz();
+          if (state.quizAnswered) return;
+          const correct = button.dataset.answer === question.correct;
+          state.quizAnswered = true;
+          if (correct) state.quizScore += 1;
+          button.classList.add(correct ? "correct" : "wrong");
+          if (!correct) {
+            quizButtons.forEach((option) => {
+              if (option.dataset.answer === question.correct) option.classList.add("correct");
+            });
+          }
+          setQuizFeedback(correct ? question.success : question.fail, correct ? "correct" : "wrong");
+          updateQuizSidePanel();
+          return;
+        }
+        setQuizFeedback(
+          button.dataset.answer === "circumference"
+            ? "정답입니다. 원이 한 바퀴 굴러가면 원둘레 2πr만큼 이동합니다."
+            : "아직 아니에요. 원이 미끄러지지 않고 한 바퀴 굴러간 거리를 떠올려 보세요.",
+          button.dataset.answer === "circumference" ? "correct" : "wrong"
+        );
+      });
+    });
+
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+    updateLabels();
+    updateModeText();
+    requestAnimationFrame(animate);
+  </script>
+</body>
+</html>
