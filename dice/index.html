@@ -4822,6 +4822,7 @@ body.single-ai-active.ai-theme-abyss .finish-cell {
     box-sizing: border-box;
     background: rgba(255, 255, 255, 0.94);
     box-shadow: 0 8px 22px rgba(15, 23, 42, 0.12);
+    backdrop-filter: none;
   }
 
   body:not(.mode-select-active):not(.dice-item-select-active) .status {
@@ -4858,10 +4859,62 @@ body.single-ai-active.ai-theme-abyss .finish-cell {
     display: none !important;
   }
 
+  body:not(.mode-select-active):not(.dice-item-select-active) .config:has(#startBtn, #modeSelectBtn) {
+    position: fixed;
+    right: max(10px, env(safe-area-inset-right));
+    bottom: max(8px, env(safe-area-inset-bottom));
+    z-index: 9001;
+    display: flex !important;
+    width: auto;
+    padding: 0;
+    border: none;
+    background: transparent;
+    box-shadow: none;
+    gap: 6px;
+    pointer-events: none;
+  }
+
+  body:not(.mode-select-active):not(.dice-item-select-active) .config label,
+  body:not(.mode-select-active):not(.dice-item-select-active) .config #soundToggleBtn {
+    display: none !important;
+  }
+
+  body:not(.mode-select-active):not(.dice-item-select-active) .config #startBtn,
+  body:not(.mode-select-active):not(.dice-item-select-active) .config #modeSelectBtn {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    min-height: 52px;
+    padding: 0 13px;
+    border-radius: 16px;
+    border: 1px solid rgba(203, 213, 225, 0.95);
+    background: rgba(248, 250, 252, 0.96);
+    color: #1f2937 !important;
+    font-size: 12px;
+    font-weight: 900;
+    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.16);
+    pointer-events: auto;
+    touch-action: manipulation;
+  }
+
+  body:not(.mode-select-active):not(.dice-item-select-active) .config #startBtn {
+    color: #1d4ed8 !important;
+  }
+
+  body:not(.mode-select-active):not(.dice-item-select-active) .config #startBtn::before {
+    content: "↻";
+    margin-right: 4px;
+  }
+
+  body:not(.mode-select-active):not(.dice-item-select-active) .config #modeSelectBtn::before {
+    content: "←";
+    margin-right: 4px;
+  }
+
   body:not(.mode-select-active):not(.dice-item-select-active) .dice-box {
     position: fixed;
     left: max(10px, env(safe-area-inset-left));
-    right: max(10px, env(safe-area-inset-right));
+    right: calc(max(10px, env(safe-area-inset-right)) + 232px);
     bottom: max(8px, env(safe-area-inset-bottom));
     z-index: 9000;
     width: auto;
@@ -4950,6 +5003,16 @@ body.single-ai-active.ai-theme-abyss .finish-cell {
     text-overflow: ellipsis;
   }
 
+  @supports not selector(:has(*)) {
+    body:not(.mode-select-active):not(.dice-item-select-active) .config {
+      display: none !important;
+    }
+
+    body:not(.mode-select-active):not(.dice-item-select-active) .dice-box {
+      right: max(10px, env(safe-area-inset-right));
+    }
+  }
+
   body:not(.mode-select-active):not(.dice-item-select-active) .board {
     height: calc(100dvh - 152px);
     margin-top: 5px;
@@ -5009,6 +5072,7 @@ body.single-ai-active.ai-theme-abyss .finish-cell {
   body:not(.mode-select-active):not(.dice-item-select-active) .dice-box {
     min-height: 58px;
     border-radius: 16px;
+    right: calc(max(10px, env(safe-area-inset-right)) + 218px);
   }
 
   body:not(.mode-select-active):not(.dice-item-select-active) #rollBtn,
@@ -5020,6 +5084,20 @@ body.single-ai-active.ai-theme-abyss .finish-cell {
     width: 46px;
     height: 46px;
     font-size: 23px;
+  }
+
+  body:not(.mode-select-active):not(.dice-item-select-active) .config #startBtn,
+  body:not(.mode-select-active):not(.dice-item-select-active) .config #modeSelectBtn {
+    min-height: 46px;
+    padding: 0 11px;
+    border-radius: 14px;
+    font-size: 11px;
+  }
+
+  @supports not selector(:has(*)) {
+    body:not(.mode-select-active):not(.dice-item-select-active) .dice-box {
+      right: max(10px, env(safe-area-inset-right));
+    }
   }
 }
 
