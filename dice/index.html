@@ -82,6 +82,7 @@ body.single-ai-active .board-size-setting {
   position: absolute;
   left: 20px;
   top: 20px;
+  z-index: 10;
   min-height: 34px;
   padding: 7px 12px;
   border-radius: 999px;
@@ -91,6 +92,8 @@ body.single-ai-active .board-size-setting {
   font-size: 12px;
   font-weight: 900;
   cursor: pointer;
+  pointer-events: auto;
+  touch-action: manipulation;
   box-shadow: 0 8px 20px rgba(37, 99, 235, 0.14);
 }
 
@@ -9608,23 +9611,55 @@ log(msg);
         window.navigator.standalone === true;
     }
 
+    function isLikelyAndroidBrowser() {
+      return /Android/i.test(navigator.userAgent || "");
+    }
+
+    function showPwaInstallGuide() {
+      const guideText = "설치 창이 안 뜨면 크롬 오른쪽 위 ⋮ 메뉴에서 '앱 설치' 또는 '홈 화면에 추가'를 눌러주세요. 첫 접속 직후라면 새로고침 후 다시 시도하면 잘 뜹니다.";
+
+      if (modeSelectMessageEl) {
+        modeSelectMessageEl.textContent = guideText;
+      }
+
+      alert(guideText);
+    }
+
     function setupPwaInstallPrompt() {
       if (!pwaInstallBtn || isRunningAsInstalledApp()) return;
+
+      if (isLikelyAndroidBrowser() && /^https?:$/.test(window.location.protocol)) {
+        pwaInstallBtn.hidden = false;
+      }
 
       window.addEventListener("beforeinstallprompt", (event) => {
         event.preventDefault();
         deferredInstallPrompt = event;
         pwaInstallBtn.hidden = false;
+        pwaInstallBtn.textContent = "📱 앱 설치";
       });
 
       pwaInstallBtn.addEventListener("click", async () => {
-        if (!deferredInstallPrompt) return;
-
         playSound("click");
-        pwaInstallBtn.hidden = true;
-        deferredInstallPrompt.prompt();
-        await deferredInstallPrompt.userChoice.catch(() => undefined);
+
+        if (!deferredInstallPrompt) {
+          showPwaInstallGuide();
+          return;
+        }
+
+        const installPrompt = deferredInstallPrompt;
         deferredInstallPrompt = null;
+        pwaInstallBtn.hidden = true;
+
+        try {
+          await installPrompt.prompt();
+          if (installPrompt.userChoice) {
+            await installPrompt.userChoice.catch(() => undefined);
+          }
+        } catch (error) {
+          pwaInstallBtn.hidden = false;
+          showPwaInstallGuide();
+        }
       });
 
       window.addEventListener("appinstalled", () => {

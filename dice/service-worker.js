@@ -1,9 +1,11 @@
-const CACHE_NAME = "dice-board-game-v1";
+const CACHE_NAME = "dice-board-game-v2";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./manifest.webmanifest",
-  "./icons/dice-app-icon.svg"
+  "./icons/dice-app-icon.svg",
+  "./icons/dice-app-icon-192.png",
+  "./icons/dice-app-icon-512.png"
 ];
 
 self.addEventListener("install", (event) => {
