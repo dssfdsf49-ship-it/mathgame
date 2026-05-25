@@ -4775,6 +4775,254 @@ body.single-ai-active.ai-theme-abyss .finish-cell {
   border-color: rgba(251, 146, 60, 0.6);
 }
 
+@media (orientation: landscape) and (max-height: 560px) {
+  body:not(.mode-select-active):not(.dice-item-select-active) {
+    padding: 0;
+    overflow: hidden;
+    background: #0f172a;
+  }
+
+  body:not(.mode-select-active):not(.dice-item-select-active) .game-title,
+  body:not(.mode-select-active):not(.dice-item-select-active) .game-credit {
+    display: none;
+  }
+
+  body:not(.mode-select-active):not(.dice-item-select-active) .game-container {
+    width: 100vw;
+    max-width: none;
+    min-height: 100dvh;
+    height: 100dvh;
+    margin: 0;
+    padding: 6px max(10px, env(safe-area-inset-right)) 84px max(10px, env(safe-area-inset-left));
+    border-radius: 0;
+    box-shadow: none;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  body:not(.mode-select-active):not(.dice-item-select-active) .top-panel {
+    position: relative;
+    z-index: 30;
+    gap: 4px;
+    margin: 0 0 6px;
+    padding: 0 0 6px;
+    border-bottom: 0;
+  }
+
+  body:not(.mode-select-active):not(.dice-item-select-active) .top-panel::after {
+    bottom: -2px;
+    height: 2px;
+    opacity: 0.65;
+  }
+
+  body:not(.mode-select-active):not(.dice-item-select-active) .status-block {
+    width: 100%;
+    padding: 6px 9px;
+    border-radius: 14px;
+    box-sizing: border-box;
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.12);
+  }
+
+  body:not(.mode-select-active):not(.dice-item-select-active) .status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    overflow-x: auto;
+    white-space: nowrap;
+    font-size: 12px;
+    line-height: 1.25;
+    scrollbar-width: none;
+  }
+
+  body:not(.mode-select-active):not(.dice-item-select-active) .status::-webkit-scrollbar {
+    display: none;
+  }
+
+  body:not(.mode-select-active):not(.dice-item-select-active) .status br {
+    display: none;
+  }
+
+  body:not(.mode-select-active):not(.dice-item-select-active) .current-effects-line {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 0;
+  }
+
+  body:not(.mode-select-active):not(.dice-item-select-active) .config,
+  body:not(.mode-select-active):not(.dice-item-select-active) .cell-edit-card,
+  body:not(.mode-select-active):not(.dice-item-select-active) .golden-key-catalog-panel,
+  body:not(.mode-select-active):not(.dice-item-select-active) .legend,
+  body:not(.mode-select-active):not(.dice-item-select-active) .players-legend,
+  body:not(.mode-select-active):not(.dice-item-select-active) .log-box {
+    display: none !important;
+  }
+
+  body:not(.mode-select-active):not(.dice-item-select-active) .dice-box {
+    position: fixed;
+    left: max(10px, env(safe-area-inset-left));
+    right: max(10px, env(safe-area-inset-right));
+    bottom: max(8px, env(safe-area-inset-bottom));
+    z-index: 9000;
+    width: auto;
+    min-height: 64px;
+    padding: 6px 8px;
+    border-radius: 18px;
+    border: 1px solid rgba(203, 213, 225, 0.92);
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 14px 38px rgba(15, 23, 42, 0.28);
+    backdrop-filter: blur(16px);
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    box-sizing: border-box;
+  }
+
+  body:not(.mode-select-active):not(.dice-item-select-active) .dice-box::before {
+    display: none;
+  }
+
+  body:not(.mode-select-active):not(.dice-item-select-active) .dice-row {
+    width: auto;
+    flex: 0 0 auto;
+    gap: 6px;
+    flex-wrap: nowrap;
+  }
+
+  body:not(.mode-select-active):not(.dice-item-select-active) #rollBtn,
+  body:not(.mode-select-active):not(.dice-item-select-active) #skipBtn {
+    min-height: 52px;
+    border-radius: 16px;
+    touch-action: manipulation;
+    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.22);
+  }
+
+  body:not(.mode-select-active):not(.dice-item-select-active) #rollBtn {
+    min-width: 140px;
+    padding: 0 18px;
+    font-size: 15px;
+    font-weight: 900;
+  }
+
+  body:not(.mode-select-active):not(.dice-item-select-active) #skipBtn {
+    min-width: 76px;
+    padding: 0 12px;
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  body:not(.mode-select-active):not(.dice-item-select-active) .dice-visual {
+    order: -1;
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    font-size: 26px;
+    flex: 0 0 auto;
+  }
+
+  body:not(.mode-select-active):not(.dice-item-select-active) .cheat-badge,
+  body:not(.mode-select-active):not(.dice-item-select-active) .cheat-input {
+    display: none !important;
+  }
+
+  body:not(.mode-select-active):not(.dice-item-select-active) .dice-item-status {
+    max-width: min(30vw, 240px);
+    padding: 4px 7px;
+    font-size: 11px;
+    overflow: auto;
+    text-overflow: ellipsis;
+  }
+
+  body:not(.mode-select-active):not(.dice-item-select-active) .dice-item-status-detail {
+    display: none;
+  }
+
+  body:not(.mode-select-active):not(.dice-item-select-active) .dice-value {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: none;
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1.3;
+    color: #334155;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  body:not(.mode-select-active):not(.dice-item-select-active) .board {
+    height: calc(100dvh - 152px);
+    margin-top: 5px;
+    padding: 4px;
+    gap: 3px;
+    grid-template-columns: repeat(10, minmax(0, 1fr)) !important;
+    grid-auto-rows: minmax(38px, 1fr);
+    align-content: stretch;
+    overflow: auto;
+  }
+
+  body:not(.mode-select-active):not(.dice-item-select-active) .cell {
+    min-height: 0;
+    padding: 4px 5px;
+    border-radius: 9px;
+    font-size: 11px;
+  }
+
+  body:not(.mode-select-active):not(.dice-item-select-active) .cell-zone-label {
+    font-size: 10px;
+  }
+
+  body:not(.mode-select-active):not(.dice-item-select-active) .cell.zone-boost::after,
+  body:not(.mode-select-active):not(.dice-item-select-active) .cell.zone-slow::after,
+  body:not(.mode-select-active):not(.dice-item-select-active) .cell.zone-reset::after,
+  body:not(.mode-select-active):not(.dice-item-select-active) .cell.zone-gkey::after,
+  body:not(.mode-select-active):not(.dice-item-select-active) .cell.zone-island::after {
+    right: 5px;
+    top: 3px;
+    font-size: 13px;
+  }
+
+  body:not(.mode-select-active):not(.dice-item-select-active) .token-container {
+    gap: 3px;
+    margin-top: 2px;
+  }
+
+  body:not(.mode-select-active):not(.dice-item-select-active) .token {
+    width: 15px;
+    height: 15px;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 420px) {
+  body:not(.mode-select-active):not(.dice-item-select-active) .game-container {
+    padding-bottom: 76px;
+  }
+
+  body:not(.mode-select-active):not(.dice-item-select-active) .status-block {
+    padding: 5px 8px;
+  }
+
+  body:not(.mode-select-active):not(.dice-item-select-active) .board {
+    height: calc(100dvh - 136px);
+  }
+
+  body:not(.mode-select-active):not(.dice-item-select-active) .dice-box {
+    min-height: 58px;
+    border-radius: 16px;
+  }
+
+  body:not(.mode-select-active):not(.dice-item-select-active) #rollBtn,
+  body:not(.mode-select-active):not(.dice-item-select-active) #skipBtn {
+    min-height: 46px;
+  }
+
+  body:not(.mode-select-active):not(.dice-item-select-active) .dice-visual {
+    width: 46px;
+    height: 46px;
+    font-size: 23px;
+  }
+}
+
 </style>
 </head>
 <body class="theme-default mode-select-active">
