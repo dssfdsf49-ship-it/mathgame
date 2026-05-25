@@ -67,6 +67,7 @@ body.single-ai-active .board-size-setting {
   background: #ffffff;
   border: 1px solid #e5e7eb;
   box-shadow: 0 16px 44px rgba(15, 23, 42, 0.12);
+  position: relative;
 }
 
 .mode-select-title {
@@ -80,6 +81,35 @@ body.single-ai-active .board-size-setting {
   margin: 0 0 18px;
   font-size: 13px;
   color: #6b7280;
+}
+
+.mode-sound-toggle-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 5;
+  min-height: 38px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  background: #f9fafb;
+  color: #374151;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+}
+
+.mode-sound-toggle-btn:hover {
+  border-color: #a5b4fc;
+  background: #eef2ff;
+}
+
+.mode-sound-toggle-btn:active {
+  transform: translateY(1px);
 }
 
 .mode-select-grid {
@@ -181,7 +211,7 @@ body.single-ai-active .board-size-setting {
 
 .ai-difficulty-options {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 6px;
 }
 
@@ -258,6 +288,12 @@ body.single-ai-active .board-size-setting {
   color: #6d28d9;
 }
 
+.ai-difficulty-abyss {
+  background: #ecfeff;
+  border-color: #a5f3fc;
+  color: #0e7490;
+}
+
 .ai-difficulty-easy.selected {
   background: linear-gradient(135deg, #10b981, #059669);
   border-color: #047857;
@@ -284,6 +320,13 @@ body.single-ai-active .board-size-setting {
   border-color: #4c1d95;
   color: #ffffff;
   box-shadow: 0 8px 18px rgba(76, 29, 149, 0.26);
+}
+
+.ai-difficulty-abyss.selected {
+  background: linear-gradient(135deg, #020617, #0891b2 48%, #0f172a);
+  border-color: #155e75;
+  color: #ffffff;
+  box-shadow: 0 8px 18px rgba(8, 145, 178, 0.28);
 }
 
 .mode-select-message {
@@ -333,6 +376,12 @@ body.single-ai-active .board-size-setting {
   color: #374151;
 }
 
+.dice-item-section-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
 .dice-item-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -346,11 +395,23 @@ body.single-ai-active .board-size-setting {
 }
 
 .dice-item-grid.normal-reward-grid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.dice-item-grid.condition-reward-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .dice-item-grid.hard-reward-grid {
   grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.dice-item-grid.nightmare-reward-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.dice-item-grid.abyss-reward-grid {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .dice-item-option {
@@ -375,6 +436,42 @@ body.single-ai-active .board-size-setting {
   border-color: #4f46e5;
   background: linear-gradient(135deg, #eef2ff, #fdf2f8);
   box-shadow: 0 10px 24px rgba(79, 70, 229, 0.16);
+}
+
+.dice-item-option.nightmare-dice-option {
+  border-color: #c4b5fd;
+  background: linear-gradient(145deg, #f5f3ff, #fef3c7);
+}
+
+.dice-item-option.nightmare-dice-option.selected {
+  border-color: #facc15;
+  background: linear-gradient(145deg, #111827, #312e81 58%, #020617);
+  color: #fef3c7;
+  box-shadow:
+    0 0 0 2px rgba(250, 204, 21, 0.38),
+    0 14px 32px rgba(76, 29, 149, 0.34);
+}
+
+.dice-item-option.nightmare-dice-option.selected .dice-item-desc {
+  color: #ddd6fe;
+}
+
+.dice-item-option.abyss-dice-option {
+  border-color: #67e8f9;
+  background: linear-gradient(145deg, #ecfeff, #f0f9ff 45%, #f8fafc);
+}
+
+.dice-item-option.abyss-dice-option.selected {
+  border-color: #22d3ee;
+  background: radial-gradient(circle at 20% 20%, #155e75, #083344 62%, #020617);
+  color: #ecfeff;
+  box-shadow:
+    0 0 0 2px rgba(34, 211, 238, 0.36),
+    0 14px 34px rgba(8, 47, 73, 0.34);
+}
+
+.dice-item-option.abyss-dice-option.selected .dice-item-desc {
+  color: #a5f3fc;
 }
 
 .dice-item-option:disabled {
@@ -647,6 +744,7 @@ body.single-ai-active .board-size-setting {
 
   .dice-item-grid.basic-reward-grid,
   .dice-item-grid.normal-reward-grid,
+  .dice-item-grid.condition-reward-grid,
   .dice-item-grid.hard-reward-grid {
     grid-template-columns: 1fr;
   }
@@ -746,6 +844,99 @@ body.theme-neon .status span {
       font-weight: 700;
     }
 
+    .opponent-ai-line {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin: 2px 0;
+    }
+
+    .opponent-ai-line[hidden] {
+      display: none;
+    }
+
+    .opponent-ai-name {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 2px 10px;
+      border-radius: 999px;
+      border: 1px solid #bfdbfe;
+      background: #eff6ff;
+      color: #1d4ed8;
+      font-size: 13px;
+      font-weight: 900;
+      box-shadow: 0 6px 16px rgba(37, 99, 235, 0.12);
+    }
+
+    .opponent-ai-name.ai-easy {
+      border-color: #86efac;
+      background: #ecfdf5;
+      color: #047857;
+    }
+
+    .opponent-ai-name.ai-normal {
+      border-color: #bfdbfe;
+      background: #eff6ff;
+      color: #1d4ed8;
+    }
+
+    .opponent-ai-name.ai-hard {
+      border-color: #fecdd3;
+      background: #fff1f2;
+      color: #be123c;
+    }
+
+    .opponent-ai-name.ai-nightmare {
+      border-color: #c4b5fd;
+      background: linear-gradient(135deg, #f5f3ff, #ede9fe);
+      color: #6d28d9;
+      box-shadow: 0 6px 18px rgba(109, 40, 217, 0.16);
+    }
+
+    .opponent-ai-name.ai-abyss {
+      border-color: #67e8f9;
+      background: linear-gradient(135deg, #ecfeff, #cffafe);
+      color: #0e7490;
+      box-shadow: 0 6px 18px rgba(8, 145, 178, 0.16);
+    }
+
+    .current-effects-line {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 3px;
+    }
+
+    .current-effects-list {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+
+    .current-effect-pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 22px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid #ddd6fe;
+      background: #f5f3ff;
+      color: #5b21b6;
+      font-size: 12px;
+      font-weight: 850;
+      box-shadow: 0 5px 14px rgba(91, 33, 182, 0.1);
+    }
+
+    .current-effect-pill.empty {
+      border-color: #e5e7eb;
+      background: #f9fafb;
+      color: #6b7280;
+      box-shadow: none;
+    }
+
     .config {
       font-size: 12px;
       display: flex;
@@ -768,6 +959,15 @@ body.theme-neon .status span {
       font-size: 12px;
       background: #f9fafb;
       width: 70px;
+    }
+
+    .config select:disabled {
+      opacity: 1;
+      cursor: not-allowed;
+      color: #4c1d95;
+      font-weight: 800;
+      border-color: rgba(124, 58, 237, 0.55);
+      background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
     }
 
     .config input[type="text"],
@@ -954,6 +1154,7 @@ body.theme-neon .status span {
     }
 
     .dice-visual {
+      position: relative;
       width: 64px;
       height: 64px;
       border-radius: 12px;
@@ -966,6 +1167,294 @@ body.theme-neon .status span {
       font-weight: 700;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
       transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .dice-visual.nightmare-crown-dice {
+      isolation: isolate;
+      overflow: hidden;
+      border-color: #7c3aed;
+      background:
+        radial-gradient(circle at 32% 22%, rgba(250, 204, 21, 0.24), transparent 15%),
+        radial-gradient(circle at 72% 26%, rgba(196, 181, 253, 0.42), transparent 22%),
+        radial-gradient(circle at 42% 64%, rgba(88, 28, 135, 0.9), transparent 34%),
+        linear-gradient(145deg, #020617 0%, #1e1b4b 42%, #4c1d95 68%, #0f172a 100%);
+      color: #ddd6fe;
+      box-shadow:
+        0 0 0 3px rgba(124, 58, 237, 0.42),
+        0 0 20px rgba(167, 139, 250, 0.62),
+        0 0 42px rgba(250, 204, 21, 0.18),
+        0 0 56px rgba(15, 23, 42, 0.82),
+        inset 0 0 18px rgba(250, 204, 21, 0.16);
+    }
+
+    .dice-visual.nightmare-crown-dice::before {
+      content: "";
+      position: absolute;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .dice-visual.nightmare-crown-dice::before {
+      left: 50%;
+      top: 50%;
+      width: 48px;
+      height: 48px;
+      border-radius: 999px;
+      background:
+        radial-gradient(circle at 42% 50%, #020617 0 42%, rgba(15, 23, 42, 0.96) 43% 55%, transparent 56%),
+        radial-gradient(circle at 68% 38%, rgba(250, 204, 21, 0.86) 0 10%, rgba(196, 181, 253, 0.4) 26%, transparent 58%);
+      box-shadow:
+        0 0 12px rgba(250, 204, 21, 0.45),
+        0 0 24px rgba(167, 139, 250, 0.62),
+        inset 0 0 14px rgba(2, 6, 23, 0.95);
+      opacity: 0.86;
+      transform: translate(-50%, -50%) rotate(-18deg);
+    }
+
+    .dice-visual.nightmare-crown-dice .dice-pip {
+      background: #fef3c7;
+      box-shadow: 0 0 8px rgba(250, 204, 21, 0.9);
+    }
+
+    .dice-visual.nightmare-crown-dice .dice-pip-symbol {
+      color: #fef3c7;
+      filter:
+        drop-shadow(0 0 5px rgba(250, 204, 21, 0.8))
+        drop-shadow(0 0 9px rgba(168, 85, 247, 0.9));
+    }
+
+    .dice-visual.nightmare-crown-dice.golden-fifteen-face,
+    .dice-visual.nightmare-crown-dice.golden-fifteen-face .dice-golden-fifteen-number {
+      color: #fde68a;
+      font-weight: 900;
+      text-shadow:
+        0 0 4px rgba(254, 240, 138, 0.82),
+        0 0 10px rgba(250, 204, 21, 0.58),
+        0 1px 2px rgba(15, 23, 42, 0.9);
+      -webkit-text-stroke: 0.4px rgba(120, 53, 15, 0.52);
+    }
+
+    .dice-golden-fifteen-number {
+      position: relative;
+      z-index: 1;
+    }
+
+    .dice-visual.nightmare-crown-dice .nightmare-pip {
+      width: auto;
+      height: auto;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+      color: #ddd6fe;
+      font-size: 20px;
+      line-height: 1;
+      text-shadow:
+        0 0 6px rgba(196, 181, 253, 0.86),
+        0 0 13px rgba(99, 102, 241, 0.7);
+      filter: drop-shadow(0 0 8px rgba(15, 23, 42, 0.7));
+    }
+
+    .nightmare-face-grid {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      width: 100%;
+      height: 100%;
+      padding: 9px;
+      gap: 2px;
+    }
+
+    .nightmare-face-grid::before {
+      content: "";
+      position: absolute;
+      inset: 11px;
+      border-radius: 10px;
+      background:
+        radial-gradient(circle at 50% 50%, rgba(196, 181, 253, 0.16), transparent 54%),
+        linear-gradient(145deg, rgba(15, 23, 42, 0.12), rgba(49, 46, 129, 0.28));
+      pointer-events: none;
+    }
+
+    .nightmare-face-cell {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .nightmare-rune {
+      color: #fef3c7;
+      font-size: 18px;
+      line-height: 1;
+      text-shadow:
+        0 0 5px rgba(254, 243, 199, 0.92),
+        0 0 13px rgba(250, 204, 21, 0.46),
+        0 0 18px rgba(167, 139, 250, 0.78),
+        0 0 22px rgba(15, 23, 42, 0.88);
+      filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.7));
+    }
+
+    .dice-visual.abyss-dice {
+      overflow: hidden;
+      border-color: #155e75;
+      border-radius: 18px;
+      background:
+        radial-gradient(circle at 28% 22%, rgba(103, 232, 249, 0.54), transparent 18%),
+        radial-gradient(circle at 76% 78%, rgba(14, 165, 233, 0.34), transparent 26%),
+        linear-gradient(145deg, #020617 0%, #083344 54%, #0f172a 100%);
+      color: #cffafe;
+      box-shadow:
+        0 0 0 3px rgba(8, 145, 178, 0.36),
+        0 0 24px rgba(6, 182, 212, 0.58),
+        0 0 48px rgba(2, 6, 23, 0.9),
+        inset 0 0 24px rgba(103, 232, 249, 0.18);
+    }
+
+    .dice-visual.abyss-dice::before,
+    .dice-visual.abyss-dice::after {
+      content: "";
+      position: absolute;
+      pointer-events: none;
+    }
+
+    .dice-visual.abyss-dice::before {
+      left: 50%;
+      top: 50%;
+      width: 76px;
+      height: 12px;
+      border-radius: 999px;
+      background:
+        radial-gradient(ellipse at center, rgba(2, 6, 23, 0.98) 0 34%, rgba(8, 145, 178, 0.82) 56%, rgba(103, 232, 249, 0.82) 72%, transparent 78%);
+      box-shadow:
+        0 0 14px rgba(103, 232, 249, 0.86),
+        0 0 28px rgba(14, 165, 233, 0.52);
+      transform: translate(-50%, -50%) rotate(-12deg);
+    }
+
+    .dice-visual.abyss-dice::after {
+      inset: 7px;
+      border-radius: 16px;
+      border: 1px solid rgba(103, 232, 249, 0.32);
+      background:
+        linear-gradient(120deg, transparent 0 43%, rgba(103, 232, 249, 0.32) 45%, transparent 48% 100%),
+        radial-gradient(circle at 50% 50%, transparent 0 40%, rgba(8, 145, 178, 0.18) 64%, transparent 68%);
+      mix-blend-mode: screen;
+      animation: abyssDicePulse 2.4s ease-in-out infinite;
+    }
+
+    .abyss-face-grid {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      width: 100%;
+      height: 100%;
+      padding: 8px;
+      gap: 2px;
+    }
+
+    .abyss-face-cell {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .abyss-rune {
+      color: #ecfeff;
+      font-size: 17px;
+      line-height: 1;
+      text-shadow:
+        0 0 7px rgba(236, 254, 255, 0.95),
+        0 0 15px rgba(103, 232, 249, 0.86),
+        0 0 26px rgba(6, 182, 212, 0.74);
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.78));
+    }
+
+    @keyframes nightmareDiceEclipsePulse {
+      0%, 100% {
+        opacity: 0.58;
+        transform: scale(0.96) rotate(0deg);
+      }
+      50% {
+        opacity: 0.92;
+        transform: scale(1.04) rotate(8deg);
+      }
+    }
+
+    @keyframes abyssDicePulse {
+      0%, 100% {
+        opacity: 0.72;
+        transform: scale(0.98) rotate(0deg);
+      }
+      50% {
+        opacity: 1;
+        transform: scale(1.04) rotate(3deg);
+      }
+    }
+
+    .dice-visual.nightmare-infinity-roll {
+      isolation: isolate;
+      border-color: #fef08a;
+      background:
+        radial-gradient(circle at 50% 50%, rgba(254, 240, 138, 0.98), transparent 22%),
+        radial-gradient(circle at 20% 18%, rgba(216, 180, 254, 0.95), transparent 28%),
+        radial-gradient(circle at 78% 82%, rgba(124, 58, 237, 0.85), transparent 34%),
+        linear-gradient(145deg, #020617, #312e81 54%, #111827);
+      color: #fef3c7;
+      font-size: 42px;
+      text-shadow:
+        0 0 8px rgba(254, 240, 138, 0.95),
+        0 0 18px rgba(168, 85, 247, 0.9);
+      box-shadow:
+        0 0 0 4px rgba(250, 204, 21, 0.34),
+        0 0 26px rgba(250, 204, 21, 0.9),
+        0 0 54px rgba(168, 85, 247, 0.95),
+        0 0 82px rgba(15, 23, 42, 0.72);
+      animation: nightmareInfinityPulse 0.72s ease-in-out infinite;
+    }
+
+    .dice-visual.nightmare-infinity-roll::before {
+      content: "";
+      position: absolute;
+      inset: -16px;
+      border-radius: 22px;
+      border: 2px solid rgba(250, 204, 21, 0.44);
+      background:
+        conic-gradient(
+          from 0deg,
+          transparent,
+          rgba(250, 204, 21, 0.55),
+          transparent,
+          rgba(168, 85, 247, 0.72),
+          transparent
+        );
+      filter: blur(1px);
+      opacity: 0.92;
+      animation: nightmareInfinityHalo 1.4s linear infinite;
+    }
+
+    @keyframes nightmareInfinityPulse {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.16) rotate(-2deg);
+      }
+    }
+
+    @keyframes nightmareInfinityHalo {
+      0% {
+        transform: rotate(0deg) scale(0.94);
+      }
+      100% {
+        transform: rotate(360deg) scale(1.08);
+      }
     }
 
     
@@ -1100,6 +1589,12 @@ body.theme-neon .status span {
       grid-template-columns: repeat(10, 1fr);
       gap: 4px;
       margin-top: 8px;
+      padding: 6px;
+      border-radius: 18px;
+      border: 1px solid transparent;
+      background: rgba(248, 250, 252, 0.42);
+      box-sizing: border-box;
+      transition: background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
     }
 
     .cell {
@@ -1449,6 +1944,1193 @@ body.theme-neon .status span {
       100% { transform: scale(0.4); opacity: 0; }
     }
 
+    #nightmareVictoryOverlay {
+      --nightmare-x: 50vw;
+      --nightmare-y: 50vh;
+      --nightmare-gold: #facc15;
+      --nightmare-violet: #a78bfa;
+      position: fixed;
+      inset: 0;
+      display: none;
+      pointer-events: none;
+      z-index: 10010;
+      background:
+        radial-gradient(circle at var(--nightmare-x) var(--nightmare-y),
+          rgba(254, 243, 199, 0.28) 0,
+          rgba(196, 181, 253, 0.34) 58px,
+          rgba(124, 58, 237, 0.28) 130px,
+          rgba(15, 23, 42, 0.58) 280px,
+          rgba(2, 6, 23, 0.9) 100%),
+        radial-gradient(circle at 50% 18%, rgba(250, 204, 21, 0.18), transparent 24%),
+        linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(49, 46, 129, 0.76));
+      opacity: 0;
+      overflow: hidden;
+    }
+
+    #nightmareVictoryOverlay::before,
+    #nightmareVictoryOverlay::after {
+      content: "";
+      position: fixed;
+      inset: -18%;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #nightmareVictoryOverlay::before {
+      background:
+        conic-gradient(from 18deg at var(--nightmare-x) var(--nightmare-y),
+          transparent 0deg,
+          rgba(250, 204, 21, 0.2) 20deg,
+          transparent 38deg,
+          rgba(167, 139, 250, 0.28) 72deg,
+          transparent 116deg,
+          rgba(254, 243, 199, 0.18) 152deg,
+          transparent 214deg,
+          rgba(124, 58, 237, 0.24) 278deg,
+          transparent 360deg);
+      filter: blur(1px);
+      animation: nightmareRaySpin 4.8s ease forwards;
+    }
+
+    #nightmareVictoryOverlay::after {
+      background-image:
+        radial-gradient(circle, rgba(254, 243, 199, 0.88) 0 1px, transparent 2px),
+        radial-gradient(circle, rgba(196, 181, 253, 0.9) 0 1px, transparent 2px);
+      background-position: 12% 18%, 78% 30%;
+      background-size: 72px 72px, 116px 116px;
+      animation: nightmareStarfield 4.8s ease forwards;
+    }
+
+    #nightmareVictoryOverlay.show {
+      display: block;
+      animation: nightmareOverlayFade 4.8s ease forwards;
+    }
+
+    .nightmare-victory-crown {
+      position: fixed;
+      left: var(--nightmare-x);
+      top: var(--nightmare-y);
+      z-index: 2;
+      font-size: 70px;
+      line-height: 1;
+      text-shadow:
+        0 0 12px rgba(254, 240, 138, 1),
+        0 0 32px rgba(168, 85, 247, 0.95),
+        0 0 58px rgba(76, 29, 149, 0.85),
+        0 16px 26px rgba(0, 0, 0, 0.58);
+      filter:
+        drop-shadow(0 0 14px rgba(250, 204, 21, 0.9))
+        drop-shadow(0 0 30px rgba(167, 139, 250, 0.88));
+      transform: translate(-50%, -360px) scale(0.78);
+      animation: nightmareCrownDrop 4.25s cubic-bezier(0.17, 0.84, 0.34, 1) forwards;
+    }
+
+    .nightmare-victory-spotlight {
+      position: fixed;
+      left: var(--nightmare-x);
+      top: var(--nightmare-y);
+      z-index: 1;
+      width: 178px;
+      height: 178px;
+      border-radius: 999px;
+      transform: translate(-50%, -50%);
+      background:
+        radial-gradient(circle, rgba(254, 243, 199, 0.48) 0 14px, rgba(196, 181, 253, 0.4) 40px, rgba(88, 28, 135, 0.28) 78px, transparent 108px);
+      box-shadow:
+        0 0 42px rgba(254, 243, 199, 0.86),
+        0 0 88px rgba(196, 181, 253, 0.95),
+        0 0 140px rgba(76, 29, 149, 0.78);
+      animation: nightmareSpotlightPulse 4.55s ease forwards;
+    }
+
+    .nightmare-victory-rift {
+      position: fixed;
+      left: var(--nightmare-x);
+      top: var(--nightmare-y);
+      width: 34px;
+      height: 280px;
+      border-radius: 999px;
+      background:
+        linear-gradient(180deg, transparent, rgba(254, 243, 199, 0.86), rgba(167, 139, 250, 0.92), transparent);
+      box-shadow:
+        0 0 22px rgba(254, 243, 199, 0.9),
+        0 0 58px rgba(167, 139, 250, 0.95),
+        0 0 90px rgba(76, 29, 149, 0.82);
+      opacity: 0;
+      transform: translate(-50%, -170px) scaleY(0.15);
+      animation: nightmareRiftOpen 4.45s ease forwards;
+    }
+
+    .nightmare-victory-eclipse {
+      position: fixed;
+      left: var(--nightmare-x);
+      top: var(--nightmare-y);
+      z-index: 1;
+      width: 260px;
+      height: 260px;
+      border-radius: 999px;
+      transform: translate(-50%, -50%) scale(0.12);
+      opacity: 0;
+      background:
+        radial-gradient(circle at 50% 50%, rgba(2, 6, 23, 0.98) 0 32%, rgba(49, 46, 129, 0.72) 45%, transparent 62%),
+        conic-gradient(from 90deg, transparent, rgba(250, 204, 21, 0.58), transparent, rgba(167, 139, 250, 0.78), transparent);
+      box-shadow:
+        0 0 34px rgba(250, 204, 21, 0.8),
+        0 0 88px rgba(167, 139, 250, 0.82),
+        inset 0 0 42px rgba(15, 23, 42, 1);
+      animation: nightmareEclipseBloom 4.65s ease forwards;
+    }
+
+    .nightmare-victory-sigil {
+      position: fixed;
+      left: var(--nightmare-x);
+      top: var(--nightmare-y);
+      z-index: 2;
+      width: 190px;
+      height: 190px;
+      border-radius: 999px;
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.25) rotate(-36deg);
+      background:
+        linear-gradient(90deg, transparent 48%, rgba(254, 243, 199, 0.9) 49% 51%, transparent 52%),
+        linear-gradient(0deg, transparent 48%, rgba(196, 181, 253, 0.8) 49% 51%, transparent 52%),
+        conic-gradient(from 0deg, transparent 0 8%, rgba(250, 204, 21, 0.72) 10% 13%, transparent 15% 25%, rgba(167, 139, 250, 0.68) 28% 31%, transparent 34% 47%, rgba(254, 243, 199, 0.72) 50% 53%, transparent 56% 71%, rgba(167, 139, 250, 0.68) 74% 77%, transparent 80% 100%);
+      border: 1px solid rgba(254, 243, 199, 0.55);
+      box-shadow:
+        0 0 22px rgba(250, 204, 21, 0.82),
+        0 0 48px rgba(167, 139, 250, 0.72),
+        inset 0 0 24px rgba(250, 204, 21, 0.34);
+      animation: nightmareSigilSummon 4.55s ease forwards;
+    }
+
+    .nightmare-victory-sigil::before,
+    .nightmare-victory-sigil::after {
+      content: "";
+      position: absolute;
+      inset: 22px;
+      border-radius: 24px;
+      border: 1px solid rgba(254, 243, 199, 0.72);
+      transform: rotate(45deg);
+      box-shadow: inset 0 0 18px rgba(167, 139, 250, 0.44);
+    }
+
+    .nightmare-victory-sigil::after {
+      inset: 52px;
+      border-radius: 999px;
+      border-color: rgba(196, 181, 253, 0.66);
+      transform: none;
+    }
+
+    .nightmare-victory-rune-orbit {
+      position: fixed;
+      left: var(--nightmare-x);
+      top: var(--nightmare-y);
+      z-index: 3;
+      width: 230px;
+      height: 230px;
+      border-radius: 999px;
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.4);
+      animation: nightmareRuneOrbit 4.5s ease forwards;
+    }
+
+    .nightmare-victory-rune-orbit.orbit-two {
+      width: 300px;
+      height: 300px;
+      animation-name: nightmareRuneOrbitReverse;
+      animation-delay: 0.08s;
+    }
+
+    .nightmare-victory-rune-orbit span {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      color: #fef3c7;
+      font-size: 17px;
+      font-weight: 900;
+      text-shadow:
+        0 0 8px rgba(254, 243, 199, 0.95),
+        0 0 18px rgba(167, 139, 250, 0.9);
+      transform: translate(-50%, -50%) rotate(var(--rune-angle)) translateX(112px);
+    }
+
+    .nightmare-victory-rune-orbit.orbit-two span {
+      color: #ddd6fe;
+      font-size: 15px;
+      transform: translate(-50%, -50%) rotate(var(--rune-angle)) translateX(148px);
+    }
+
+    .nightmare-victory-rune-orbit span:nth-child(1) { --rune-angle: 0deg; }
+    .nightmare-victory-rune-orbit span:nth-child(2) { --rune-angle: 60deg; }
+    .nightmare-victory-rune-orbit span:nth-child(3) { --rune-angle: 120deg; }
+    .nightmare-victory-rune-orbit span:nth-child(4) { --rune-angle: 180deg; }
+    .nightmare-victory-rune-orbit span:nth-child(5) { --rune-angle: 240deg; }
+    .nightmare-victory-rune-orbit span:nth-child(6) { --rune-angle: 300deg; }
+    }
+
+    .nightmare-victory-ring {
+      position: fixed;
+      left: var(--nightmare-x);
+      top: var(--nightmare-y);
+      width: 64px;
+      height: 64px;
+      border-radius: 999px;
+      border: 2px solid rgba(254, 243, 199, 0.86);
+      box-shadow:
+        0 0 18px rgba(254, 243, 199, 0.9),
+        inset 0 0 18px rgba(167, 139, 250, 0.75);
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.1);
+      animation: nightmareRingBurst 4.35s ease forwards;
+    }
+
+    .nightmare-victory-ring.ring-two {
+      border-color: rgba(196, 181, 253, 0.9);
+      animation-delay: 0.16s;
+    }
+
+    .nightmare-victory-ring.ring-three {
+      border-color: rgba(250, 204, 21, 0.78);
+      animation-delay: 0.32s;
+    }
+
+    .nightmare-victory-copy {
+      position: fixed;
+      left: 50%;
+      top: 21%;
+      z-index: 3;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      transform: translate(-50%, -26px);
+      text-align: center;
+      opacity: 0;
+      animation: nightmareTitleReveal 4.55s ease forwards;
+    }
+
+    .nightmare-victory-title {
+      color: #fef3c7;
+      font-size: 44px;
+      font-weight: 950;
+      letter-spacing: 0;
+      background: linear-gradient(180deg, #ffffff 0%, #fef3c7 35%, #facc15 64%, #c4b5fd 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow:
+        0 0 14px rgba(250, 204, 21, 0.95),
+        0 0 34px rgba(168, 85, 247, 0.96),
+        0 0 62px rgba(76, 29, 149, 0.86);
+    }
+
+    .nightmare-victory-sub {
+      color: #ddd6fe;
+      font-size: 16px;
+      font-weight: 800;
+      padding: 5px 12px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.44);
+      box-shadow: inset 0 0 0 1px rgba(196, 181, 253, 0.28);
+      text-shadow: 0 2px 12px rgba(0, 0, 0, 0.72);
+    }
+
+    .nightmare-victory-lightning {
+      --bolt-x: -50%;
+      --bolt-y: -126px;
+      --bolt-rotate: 18deg;
+      --bolt-rotate-alt: -11deg;
+      position: fixed;
+      left: var(--nightmare-x);
+      top: var(--nightmare-y);
+      z-index: 2;
+      width: 5px;
+      height: 240px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, transparent, #fef3c7 20%, #a78bfa 54%, transparent);
+      box-shadow:
+        0 0 18px rgba(254, 243, 199, 0.95),
+        0 0 34px rgba(167, 139, 250, 0.95);
+      transform: translate(var(--bolt-x), var(--bolt-y)) rotate(var(--bolt-rotate)) scaleY(0);
+      opacity: 0;
+      animation: nightmareLightningStrike 4.35s ease forwards;
+    }
+
+    .nightmare-victory-lightning.lightning-left {
+      --bolt-x: calc(-50% - 54px);
+      --bolt-y: -90px;
+      --bolt-rotate: -31deg;
+      --bolt-rotate-alt: -42deg;
+      height: 170px;
+      width: 3px;
+      animation-delay: 0.1s;
+    }
+
+    .nightmare-victory-lightning.lightning-right {
+      --bolt-x: calc(-50% + 58px);
+      --bolt-y: -78px;
+      --bolt-rotate: 39deg;
+      --bolt-rotate-alt: 27deg;
+      height: 150px;
+      width: 3px;
+      animation-delay: 0.22s;
+    }
+
+    .nightmare-victory-sparks span {
+      --spark-x: 0px;
+      --spark-y: 0px;
+      --spark-rotate: 0deg;
+      position: fixed;
+      left: var(--nightmare-x);
+      top: var(--nightmare-y);
+      z-index: 2;
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: radial-gradient(circle, #ffffff 0 18%, #fef3c7 42%, #a78bfa 74%, transparent 100%);
+      box-shadow:
+        0 0 10px rgba(254, 243, 199, 0.95),
+        0 0 18px rgba(167, 139, 250, 0.88);
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0);
+      animation: nightmareSparkBurst 4.3s ease forwards;
+    }
+
+    .nightmare-victory-sparks span:nth-child(1) { --spark-x: -118px; --spark-y: -88px; --spark-rotate: 12deg; }
+    .nightmare-victory-sparks span:nth-child(2) { --spark-x: -74px; --spark-y: -138px; --spark-rotate: -18deg; animation-delay: 0.06s; }
+    .nightmare-victory-sparks span:nth-child(3) { --spark-x: 4px; --spark-y: -158px; --spark-rotate: 22deg; animation-delay: 0.12s; }
+    .nightmare-victory-sparks span:nth-child(4) { --spark-x: 86px; --spark-y: -124px; --spark-rotate: -25deg; animation-delay: 0.18s; }
+    .nightmare-victory-sparks span:nth-child(5) { --spark-x: 138px; --spark-y: -52px; --spark-rotate: 15deg; animation-delay: 0.24s; }
+    .nightmare-victory-sparks span:nth-child(6) { --spark-x: 124px; --spark-y: 34px; --spark-rotate: -10deg; animation-delay: 0.3s; }
+    .nightmare-victory-sparks span:nth-child(7) { --spark-x: 52px; --spark-y: 116px; --spark-rotate: 28deg; animation-delay: 0.16s; }
+    .nightmare-victory-sparks span:nth-child(8) { --spark-x: -42px; --spark-y: 126px; --spark-rotate: -20deg; animation-delay: 0.22s; }
+    .nightmare-victory-sparks span:nth-child(9) { --spark-x: -126px; --spark-y: 54px; --spark-rotate: 18deg; animation-delay: 0.28s; }
+    .nightmare-victory-sparks span:nth-child(10) { --spark-x: -152px; --spark-y: -18px; --spark-rotate: -12deg; animation-delay: 0.34s; }
+    .nightmare-victory-sparks span:nth-child(11) { --spark-x: 34px; --spark-y: -92px; --spark-rotate: 30deg; animation-delay: 0.4s; }
+    .nightmare-victory-sparks span:nth-child(12) { --spark-x: -28px; --spark-y: 72px; --spark-rotate: -28deg; animation-delay: 0.46s; }
+
+    .nightmare-victory-shards span {
+      --shard-x: 0px;
+      --shard-y: 0px;
+      --shard-rotate: 0deg;
+      position: fixed;
+      left: var(--nightmare-x);
+      top: var(--nightmare-y);
+      z-index: 2;
+      width: 14px;
+      height: 28px;
+      clip-path: polygon(50% 0%, 100% 100%, 0% 78%);
+      background: linear-gradient(180deg, rgba(254, 243, 199, 0.96), rgba(167, 139, 250, 0.42));
+      box-shadow:
+        0 0 10px rgba(250, 204, 21, 0.88),
+        0 0 24px rgba(167, 139, 250, 0.74);
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.1) rotate(var(--shard-rotate));
+      animation: nightmareShardScatter 4.35s ease forwards;
+    }
+
+    .nightmare-victory-shards span:nth-child(1) { --shard-x: -188px; --shard-y: -44px; --shard-rotate: -36deg; }
+    .nightmare-victory-shards span:nth-child(2) { --shard-x: -126px; --shard-y: -148px; --shard-rotate: 18deg; animation-delay: 0.08s; }
+    .nightmare-victory-shards span:nth-child(3) { --shard-x: 16px; --shard-y: -202px; --shard-rotate: 47deg; animation-delay: 0.14s; }
+    .nightmare-victory-shards span:nth-child(4) { --shard-x: 154px; --shard-y: -126px; --shard-rotate: -18deg; animation-delay: 0.2s; }
+    .nightmare-victory-shards span:nth-child(5) { --shard-x: 204px; --shard-y: 16px; --shard-rotate: 30deg; animation-delay: 0.26s; }
+    .nightmare-victory-shards span:nth-child(6) { --shard-x: 110px; --shard-y: 168px; --shard-rotate: -52deg; animation-delay: 0.18s; }
+    .nightmare-victory-shards span:nth-child(7) { --shard-x: -58px; --shard-y: 194px; --shard-rotate: 12deg; animation-delay: 0.3s; }
+    .nightmare-victory-shards span:nth-child(8) { --shard-x: -184px; --shard-y: 86px; --shard-rotate: 58deg; animation-delay: 0.24s; }
+
+    .token.nightmare-victory-winner {
+      position: relative;
+      z-index: 3;
+      animation: nightmareWinnerGlow 0.9s ease-in-out infinite;
+    }
+
+    .game-container.nightmare-victory-shake {
+      animation: nightmareVictoryShake 0.68s ease;
+    }
+
+    @keyframes nightmareOverlayFade {
+      0%   { opacity: 0; }
+      9%   { opacity: 1; }
+      84%  { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    @keyframes nightmareRaySpin {
+      0%   { opacity: 0; transform: rotate(0deg) scale(0.92); }
+      14%  { opacity: 0.9; }
+      72%  { opacity: 0.72; transform: rotate(28deg) scale(1.05); }
+      100% { opacity: 0; transform: rotate(42deg) scale(1.1); }
+    }
+
+    @keyframes nightmareStarfield {
+      0%   { opacity: 0; transform: translateY(14px) scale(0.98); }
+      20%  { opacity: 0.58; }
+      74%  { opacity: 0.48; transform: translateY(-14px) scale(1.03); }
+      100% { opacity: 0; transform: translateY(-28px) scale(1.05); }
+    }
+
+    @keyframes nightmareEclipseBloom {
+      0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.08) rotate(-18deg);
+        filter: blur(5px);
+      }
+      20% {
+        opacity: 0.92;
+        transform: translate(-50%, -50%) scale(0.9) rotate(10deg);
+        filter: blur(0);
+      }
+      52% {
+        opacity: 0.88;
+        transform: translate(-50%, -50%) scale(1.08) rotate(34deg);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(1.38) rotate(76deg);
+        filter: blur(4px);
+      }
+    }
+
+    @keyframes nightmareSigilSummon {
+      0%, 12% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.25) rotate(-48deg);
+      }
+      30% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1) rotate(8deg);
+      }
+      62% {
+        opacity: 0.86;
+        transform: translate(-50%, -50%) scale(1.14) rotate(42deg);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(1.36) rotate(96deg);
+      }
+    }
+
+    @keyframes nightmareRuneOrbit {
+      0%, 16% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.4) rotate(-80deg);
+      }
+      34% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1) rotate(18deg);
+      }
+      74% {
+        opacity: 0.78;
+        transform: translate(-50%, -50%) scale(1.08) rotate(170deg);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(1.22) rotate(250deg);
+      }
+    }
+
+    @keyframes nightmareRuneOrbitReverse {
+      0%, 16% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.34) rotate(95deg);
+      }
+      34% {
+        opacity: 0.85;
+        transform: translate(-50%, -50%) scale(1) rotate(-12deg);
+      }
+      74% {
+        opacity: 0.68;
+        transform: translate(-50%, -50%) scale(1.04) rotate(-150deg);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(1.2) rotate(-230deg);
+      }
+    }
+
+    @keyframes nightmareCrownDrop {
+      0% {
+        opacity: 0;
+        transform: translate(-50%, -360px) scale(0.78) rotate(-14deg);
+      }
+      24% {
+        opacity: 1;
+        transform: translate(-50%, -82px) scale(1.18) rotate(6deg);
+      }
+      39% {
+        transform: translate(-50%, -58px) scale(1.03) rotate(-3deg);
+      }
+      54% {
+        transform: translate(-50%, -72px) scale(1.12) rotate(2deg);
+      }
+      78% {
+        opacity: 1;
+        transform: translate(-50%, -60px) scale(1.08) rotate(0deg);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -58px) scale(1.22) rotate(0deg);
+      }
+    }
+
+    @keyframes nightmareSpotlightPulse {
+      0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.35); }
+      16%  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+      45%  { opacity: 0.96; transform: translate(-50%, -50%) scale(1.3); }
+      76%  { opacity: 0.72; transform: translate(-50%, -50%) scale(1.72); }
+      100% { opacity: 0; transform: translate(-50%, -50%) scale(2.05); }
+    }
+
+    @keyframes nightmareRiftOpen {
+      0%   { opacity: 0; transform: translate(-50%, -190px) scaleY(0.05); }
+      16%  { opacity: 0.95; transform: translate(-50%, -166px) scaleY(1); }
+      42%  { opacity: 0.72; transform: translate(-50%, -150px) scaleY(1.12); }
+      76%  { opacity: 0.42; transform: translate(-50%, -138px) scaleY(0.76); }
+      100% { opacity: 0; transform: translate(-50%, -126px) scaleY(0.18); }
+    }
+
+    @keyframes nightmareRingBurst {
+      0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.1); }
+      18%  { opacity: 1; transform: translate(-50%, -50%) scale(0.72); }
+      56%  { opacity: 0.72; transform: translate(-50%, -50%) scale(2.18); }
+      100% { opacity: 0; transform: translate(-50%, -50%) scale(3.24); }
+    }
+
+    @keyframes nightmareTitleReveal {
+      0%   { opacity: 0; transform: translate(-50%, -26px) scale(0.92); }
+      18%  { opacity: 1; transform: translate(-50%, 0) scale(1.04); }
+      44%  { opacity: 1; transform: translate(-50%, 0) scale(1); }
+      78%  { opacity: 1; transform: translate(-50%, 0) scale(1.04); }
+      100% { opacity: 0; transform: translate(-50%, 18px) scale(1.08); }
+    }
+
+    @keyframes nightmareLightningStrike {
+      0%, 42% {
+        opacity: 0;
+        transform: translate(var(--bolt-x), var(--bolt-y)) rotate(var(--bolt-rotate)) scaleY(0);
+      }
+      46% {
+        opacity: 1;
+        transform: translate(var(--bolt-x), var(--bolt-y)) rotate(var(--bolt-rotate)) scaleY(1);
+      }
+      52% {
+        opacity: 0;
+        transform: translate(var(--bolt-x), var(--bolt-y)) rotate(var(--bolt-rotate)) scaleY(0.68);
+      }
+      62% {
+        opacity: 0.95;
+        transform: translate(var(--bolt-x), var(--bolt-y)) rotate(var(--bolt-rotate-alt)) scaleY(0.9);
+      }
+      69% {
+        opacity: 0;
+        transform: translate(var(--bolt-x), var(--bolt-y)) rotate(var(--bolt-rotate-alt)) scaleY(0.4);
+      }
+      100% { opacity: 0; }
+    }
+
+    @keyframes nightmareSparkBurst {
+      0%, 20% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0) rotate(0deg);
+      }
+      36% {
+        opacity: 1;
+        transform: translate(-50%, -50%) translate(var(--spark-x), var(--spark-y)) scale(1.25) rotate(var(--spark-rotate));
+      }
+      78% {
+        opacity: 0.72;
+        transform: translate(-50%, -50%) translate(var(--spark-x), var(--spark-y)) scale(0.84) rotate(var(--spark-rotate));
+      }
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) translate(var(--spark-x), var(--spark-y)) scale(0.2) rotate(var(--spark-rotate));
+      }
+    }
+
+    @keyframes nightmareShardScatter {
+      0%, 28% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.1) rotate(var(--shard-rotate));
+      }
+      42% {
+        opacity: 0.95;
+        transform: translate(-50%, -50%) translate(var(--shard-x), var(--shard-y)) scale(1.05) rotate(var(--shard-rotate));
+      }
+      78% {
+        opacity: 0.68;
+        transform: translate(-50%, -50%) translate(var(--shard-x), var(--shard-y)) scale(0.86) rotate(var(--shard-rotate));
+      }
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) translate(var(--shard-x), var(--shard-y)) scale(0.26) rotate(var(--shard-rotate));
+      }
+    }
+
+    @keyframes nightmareWinnerGlow {
+      0%, 100% {
+        transform: scale(1.2);
+        box-shadow:
+          0 0 0 2px rgba(254, 243, 199, 0.92),
+          0 0 16px rgba(167, 139, 250, 0.95);
+      }
+      50% {
+        transform: scale(1.45);
+        box-shadow:
+          0 0 0 4px rgba(254, 243, 199, 0.95),
+          0 0 28px rgba(168, 85, 247, 1),
+          0 0 48px rgba(76, 29, 149, 0.86);
+      }
+    }
+
+    @keyframes nightmareVictoryShake {
+      0%   { transform: translateX(0); }
+      20%  { transform: translateX(-6px); }
+      40%  { transform: translateX(6px); }
+      60%  { transform: translateX(-4px); }
+      80%  { transform: translateX(4px); }
+      100% { transform: translateX(0); }
+    }
+
+    #abyssUnlockOverlay {
+      --abyss-x: 50vw;
+      --abyss-y: 54vh;
+      position: fixed;
+      inset: 0;
+      display: none;
+      pointer-events: none;
+      z-index: 10030;
+      overflow: hidden;
+      opacity: 0;
+      background:
+        radial-gradient(circle at var(--abyss-x) var(--abyss-y),
+          rgba(103, 232, 249, 0.22) 0,
+          rgba(8, 47, 73, 0.48) 118px,
+          rgba(2, 6, 23, 0.82) 330px,
+          rgba(2, 6, 23, 0.94) 100%),
+        radial-gradient(circle at 50% 0%, rgba(34, 211, 238, 0.18), transparent 34%),
+        linear-gradient(180deg, rgba(2, 6, 23, 0.26), rgba(8, 47, 73, 0.18) 48%, rgba(2, 6, 23, 0.84));
+    }
+
+    #abyssUnlockOverlay::before,
+    #abyssUnlockOverlay::after {
+      content: "";
+      position: fixed;
+      inset: -20%;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #abyssUnlockOverlay::before {
+      background:
+        conic-gradient(from 120deg at var(--abyss-x) var(--abyss-y),
+          transparent 0deg,
+          rgba(14, 165, 233, 0.18) 42deg,
+          transparent 78deg,
+          rgba(6, 182, 212, 0.22) 136deg,
+          transparent 176deg,
+          rgba(2, 6, 23, 0.62) 242deg,
+          rgba(103, 232, 249, 0.2) 288deg,
+          transparent 360deg);
+      filter: blur(2px);
+      animation: abyssRayTwist 4.8s ease forwards;
+    }
+
+    #abyssUnlockOverlay::after {
+      background-image:
+        radial-gradient(circle, rgba(103, 232, 249, 0.9) 0 1px, transparent 2px),
+        radial-gradient(circle, rgba(14, 165, 233, 0.7) 0 1px, transparent 2px);
+      background-position: 14% 20%, 76% 34%;
+      background-size: 84px 84px, 132px 132px;
+      animation: abyssStarDrift 4.8s ease forwards;
+    }
+
+    #abyssUnlockOverlay.show {
+      display: block;
+      animation: abyssOverlayFade 4.8s ease forwards;
+    }
+
+    .abyss-unlock-rift {
+      position: fixed;
+      left: var(--abyss-x);
+      top: var(--abyss-y);
+      z-index: 2;
+      width: 34px;
+      height: 18px;
+      border-radius: 999px;
+      transform: translate(-50%, 42px) scaleX(0.12);
+      opacity: 0;
+      background:
+        radial-gradient(ellipse at center, #020617 0 28%, rgba(8, 47, 73, 0.96) 46%, rgba(103, 232, 249, 0.9) 68%, transparent 74%);
+      box-shadow:
+        0 0 22px rgba(103, 232, 249, 0.92),
+        0 0 70px rgba(14, 165, 233, 0.72),
+        inset 0 0 30px rgba(2, 6, 23, 1);
+      animation: abyssRiftOpen 4.65s ease forwards;
+    }
+
+    .abyss-unlock-rift::before,
+    .abyss-unlock-rift::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 140%;
+      height: 5px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, transparent, rgba(103, 232, 249, 0.9), transparent);
+      transform: translate(-50%, -50%) rotate(0deg);
+      filter: blur(1px);
+    }
+
+    .abyss-unlock-rift::after {
+      width: 92%;
+      transform: translate(-50%, -50%) rotate(7deg);
+      opacity: 0.65;
+    }
+
+    .abyss-unlock-vortex {
+      position: fixed;
+      left: var(--abyss-x);
+      top: var(--abyss-y);
+      z-index: 1;
+      width: 260px;
+      height: 260px;
+      border-radius: 999px;
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.18) rotate(-28deg);
+      background:
+        radial-gradient(circle, rgba(2, 6, 23, 0.94) 0 26%, rgba(8, 47, 73, 0.7) 42%, transparent 66%),
+        conic-gradient(from 0deg, transparent, rgba(103, 232, 249, 0.64), transparent, rgba(6, 182, 212, 0.48), transparent);
+      box-shadow:
+        0 0 44px rgba(103, 232, 249, 0.65),
+        inset 0 0 56px rgba(2, 6, 23, 1);
+      animation: abyssVortexSpin 4.72s ease forwards;
+    }
+
+    .abyss-unlock-eye {
+      position: fixed;
+      left: var(--abyss-x);
+      top: var(--abyss-y);
+      z-index: 3;
+      width: 176px;
+      height: 176px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      font-size: 74px;
+      line-height: 1;
+      opacity: 0;
+      transform: translate(-50%, -122px) scale(0.28) rotate(-12deg);
+      background:
+        radial-gradient(circle at 50% 50%, rgba(2, 6, 23, 0.88) 0 26%, rgba(8, 47, 73, 0.74) 46%, transparent 68%),
+        conic-gradient(from 120deg, transparent, rgba(103, 232, 249, 0.6), transparent, rgba(14, 165, 233, 0.38), transparent);
+      box-shadow:
+        0 0 34px rgba(103, 232, 249, 0.74),
+        0 0 82px rgba(6, 182, 212, 0.54),
+        inset 0 0 44px rgba(2, 6, 23, 0.98);
+      filter:
+        drop-shadow(0 0 18px rgba(103, 232, 249, 0.92))
+        drop-shadow(0 0 38px rgba(14, 165, 233, 0.64));
+      animation: abyssEyeAwaken 4.65s ease forwards;
+    }
+
+    .abyss-unlock-eye::before,
+    .abyss-unlock-eye::after {
+      content: "";
+      position: absolute;
+      border-radius: 999px;
+      pointer-events: none;
+    }
+
+    .abyss-unlock-eye::before {
+      inset: -22px;
+      border: 1px solid rgba(103, 232, 249, 0.34);
+      background: conic-gradient(from 0deg, transparent 0 24%, rgba(103, 232, 249, 0.22) 28%, transparent 34% 62%, rgba(14, 165, 233, 0.24) 68%, transparent 76% 100%);
+      filter: blur(0.5px);
+      animation: abyssEyeRingSpin 4.65s linear forwards;
+    }
+
+    .abyss-unlock-eye::after {
+      inset: 36px;
+      background: radial-gradient(circle, rgba(236, 254, 255, 0.9), rgba(103, 232, 249, 0.36) 34%, transparent 66%);
+      box-shadow: 0 0 28px rgba(236, 254, 255, 0.64);
+      opacity: 0.7;
+    }
+
+    .abyss-unlock-pulse {
+      position: fixed;
+      left: var(--abyss-x);
+      top: var(--abyss-y);
+      z-index: 2;
+      width: 92px;
+      height: 92px;
+      border-radius: 999px;
+      border: 1px solid rgba(103, 232, 249, 0.5);
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.2);
+      box-shadow:
+        0 0 24px rgba(103, 232, 249, 0.52),
+        inset 0 0 20px rgba(103, 232, 249, 0.22);
+      animation: abyssPulseBurst 4.5s ease forwards;
+    }
+
+    .abyss-unlock-pulse.pulse-two {
+      width: 138px;
+      height: 138px;
+      animation-delay: 0.18s;
+    }
+
+    .abyss-unlock-pulse.pulse-three {
+      width: 180px;
+      height: 180px;
+      animation-delay: 0.36s;
+      border-color: rgba(236, 254, 255, 0.36);
+    }
+
+    .abyss-unlock-dice {
+      position: fixed;
+      left: var(--abyss-x);
+      top: var(--abyss-y);
+      z-index: 4;
+      isolation: isolate;
+      overflow: visible;
+      width: 92px;
+      height: 92px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 24px;
+      font-size: 56px;
+      line-height: 1;
+      opacity: 0;
+      color: #ecfeff;
+      background:
+        radial-gradient(circle at 28% 22%, rgba(236, 254, 255, 0.88), rgba(103, 232, 249, 0.52) 20%, transparent 34%),
+        linear-gradient(145deg, rgba(8, 145, 178, 0.82), rgba(15, 23, 42, 0.96) 58%, rgba(2, 6, 23, 1));
+      border: 1px solid rgba(103, 232, 249, 0.8);
+      box-shadow:
+        0 0 22px rgba(103, 232, 249, 0.95),
+        0 0 54px rgba(14, 165, 233, 0.76),
+        0 22px 34px rgba(0, 0, 0, 0.58),
+        inset 0 0 22px rgba(103, 232, 249, 0.38);
+      transform: translate(-50%, 118px) scale(0.36) rotate(-28deg);
+      animation: abyssDiceRise 4.55s cubic-bezier(0.19, 0.84, 0.28, 1) forwards;
+    }
+
+    .abyss-unlock-dice::before,
+    .abyss-unlock-dice::after {
+      content: "";
+      position: absolute;
+      pointer-events: none;
+      border-radius: 999px;
+    }
+
+    .abyss-unlock-dice::before {
+      z-index: 2;
+      left: 50%;
+      top: 50%;
+      width: 82px;
+      height: 14px;
+      background:
+        radial-gradient(ellipse at center, rgba(2, 6, 23, 0.98) 0 32%, rgba(8, 145, 178, 0.86) 58%, rgba(103, 232, 249, 0.88) 72%, transparent 78%);
+      box-shadow:
+        0 0 16px rgba(103, 232, 249, 0.9),
+        0 0 34px rgba(14, 165, 233, 0.62);
+      transform: translate(-50%, -50%) rotate(-12deg);
+    }
+
+    .abyss-unlock-dice::after {
+      z-index: 1;
+      inset: -12px;
+      border: 1px solid rgba(103, 232, 249, 0.34);
+      background: conic-gradient(from 0deg, transparent, rgba(103, 232, 249, 0.2), transparent, rgba(14, 165, 233, 0.32), transparent);
+      animation: abyssDiceHaloSpin 1.25s linear infinite;
+    }
+
+    .abyss-unlock-orbit {
+      position: fixed;
+      left: var(--abyss-x);
+      top: var(--abyss-y);
+      z-index: 3;
+      width: 210px;
+      height: 210px;
+      border-radius: 999px;
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.28) rotate(32deg);
+      border: 1px solid rgba(103, 232, 249, 0.58);
+      box-shadow:
+        0 0 18px rgba(103, 232, 249, 0.7),
+        inset 0 0 22px rgba(14, 165, 233, 0.32);
+      animation: abyssOrbitReveal 4.55s ease forwards;
+    }
+
+    .abyss-unlock-orbit.orbit-two {
+      width: 286px;
+      height: 286px;
+      border-color: rgba(125, 211, 252, 0.42);
+      animation-delay: 0.1s;
+      animation-name: abyssOrbitReverse;
+    }
+
+    .abyss-unlock-shards span {
+      --abyss-shard-x: 0px;
+      --abyss-shard-y: 0px;
+      --abyss-shard-r: 0deg;
+      position: fixed;
+      left: var(--abyss-x);
+      top: var(--abyss-y);
+      z-index: 3;
+      width: 12px;
+      height: 24px;
+      clip-path: polygon(50% 0%, 92% 100%, 8% 78%);
+      background: linear-gradient(180deg, rgba(236, 254, 255, 0.96), rgba(6, 182, 212, 0.34));
+      box-shadow: 0 0 18px rgba(103, 232, 249, 0.74);
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.12) rotate(var(--abyss-shard-r));
+      animation: abyssShardBurst 4.38s ease forwards;
+    }
+
+    .abyss-unlock-shards span:nth-child(1) { --abyss-shard-x: -154px; --abyss-shard-y: -36px; --abyss-shard-r: -38deg; }
+    .abyss-unlock-shards span:nth-child(2) { --abyss-shard-x: -92px; --abyss-shard-y: -122px; --abyss-shard-r: 24deg; animation-delay: 0.08s; }
+    .abyss-unlock-shards span:nth-child(3) { --abyss-shard-x: 24px; --abyss-shard-y: -148px; --abyss-shard-r: 48deg; animation-delay: 0.14s; }
+    .abyss-unlock-shards span:nth-child(4) { --abyss-shard-x: 128px; --abyss-shard-y: -86px; --abyss-shard-r: -22deg; animation-delay: 0.2s; }
+    .abyss-unlock-shards span:nth-child(5) { --abyss-shard-x: 162px; --abyss-shard-y: 28px; --abyss-shard-r: 32deg; animation-delay: 0.26s; }
+    .abyss-unlock-shards span:nth-child(6) { --abyss-shard-x: 78px; --abyss-shard-y: 134px; --abyss-shard-r: -50deg; animation-delay: 0.18s; }
+    .abyss-unlock-shards span:nth-child(7) { --abyss-shard-x: -64px; --abyss-shard-y: 142px; --abyss-shard-r: 18deg; animation-delay: 0.28s; }
+    .abyss-unlock-shards span:nth-child(8) { --abyss-shard-x: -152px; --abyss-shard-y: 62px; --abyss-shard-r: 55deg; animation-delay: 0.22s; }
+    .abyss-unlock-shards span:nth-child(9) { --abyss-shard-x: 8px; --abyss-shard-y: -206px; --abyss-shard-r: -70deg; animation-delay: 0.34s; }
+    .abyss-unlock-shards span:nth-child(10) { --abyss-shard-x: 214px; --abyss-shard-y: -22px; --abyss-shard-r: 74deg; animation-delay: 0.38s; }
+    .abyss-unlock-shards span:nth-child(11) { --abyss-shard-x: 34px; --abyss-shard-y: 198px; --abyss-shard-r: 12deg; animation-delay: 0.32s; }
+    .abyss-unlock-shards span:nth-child(12) { --abyss-shard-x: -218px; --abyss-shard-y: -8px; --abyss-shard-r: -12deg; animation-delay: 0.36s; }
+
+    .abyss-unlock-copy {
+      position: fixed;
+      left: 50%;
+      top: 19%;
+      z-index: 5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      text-align: center;
+      opacity: 0;
+      transform: translate(-50%, -28px) scale(0.95);
+      animation: abyssTitleReveal 4.55s ease forwards;
+    }
+
+    .abyss-unlock-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 5px 12px;
+      border-radius: 999px;
+      color: #67e8f9;
+      font-size: 12px;
+      font-weight: 950;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      background: rgba(2, 6, 23, 0.58);
+      box-shadow:
+        inset 0 0 0 1px rgba(103, 232, 249, 0.28),
+        0 0 22px rgba(14, 165, 233, 0.36);
+    }
+
+    .abyss-unlock-title {
+      font-size: 42px;
+      font-weight: 950;
+      letter-spacing: 0;
+      background: linear-gradient(180deg, #ecfeff 0%, #67e8f9 46%, #0e7490 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow:
+        0 0 18px rgba(103, 232, 249, 0.95),
+        0 0 46px rgba(14, 165, 233, 0.92);
+    }
+
+    .abyss-unlock-sub {
+      color: #cffafe;
+      font-size: 15px;
+      font-weight: 850;
+      padding: 5px 12px;
+      border-radius: 999px;
+      background: rgba(2, 6, 23, 0.48);
+      box-shadow: inset 0 0 0 1px rgba(103, 232, 249, 0.24);
+      text-shadow: 0 2px 12px rgba(0, 0, 0, 0.72);
+    }
+
+    .game-container.abyss-unlock-shake {
+      animation: abyssUnlockShake 0.74s ease;
+    }
+
+    @keyframes abyssOverlayFade {
+      0%   { opacity: 0; }
+      10%  { opacity: 1; }
+      84%  { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    @keyframes abyssRayTwist {
+      0%   { opacity: 0; transform: rotate(-18deg) scale(0.92); }
+      20%  { opacity: 0.82; }
+      70%  { opacity: 0.56; transform: rotate(-54deg) scale(1.06); }
+      100% { opacity: 0; transform: rotate(-72deg) scale(1.12); }
+    }
+
+    @keyframes abyssStarDrift {
+      0%   { opacity: 0; transform: translateY(18px) scale(0.98); }
+      22%  { opacity: 0.58; }
+      72%  { opacity: 0.42; transform: translateY(-18px) scale(1.04); }
+      100% { opacity: 0; transform: translateY(-34px) scale(1.08); }
+    }
+
+    @keyframes abyssRiftOpen {
+      0%   { opacity: 0; transform: translate(-50%, 52px) scaleX(0.08) scaleY(0.42); }
+      18%  { opacity: 1; transform: translate(-50%, 52px) scaleX(4.7) scaleY(1.08); }
+      42%  { opacity: 0.96; transform: translate(-50%, 52px) scaleX(5.35) scaleY(1.18); }
+      76%  { opacity: 0.64; transform: translate(-50%, 52px) scaleX(3.72) scaleY(0.82); }
+      100% { opacity: 0; transform: translate(-50%, 52px) scaleX(0.22) scaleY(0.46); }
+    }
+
+    @keyframes abyssVortexSpin {
+      0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.18) rotate(-34deg); filter: blur(6px); }
+      22%  { opacity: 0.95; transform: translate(-50%, -50%) scale(0.92) rotate(22deg); filter: blur(0); }
+      60%  { opacity: 0.82; transform: translate(-50%, -50%) scale(1.14) rotate(154deg); }
+      100% { opacity: 0; transform: translate(-50%, -50%) scale(1.42) rotate(268deg); filter: blur(5px); }
+    }
+
+    @keyframes abyssEyeAwaken {
+      0%, 14% {
+        opacity: 0;
+        transform: translate(-50%, -132px) scale(0.18) rotate(-18deg);
+        filter: blur(7px) drop-shadow(0 0 0 rgba(103, 232, 249, 0));
+      }
+      30% {
+        opacity: 0.9;
+        transform: translate(-50%, -114px) scale(1.02) rotate(4deg);
+        filter: blur(0) drop-shadow(0 0 26px rgba(103, 232, 249, 0.95));
+      }
+      56% {
+        opacity: 1;
+        transform: translate(-50%, -118px) scale(1.12) rotate(-3deg);
+      }
+      78% {
+        opacity: 0.72;
+        transform: translate(-50%, -126px) scale(1.28) rotate(8deg);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -142px) scale(1.52) rotate(18deg);
+        filter: blur(5px) drop-shadow(0 0 34px rgba(103, 232, 249, 0.54));
+      }
+    }
+
+    @keyframes abyssEyeRingSpin {
+      0%   { opacity: 0; transform: rotate(0deg) scale(0.86); }
+      28%  { opacity: 1; }
+      100% { opacity: 0; transform: rotate(300deg) scale(1.18); }
+    }
+
+    @keyframes abyssPulseBurst {
+      0%, 20% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.16);
+      }
+      36% {
+        opacity: 0.82;
+        transform: translate(-50%, -50%) scale(1);
+      }
+      74% {
+        opacity: 0.34;
+        transform: translate(-50%, -50%) scale(2.08);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(2.9);
+      }
+    }
+
+    @keyframes abyssDiceHaloSpin {
+      0%   { transform: rotate(0deg) scale(0.92); opacity: 0.76; }
+      100% { transform: rotate(360deg) scale(1.04); opacity: 0.86; }
+    }
+
+    @keyframes abyssDiceRise {
+      0%, 12% {
+        opacity: 0;
+        transform: translate(-50%, 118px) scale(0.36) rotate(-28deg);
+        filter: blur(5px);
+      }
+      32% {
+        opacity: 1;
+        transform: translate(-50%, -58px) scale(1.12) rotate(9deg);
+        filter: blur(0);
+      }
+      50% {
+        transform: translate(-50%, -84px) scale(1.02) rotate(-4deg);
+      }
+      76% {
+        opacity: 1;
+        transform: translate(-50%, -74px) scale(1.08) rotate(2deg);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -132px) scale(1.28) rotate(0deg);
+        filter: blur(2px);
+      }
+    }
+
+    @keyframes abyssOrbitReveal {
+      0%, 18% { opacity: 0; transform: translate(-50%, -50%) scale(0.28) rotate(32deg); }
+      36%     { opacity: 0.9; transform: translate(-50%, -50%) scale(1) rotate(112deg); }
+      74%     { opacity: 0.52; transform: translate(-50%, -50%) scale(1.1) rotate(262deg); }
+      100%    { opacity: 0; transform: translate(-50%, -50%) scale(1.25) rotate(350deg); }
+    }
+
+    @keyframes abyssOrbitReverse {
+      0%, 18% { opacity: 0; transform: translate(-50%, -50%) scale(0.24) rotate(-40deg); }
+      36%     { opacity: 0.74; transform: translate(-50%, -50%) scale(1) rotate(-126deg); }
+      74%     { opacity: 0.46; transform: translate(-50%, -50%) scale(1.08) rotate(-268deg); }
+      100%    { opacity: 0; transform: translate(-50%, -50%) scale(1.22) rotate(-360deg); }
+    }
+
+    @keyframes abyssShardBurst {
+      0%, 24% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.12) rotate(var(--abyss-shard-r));
+      }
+      40% {
+        opacity: 0.95;
+        transform: translate(-50%, -50%) translate(var(--abyss-shard-x), var(--abyss-shard-y)) scale(1.08) rotate(var(--abyss-shard-r));
+      }
+      78% {
+        opacity: 0.62;
+        transform: translate(-50%, -50%) translate(var(--abyss-shard-x), var(--abyss-shard-y)) scale(0.78) rotate(var(--abyss-shard-r));
+      }
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) translate(var(--abyss-shard-x), var(--abyss-shard-y)) scale(0.2) rotate(var(--abyss-shard-r));
+      }
+    }
+
+    @keyframes abyssTitleReveal {
+      0%   { opacity: 0; transform: translate(-50%, -28px) scale(0.95); }
+      18%  { opacity: 1; transform: translate(-50%, 0) scale(1.04); }
+      50%  { opacity: 1; transform: translate(-50%, 0) scale(1); }
+      78%  { opacity: 1; transform: translate(-50%, 0) scale(1.04); }
+      100% { opacity: 0; transform: translate(-50%, 18px) scale(1.08); }
+    }
+
+    @keyframes abyssUnlockShake {
+      0%   { transform: translate(0, 0); }
+      18%  { transform: translate(-5px, 2px); }
+      36%  { transform: translate(5px, -2px); }
+      54%  { transform: translate(-3px, 1px); }
+      72%  { transform: translate(3px, -1px); }
+      100% { transform: translate(0, 0); }
+    }
+
     #rerollChoiceOverlay,
     #goldenKeyChoiceOverlay {
       position: fixed;
@@ -1589,6 +3271,12 @@ body.theme-neon .status span {
     }
 
     @media (max-width: 560px) {
+      .mode-sound-toggle-btn {
+        position: static;
+        display: block;
+        margin: 0 auto 14px;
+      }
+
       .golden-key-choice-buttons {
         grid-template-columns: 1fr;
       }
@@ -2271,7 +3959,9 @@ body.theme-neon .players-legend .player-pill.current-turn {
 
     /* === 우주/네온 테마에서 일반 주사위를 더 밝게 보이도록 강제 === */
     body.theme-space .dice-visual:not(.cheat-active),
-    body.theme-neon .dice-visual:not(.cheat-active) {
+    body.theme-neon .dice-visual:not(.cheat-active),
+    body.theme-nightmare .dice-visual:not(.cheat-active),
+    body.theme-abyss .dice-visual:not(.cheat-active) {
       background: #ffffff !important;      /* 안쪽 완전 흰색 */
       border-color: #e5e7eb;
       color: #020617;
@@ -2281,12 +3971,16 @@ body.theme-neon .players-legend .player-pill.current-turn {
     }
 
     body.theme-space .dice-visual:not(.cheat-active) .dice-pip,
-    body.theme-neon .dice-visual:not(.cheat-active) .dice-pip {
+    body.theme-neon .dice-visual:not(.cheat-active) .dice-pip,
+    body.theme-nightmare .dice-visual:not(.cheat-active) .dice-pip,
+    body.theme-abyss .dice-visual:not(.cheat-active) .dice-pip {
       background: #020617;  /* 눈은 짙은 색으로 또렷하게 */
     }
 
     body.theme-space .dice-visual.dice-style-forest:not(.cheat-active),
-    body.theme-neon .dice-visual.dice-style-forest:not(.cheat-active) {
+    body.theme-neon .dice-visual.dice-style-forest:not(.cheat-active),
+    body.theme-nightmare .dice-visual.dice-style-forest:not(.cheat-active),
+    body.theme-abyss .dice-visual.dice-style-forest:not(.cheat-active) {
       background:
         radial-gradient(circle at 25% 20%, rgba(187, 247, 208, 0.95), transparent 45%),
         linear-gradient(145deg, #ecfdf5, #bbf7d0) !important;
@@ -2294,7 +3988,9 @@ body.theme-neon .players-legend .player-pill.current-turn {
     }
 
     body.theme-space .dice-visual.dice-style-space:not(.cheat-active),
-    body.theme-neon .dice-visual.dice-style-space:not(.cheat-active) {
+    body.theme-neon .dice-visual.dice-style-space:not(.cheat-active),
+    body.theme-nightmare .dice-visual.dice-style-space:not(.cheat-active),
+    body.theme-abyss .dice-visual.dice-style-space:not(.cheat-active) {
       background:
         radial-gradient(circle at 25% 20%, rgba(255, 255, 255, 0.9), transparent 9%),
         radial-gradient(circle at 72% 30%, rgba(125, 211, 252, 0.8), transparent 11%),
@@ -2302,8 +3998,48 @@ body.theme-neon .players-legend .player-pill.current-turn {
       color: #f8fafc !important;
     }
 
+    body.theme-space .dice-visual.nightmare-crown-dice:not(.cheat-active),
+    body.theme-neon .dice-visual.nightmare-crown-dice:not(.cheat-active),
+    body.theme-nightmare .dice-visual.nightmare-crown-dice:not(.cheat-active),
+    body.theme-abyss .dice-visual.nightmare-crown-dice:not(.cheat-active) {
+      border-color: #7c3aed !important;
+      background:
+        radial-gradient(circle at 32% 22%, rgba(250, 204, 21, 0.24), transparent 15%),
+        radial-gradient(circle at 72% 26%, rgba(196, 181, 253, 0.42), transparent 22%),
+        radial-gradient(circle at 42% 64%, rgba(88, 28, 135, 0.9), transparent 34%),
+        linear-gradient(145deg, #020617 0%, #1e1b4b 42%, #4c1d95 68%, #0f172a 100%) !important;
+      color: #ddd6fe !important;
+    }
+
+    body.theme-space .dice-visual.abyss-dice:not(.cheat-active),
+    body.theme-neon .dice-visual.abyss-dice:not(.cheat-active),
+    body.theme-nightmare .dice-visual.abyss-dice:not(.cheat-active),
+    body.theme-abyss .dice-visual.abyss-dice:not(.cheat-active) {
+      border-color: #155e75 !important;
+      background:
+        radial-gradient(circle at 28% 22%, rgba(103, 232, 249, 0.54), transparent 18%),
+        radial-gradient(circle at 76% 78%, rgba(14, 165, 233, 0.34), transparent 26%),
+        linear-gradient(145deg, #020617 0%, #083344 54%, #0f172a 100%) !important;
+      color: #cffafe !important;
+    }
+
+    body.theme-space .dice-visual.nightmare-infinity-roll:not(.cheat-active),
+    body.theme-neon .dice-visual.nightmare-infinity-roll:not(.cheat-active),
+    body.theme-nightmare .dice-visual.nightmare-infinity-roll:not(.cheat-active),
+    body.theme-abyss .dice-visual.nightmare-infinity-roll:not(.cheat-active) {
+      border-color: #fef08a !important;
+      background:
+        radial-gradient(circle at 50% 50%, rgba(254, 240, 138, 0.98), transparent 22%),
+        radial-gradient(circle at 20% 18%, rgba(216, 180, 254, 0.95), transparent 28%),
+        radial-gradient(circle at 78% 82%, rgba(124, 58, 237, 0.85), transparent 34%),
+        linear-gradient(145deg, #020617, #312e81 54%, #111827) !important;
+      color: #fef3c7 !important;
+    }
+
     body.theme-space .dice-visual .dice-pip-symbol,
-    body.theme-neon .dice-visual .dice-pip-symbol {
+    body.theme-neon .dice-visual .dice-pip-symbol,
+    body.theme-nightmare .dice-visual .dice-pip-symbol,
+    body.theme-abyss .dice-visual .dice-pip-symbol {
       background: transparent;
     }
 
@@ -2782,10 +4518,211 @@ body.theme-desert .cell.zone-reset::after { content: "🌵"; }
 body.theme-desert .cell.zone-gkey::after { content: "💧"; }
 body.theme-desert .cell.zone-island::after { content: "🏝"; }
 
+body.single-ai-active.ai-theme-nightmare:not(.mode-select-active):not(.dice-item-select-active) {
+  color: #e5e7eb;
+  background:
+    radial-gradient(circle at 50% -6%, rgba(124, 58, 237, 0.42), transparent 34%),
+    radial-gradient(circle at 10% 68%, rgba(250, 204, 21, 0.1), transparent 24%),
+    radial-gradient(circle at 86% 78%, rgba(49, 46, 129, 0.34), transparent 30%),
+    linear-gradient(180deg, #05030d 0%, #090616 50%, #020617 100%);
+}
+
+body.single-ai-active.ai-theme-abyss:not(.mode-select-active):not(.dice-item-select-active) {
+  color: #e5e7eb;
+  background:
+    radial-gradient(circle at 50% -6%, rgba(6, 182, 212, 0.36), transparent 34%),
+    radial-gradient(circle at 14% 72%, rgba(8, 47, 73, 0.62), transparent 30%),
+    radial-gradient(circle at 88% 70%, rgba(103, 232, 249, 0.12), transparent 24%),
+    linear-gradient(180deg, #020617 0%, #03151d 54%, #01080c 100%);
+}
+
+body.single-ai-active.ai-theme-nightmare .game-container {
+  border: 1px solid rgba(167, 139, 250, 0.44);
+  background:
+    radial-gradient(circle at 50% -8%, rgba(124, 58, 237, 0.3), transparent 34%),
+    radial-gradient(circle at 88% 12%, rgba(250, 204, 21, 0.08), transparent 22%),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.96) 0%, rgba(17, 12, 32, 0.96) 58%, rgba(2, 6, 23, 0.98) 100%);
+  box-shadow:
+    0 22px 58px rgba(0, 0, 0, 0.46),
+    0 0 0 1px rgba(196, 181, 253, 0.18),
+    0 0 56px rgba(124, 58, 237, 0.28);
+}
+
+body.single-ai-active.ai-theme-nightmare .game-container::before {
+  background:
+    linear-gradient(135deg, rgba(15, 23, 42, 0.72), rgba(124, 58, 237, 0.78), rgba(250, 204, 21, 0.22));
+  opacity: 0.95;
+}
+
+body.single-ai-active.ai-theme-nightmare .top-panel::after {
+  height: 3px;
+  background: linear-gradient(90deg, #1e1b4b, #7c3aed, #facc15);
+  box-shadow: 0 0 18px rgba(124, 58, 237, 0.44);
+}
+
+body.single-ai-active.ai-theme-nightmare .board {
+  border-color: rgba(167, 139, 250, 0.36);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(250, 204, 21, 0.06), transparent 28%),
+    linear-gradient(135deg, rgba(15, 23, 42, 0.86), rgba(30, 27, 75, 0.72), rgba(2, 6, 23, 0.88));
+  box-shadow:
+    0 0 0 2px rgba(167, 139, 250, 0.12),
+    0 0 34px rgba(124, 58, 237, 0.28),
+    inset 0 0 28px rgba(0, 0, 0, 0.32);
+}
+
+body.single-ai-active.ai-theme-abyss .game-container {
+  border: 1px solid rgba(34, 211, 238, 0.44);
+  background:
+    radial-gradient(circle at 50% -8%, rgba(6, 182, 212, 0.26), transparent 36%),
+    radial-gradient(circle at 88% 16%, rgba(103, 232, 249, 0.08), transparent 24%),
+    linear-gradient(180deg, rgba(2, 6, 23, 0.98) 0%, rgba(3, 28, 36, 0.96) 60%, rgba(1, 8, 12, 0.98) 100%);
+  box-shadow:
+    0 22px 60px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(103, 232, 249, 0.18),
+    0 0 58px rgba(6, 182, 212, 0.26);
+}
+
+body.single-ai-active.ai-theme-abyss .game-container::before {
+  background:
+    linear-gradient(135deg, rgba(2, 6, 23, 0.76), rgba(8, 145, 178, 0.78), rgba(103, 232, 249, 0.28));
+  opacity: 0.95;
+}
+
+body.single-ai-active.ai-theme-abyss .top-panel::after {
+  height: 3px;
+  background: linear-gradient(90deg, #020617, #0891b2, #67e8f9);
+  box-shadow: 0 0 18px rgba(6, 182, 212, 0.44);
+}
+
+body.single-ai-active.ai-theme-abyss .board {
+  border-color: rgba(6, 182, 212, 0.42);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(103, 232, 249, 0.08), transparent 30%),
+    linear-gradient(135deg, rgba(2, 6, 23, 0.88), rgba(8, 47, 73, 0.7), rgba(1, 8, 12, 0.92));
+  box-shadow:
+    0 0 0 2px rgba(103, 232, 249, 0.12),
+    0 0 36px rgba(6, 182, 212, 0.26),
+    inset 0 0 30px rgba(0, 0, 0, 0.34);
+}
+
+body.single-ai-active.ai-theme-nightmare .status-block,
+body.single-ai-active.ai-theme-nightmare .config,
+body.single-ai-active.ai-theme-nightmare .log-box,
+body.single-ai-active.ai-theme-abyss .status-block,
+body.single-ai-active.ai-theme-abyss .config,
+body.single-ai-active.ai-theme-abyss .log-box {
+  color: #e5e7eb;
+  background: rgba(15, 23, 42, 0.82);
+  border-color: rgba(148, 163, 184, 0.28);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.22);
+}
+
+body.single-ai-active.ai-theme-nightmare .status,
+body.single-ai-active.ai-theme-nightmare .status span,
+body.single-ai-active.ai-theme-abyss .status,
+body.single-ai-active.ai-theme-abyss .status span {
+  color: #e5e7eb;
+}
+
+body.single-ai-active.ai-theme-nightmare .current-effect-pill,
+body.single-ai-active.ai-theme-abyss .current-effect-pill {
+  border-color: rgba(196, 181, 253, 0.32);
+  background: rgba(2, 6, 23, 0.68);
+  color: #e9d5ff;
+  box-shadow: 0 0 16px rgba(124, 58, 237, 0.18);
+}
+
+body.single-ai-active.ai-theme-abyss .current-effect-pill {
+  border-color: rgba(103, 232, 249, 0.32);
+  color: #cffafe;
+  box-shadow: 0 0 16px rgba(6, 182, 212, 0.18);
+}
+
+body.single-ai-active.ai-theme-nightmare .current-effect-pill.empty,
+body.single-ai-active.ai-theme-abyss .current-effect-pill.empty {
+  border-color: rgba(148, 163, 184, 0.28);
+  color: #94a3b8;
+}
+
+body.single-ai-active.ai-theme-nightmare .config select,
+body.single-ai-active.ai-theme-nightmare .config button,
+body.single-ai-active.ai-theme-nightmare .cheat-badge,
+body.single-ai-active.ai-theme-nightmare .cheat-input input,
+body.single-ai-active.ai-theme-abyss .config select,
+body.single-ai-active.ai-theme-abyss .config button,
+body.single-ai-active.ai-theme-abyss .cheat-badge,
+body.single-ai-active.ai-theme-abyss .cheat-input input {
+  color: #e5e7eb;
+  background: rgba(2, 6, 23, 0.62);
+  border-color: rgba(148, 163, 184, 0.36);
+}
+
+body.single-ai-active.ai-theme-nightmare .cell,
+body.single-ai-active.ai-theme-abyss .cell {
+  color: #e5e7eb;
+  border-color: rgba(148, 163, 184, 0.22);
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.92), rgba(30, 41, 59, 0.72));
+  box-shadow: inset 0 0 16px rgba(0, 0, 0, 0.2);
+}
+
+body.single-ai-active.ai-theme-nightmare .cell {
+  border-color: rgba(167, 139, 250, 0.24);
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.94), rgba(30, 27, 75, 0.72));
+}
+
+body.single-ai-active.ai-theme-abyss .cell {
+  border-color: rgba(103, 232, 249, 0.22);
+  background: linear-gradient(145deg, rgba(2, 6, 23, 0.94), rgba(8, 47, 73, 0.72));
+}
+
+body.single-ai-active.ai-theme-nightmare .zone-boost,
+body.single-ai-active.ai-theme-abyss .zone-boost {
+  background: linear-gradient(145deg, rgba(127, 29, 29, 0.9), rgba(69, 10, 10, 0.86));
+  border-color: rgba(248, 113, 113, 0.42);
+}
+
+body.single-ai-active.ai-theme-nightmare .zone-slow,
+body.single-ai-active.ai-theme-abyss .zone-slow {
+  background: linear-gradient(145deg, rgba(30, 64, 175, 0.78), rgba(15, 23, 42, 0.92));
+  border-color: rgba(96, 165, 250, 0.38);
+}
+
+body.single-ai-active.ai-theme-nightmare .zone-reset,
+body.single-ai-active.ai-theme-abyss .zone-reset {
+  background: linear-gradient(145deg, rgba(113, 63, 18, 0.86), rgba(24, 18, 9, 0.94));
+  border-color: rgba(250, 204, 21, 0.48);
+}
+
+body.single-ai-active.ai-theme-nightmare .zone-gkey,
+body.single-ai-active.ai-theme-abyss .zone-gkey {
+  background: linear-gradient(145deg, rgba(88, 28, 135, 0.78), rgba(15, 23, 42, 0.92));
+  border-color: rgba(192, 132, 252, 0.5);
+}
+
+body.single-ai-active.ai-theme-nightmare .zone-island,
+body.single-ai-active.ai-theme-abyss .zone-island {
+  background: linear-gradient(145deg, rgba(20, 83, 45, 0.78), rgba(15, 23, 42, 0.92));
+  border-color: rgba(45, 212, 191, 0.42);
+}
+
+body.single-ai-active.ai-theme-nightmare .start-cell,
+body.single-ai-active.ai-theme-abyss .start-cell {
+  background: linear-gradient(145deg, rgba(20, 83, 45, 0.82), rgba(6, 78, 59, 0.72));
+  border-color: rgba(74, 222, 128, 0.48);
+}
+
+body.single-ai-active.ai-theme-nightmare .finish-cell,
+body.single-ai-active.ai-theme-abyss .finish-cell {
+  background: linear-gradient(145deg, rgba(67, 20, 7, 0.9), rgba(15, 23, 42, 0.92));
+  border-color: rgba(251, 146, 60, 0.6);
+}
+
 </style>
 </head>
 <body class="theme-default mode-select-active">
   <section class="mode-select-screen" id="modeSelectScreen">
+    <button type="button" class="mode-sound-toggle-btn" id="modeSoundToggleBtn">🔊 효과음 켜짐</button>
     <h1 class="mode-select-title">주사위 보드게임</h1>
     <div class="mode-select-grid">
       <div class="mode-card">
@@ -2819,6 +4756,10 @@ body.theme-desert .cell.zone-island::after { content: "🏝"; }
               <label class="ai-difficulty-option ai-difficulty-nightmare">
                 <input type="radio" name="aiDifficulty" value="nightmare" />
                 <span>악몽</span>
+              </label>
+              <label class="ai-difficulty-option ai-difficulty-abyss">
+                <input type="radio" name="aiDifficulty" value="abyss" />
+                <span>심연</span>
               </label>
             </div>
           </div>
@@ -2857,12 +4798,12 @@ body.theme-desert .cell.zone-island::after { content: "🏝"; }
               <span class="ai-win-status-count" id="hardAiWinCount">0승</span>
             </span>
             <span class="ai-win-status-row">
-              <span>어려움 기본 주사위</span>
-              <span class="ai-win-status-count" id="hardBasicAiWinCount">0/3</span>
-            </span>
-            <span class="ai-win-status-row">
               <span>악몽 AI</span>
               <span class="ai-win-status-count" id="nightmareAiWinCount">0승</span>
+            </span>
+            <span class="ai-win-status-row">
+              <span>심연 AI</span>
+              <span class="ai-win-status-count" id="abyssAiWinCount">0승</span>
             </span>
             <button type="button" class="ai-win-reset-btn" id="aiWinResetBtn">클리어 기록 초기화</button>
           </div>
@@ -2890,10 +4831,10 @@ body.theme-desert .cell.zone-island::after { content: "🏝"; }
       <section class="dice-item-section">
         <h2 class="dice-item-section-title">보통 AI 보상</h2>
         <div class="dice-item-grid normal-reward-grid">
-          <button type="button" class="dice-item-option" data-item="weak-dash" disabled>
-            <span class="dice-item-icon">⚡</span>
-            <span class="dice-item-name">약한 질주 주사위</span>
-            <span class="dice-item-desc">주사위 값 +1을 1회 사용</span>
+          <button type="button" class="dice-item-option" data-item="weak-reroll" disabled>
+            <span class="dice-item-icon">🔁</span>
+            <span class="dice-item-name">약한 재굴림 주사위</span>
+            <span class="dice-item-desc">주사위 재굴림 1회 사용</span>
             <span class="dice-item-lock">보통 AI 3승 필요</span>
           </button>
           <button type="button" class="dice-item-option" data-item="weak-shield" disabled>
@@ -2902,16 +4843,22 @@ body.theme-desert .cell.zone-island::after { content: "🏝"; }
             <span class="dice-item-desc">함정칸 효과를 1회 방어</span>
             <span class="dice-item-lock">보통 AI 5승 필요</span>
           </button>
+          <button type="button" class="dice-item-option" data-item="weak-dash" disabled>
+            <span class="dice-item-icon">⚡</span>
+            <span class="dice-item-name">약한 질주 주사위</span>
+            <span class="dice-item-desc">주사위 값 +1을 1회 사용</span>
+            <span class="dice-item-lock">보통 AI 7승 필요</span>
+          </button>
         </div>
       </section>
 
       <section class="dice-item-section">
         <h2 class="dice-item-section-title">어려움 AI 보상</h2>
         <div class="dice-item-grid hard-reward-grid">
-          <button type="button" class="dice-item-option" data-item="dash" disabled>
-            <span class="dice-item-icon">⚡</span>
-            <span class="dice-item-name">질주 주사위</span>
-            <span class="dice-item-desc">주사위 값 +3을 3회 사용</span>
+          <button type="button" class="dice-item-option" data-item="reroll" disabled>
+            <span class="dice-item-icon">🔁</span>
+            <span class="dice-item-name">재굴림 주사위</span>
+            <span class="dice-item-desc">주사위 재굴림 3회 사용</span>
             <span class="dice-item-lock">어려움 AI 3승 필요</span>
           </button>
           <button type="button" class="dice-item-option" data-item="shield" disabled>
@@ -2920,10 +4867,10 @@ body.theme-desert .cell.zone-island::after { content: "🏝"; }
             <span class="dice-item-desc">함정/무인도 효과를 3회 방어</span>
             <span class="dice-item-lock">어려움 AI 5승 필요</span>
           </button>
-          <button type="button" class="dice-item-option" data-item="reroll" disabled>
-            <span class="dice-item-icon">🔁</span>
-            <span class="dice-item-name">재굴림 주사위</span>
-            <span class="dice-item-desc">주사위 재굴림 3회 사용</span>
+          <button type="button" class="dice-item-option" data-item="dash" disabled>
+            <span class="dice-item-icon">⚡</span>
+            <span class="dice-item-name">질주 주사위</span>
+            <span class="dice-item-desc">주사위 값 +3을 3회 사용</span>
             <span class="dice-item-lock">어려움 AI 7승 필요</span>
           </button>
           <button type="button" class="dice-item-option" data-item="revenge" disabled>
@@ -2935,14 +4882,52 @@ body.theme-desert .cell.zone-island::after { content: "🏝"; }
         </div>
       </section>
 
+      <div class="dice-item-section-row">
+        <section class="dice-item-section">
+          <h2 class="dice-item-section-title">악몽 AI 보상</h2>
+          <div class="dice-item-grid nightmare-reward-grid">
+            <button type="button" class="dice-item-option nightmare-dice-option" data-item="nightmare-crown" disabled>
+              <span class="dice-item-icon">🌑</span>
+              <span class="dice-item-name">악몽 주사위</span>
+              <span class="dice-item-desc">15% 확률로 황금 15</span>
+              <span class="dice-item-lock">악몽 AI 10승 필요</span>
+            </button>
+          </div>
+        </section>
+
+        <section class="dice-item-section">
+          <h2 class="dice-item-section-title">심연 AI 보상</h2>
+          <div class="dice-item-grid abyss-reward-grid">
+            <button type="button" class="dice-item-option abyss-dice-option" data-item="abyss-dice" disabled>
+              <span class="dice-item-icon">👁️‍🗨️</span>
+              <span class="dice-item-name">심연 주사위</span>
+              <span class="dice-item-desc">해로운 효과 완전 면역, 위험 칸에서 출발 시 20%확률로 +6</span>
+              <span class="dice-item-lock">심연 AI 10승 필요</span>
+            </button>
+          </div>
+        </section>
+      </div>
+
       <section class="dice-item-section">
         <h2 class="dice-item-section-title">조건 보상</h2>
-        <div class="dice-item-grid hard-reward-grid">
+        <div class="dice-item-grid condition-reward-grid">
           <button type="button" class="dice-item-option" data-item="golden-hunter" disabled>
             <span class="dice-item-icon">🔑</span>
             <span class="dice-item-name">황금 사냥꾼 주사위</span>
             <span class="dice-item-desc">황금열쇠 카드 3장 중 선택</span>
             <span class="dice-item-lock">한 판 황금열쇠 3회 획득 후 승리</span>
+          </button>
+          <button type="button" class="dice-item-option" data-item="immune" disabled>
+            <span class="dice-item-icon">🧬</span>
+            <span class="dice-item-name">면역 주사위</span>
+            <span class="dice-item-desc">해로운 효과 완전 면역</span>
+            <span class="dice-item-lock">함정 누적 0/30</span>
+          </button>
+          <button type="button" class="dice-item-option" data-item="origin" disabled>
+            <span class="dice-item-icon">🌀</span>
+            <span class="dice-item-name">태초 주사위</span>
+            <span class="dice-item-desc">상대를 출발점으로 되돌림</span>
+            <span class="dice-item-lock">도착까지 10칸 이하 남은 상태에서 함정에 걸린 뒤 승리</span>
           </button>
         </div>
       </section>
@@ -2963,7 +4948,9 @@ body.theme-desert .cell.zone-island::after { content: "🏝"; }
       <div class="status-block">
         <div class="status">
           현재 차례: <span id="currentPlayer"></span><br />
+          <span id="opponentAiLine" class="opponent-ai-line" hidden>상대 AI: <span id="opponentAiName" class="opponent-ai-name"></span></span>
           말 위치: <span id="positions"></span>
+          <span class="current-effects-line">현재 효과: <span id="currentEffects" class="current-effects-list"></span></span>
         </div>
         <div class="config">
           <label class="player-count-setting">
@@ -2989,6 +4976,8 @@ body.theme-desert .cell.zone-island::after { content: "🏝"; }
               <option value="forest">숲</option>
               <option value="desert">사막</option>
               <option value="neon">네온</option>
+              <option value="nightmare" hidden>악몽</option>
+              <option value="abyss" hidden>심연</option>
             </select>
           </label>
           <label>
@@ -2997,6 +4986,8 @@ body.theme-desert .cell.zone-island::after { content: "🏝"; }
               <option value="classic" selected>기본 점</option>
               <option value="forest">나무</option>
               <option value="space">우주</option>
+              <option value="nightmare" hidden>악몽</option>
+              <option value="abyss" hidden>심연</option>
             </select>
           </label>
 
@@ -3198,6 +5189,95 @@ body.theme-desert .cell.zone-island::after { content: "🏝"; }
     </div>
   </div>
 
+  <div id="nightmareVictoryOverlay" aria-hidden="true">
+    <div class="nightmare-victory-rift"></div>
+    <div class="nightmare-victory-eclipse"></div>
+    <div class="nightmare-victory-sigil"></div>
+    <div class="nightmare-victory-rune-orbit orbit-one">
+      <span>✦</span>
+      <span>◆</span>
+      <span>◈</span>
+      <span>◇</span>
+      <span>✧</span>
+      <span>✹</span>
+    </div>
+    <div class="nightmare-victory-rune-orbit orbit-two">
+      <span>◇</span>
+      <span>✹</span>
+      <span>✦</span>
+      <span>◆</span>
+      <span>✧</span>
+      <span>◈</span>
+    </div>
+    <div class="nightmare-victory-ring ring-one"></div>
+    <div class="nightmare-victory-ring ring-two"></div>
+    <div class="nightmare-victory-ring ring-three"></div>
+    <div class="nightmare-victory-spotlight"></div>
+    <div class="nightmare-victory-crown">🌑</div>
+    <div class="nightmare-victory-lightning"></div>
+    <div class="nightmare-victory-lightning lightning-left"></div>
+    <div class="nightmare-victory-lightning lightning-right"></div>
+    <div class="nightmare-victory-sparks">
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+    <div class="nightmare-victory-shards">
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+    <div class="nightmare-victory-copy">
+      <span class="nightmare-victory-title" id="nightmareVictoryTitle">악몽 주사위 해금</span>
+      <span class="nightmare-victory-sub" id="nightmareVictorySub">악몽 AI 10승 보상이 깨어났습니다.</span>
+    </div>
+  </div>
+
+  <div id="abyssUnlockOverlay" aria-hidden="true">
+    <div class="abyss-unlock-vortex"></div>
+    <div class="abyss-unlock-pulse pulse-one"></div>
+    <div class="abyss-unlock-pulse pulse-two"></div>
+    <div class="abyss-unlock-pulse pulse-three"></div>
+    <div class="abyss-unlock-eye">👁️‍🗨️</div>
+    <div class="abyss-unlock-rift"></div>
+    <div class="abyss-unlock-orbit orbit-one"></div>
+    <div class="abyss-unlock-orbit orbit-two"></div>
+    <div class="abyss-unlock-dice" aria-label="심연 주사위"></div>
+    <div class="abyss-unlock-shards">
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+    <div class="abyss-unlock-copy">
+      <span class="abyss-unlock-badge" id="abyssUnlockBadge">ABYSS REWARD</span>
+      <span class="abyss-unlock-title" id="abyssUnlockTitle">심연 주사위 해금</span>
+      <span class="abyss-unlock-sub" id="abyssUnlockSub">검은 균열에서 심연의 주사위가 떠오릅니다.</span>
+    </div>
+  </div>
+
   <div id="rewardUnlockOverlay">
     <div class="reward-unlock-panel">
       <span class="reward-unlock-badge">새 보상 획득</span>
@@ -3238,15 +5318,21 @@ body.theme-desert .cell.zone-island::after { content: "🏝"; }
       "#eab308"
     ];
 
+    const IMMUNE_DICE_TRAP_HIT_UNLOCK_COUNT = 30;
+    const ORIGIN_DICE_TRAP_REMAINING_LIMIT = 10;
+    const ABYSS_DICE_UNLOCK_EFFECT_DURATION_MS = 4800;
+
     const CHEAT_DEFS = [
       { code: "3025", name: "황금 15", desc: "주사위 눈을 15로 고정" },
       { code: "1357", name: "이동 2배", desc: "이동 거리 2배" },
-      { code: "2468", name: "함정 영구 무시", desc: "남은 게임 동안 함정 칸 무시" },
-      { code: "4444", name: "2회 보호막", desc: "해로운 효과 2번 방어" },
+      { code: "4444", name: "2회 보호막", desc: "함정/1/2칸/무인도 등 해로운 효과 2번 방어" },
       { code: "9999", name: "추가 턴", desc: "이동 후 한 번 더 턴" },
       { code: "1111", name: "선두 바로 뒤 워프", desc: "선두 바로 뒤 칸으로 이동" },
       { code: "2222", name: "선두와 교환", desc: "선두와 위치 바꾸기" },
       { code: "3333", name: "다른 사람 -2칸", desc: "나 빼고 모두 2칸 뒤로" },
+      { code: "9090", name: "위험 반전", desc: "함정칸과 황금열쇠칸을 서로 교환" },
+      { code: "1919", name: "저속 역전", desc: "모든 1/2칸을 x2칸으로 변경" },
+      { code: "7878", name: "황금 유성", desc: "랜덤 일반칸 3개를 황금열쇠칸으로 변경" },
       { code: "5555", name: "재굴림(큰 수)", desc: "두 번 굴려 더 큰 수 사용" },
       { code: "6666", name: "선두 워프+턴 스킵", desc: "선두 위치로 이동, 다음 자기 턴 스킵" },
       { code: "7777", name: "+3~+6 랜덤", desc: "+3~+6칸 랜덤 이동" },
@@ -3256,13 +5342,18 @@ body.theme-desert .cell.zone-island::after { content: "🏝"; }
 
     const DICE_ITEM_UNLOCKS = {
       basic: { difficulty: null, wins: 0 },
-      "weak-dash": { difficulty: "normal", wins: 3 },
+      "weak-reroll": { difficulty: "normal", wins: 3 },
       "weak-shield": { difficulty: "normal", wins: 5 },
-      dash: { difficulty: "hard", wins: 3 },
+      "weak-dash": { difficulty: "normal", wins: 7 },
+      reroll: { difficulty: "hard", wins: 3 },
       shield: { difficulty: "hard", wins: 5 },
-      reroll: { difficulty: "hard", wins: 7 },
+      dash: { difficulty: "hard", wins: 7 },
       revenge: { difficulty: "hard", wins: 10 },
-      "golden-hunter": { achievement: "goldenHunter" }
+      "nightmare-crown": { difficulty: "nightmare", wins: 10 },
+      "abyss-dice": { difficulty: "abyss", wins: 10 },
+      "golden-hunter": { achievement: "goldenHunter" },
+      immune: { achievementCount: "trapHits", target: IMMUNE_DICE_TRAP_HIT_UNLOCK_COUNT },
+      origin: { achievement: "originReturn" }
     };
 
     const AI_CHALLENGE_MAPS = {
@@ -3297,11 +5388,29 @@ body.theme-desert .cell.zone-island::after { content: "🏝"; }
         trap: "10, 18, 27, 36",
         gKey: "5, 22, 33",
         island: "13, 29"
+      },
+      abyss: {
+        boardSize: 50,
+        x2: "7, 21, 37",
+        half: "5, 13, 24, 31, 39, 43, 47",
+        trap: "10, 18, 27, 36, 44, 48",
+        gKey: "9, 23, 32, 41",
+        island: "15, 30, 40, 46"
       }
     };
 
     const AI_REWARD_STORAGE_KEY = "diceBoardAiRewardWins";
     const NIGHTMARE_UNLOCK_BASIC_HARD_CLEARS = 3;
+    const ABYSS_UNLOCK_BASIC_NIGHTMARE_CLEARS = 3;
+    const NIGHTMARE_CROWN_EFFECT_WINS = 10;
+    const NIGHTMARE_GOLDEN_FIFTEEN_ROLL_CHANCE = 0.15;
+    const NIGHTMARE_GOLDEN_FIFTEEN_ROLL_VALUE = 15;
+    const NIGHTMARE_INFINITY_ROLL_DISPLAY = "∞";
+    const NIGHTMARE_UNLOCK_CHEAT_CODES = ["nightmareopen"];
+    const NIGHTMARE_CROWN_CHEAT_CODES = ["nightmaredice"];
+    const NIGHTMARE_INFINITY_TEST_CHEAT_CODES = ["nightmareinfinity"];
+    const ABYSS_UNLOCK_CHEAT_CODES = ["abyssopen"];
+    const ABYSS_DICE_CHEAT_CODES = ["abyssdice"];
 
     let players = [];
     let currentPlayerIndex = 0;
@@ -3332,6 +5441,7 @@ body.theme-desert .cell.zone-island::after { content: "🏝"; }
     const hardAiWinCountEl = document.getElementById("hardAiWinCount");
     const hardBasicAiWinCountEl = document.getElementById("hardBasicAiWinCount");
     const nightmareAiWinCountEl = document.getElementById("nightmareAiWinCount");
+    const abyssAiWinCountEl = document.getElementById("abyssAiWinCount");
     const aiWinResetBtn = document.getElementById("aiWinResetBtn");
     const achievementCatalogPanelEl = document.getElementById("achievementCatalogPanel");
     const achievementCatalogToggleBtn = document.getElementById("achievementCatalogToggleBtn");
@@ -3349,12 +5459,16 @@ body.theme-desert .cell.zone-island::after { content: "🏝"; }
     const diceItemStatusDetailEl = document.getElementById("diceItemStatusDetail");
     const diceVisualEl = document.getElementById("diceVisual");
     const currentPlayerEl = document.getElementById("currentPlayer");
+    const opponentAiLineEl = document.getElementById("opponentAiLine");
+    const opponentAiNameEl = document.getElementById("opponentAiName");
     const positionsEl = document.getElementById("positions");
+    const currentEffectsEl = document.getElementById("currentEffects");
     const logEl = document.getElementById("log");
     const playersLegendEl = document.getElementById("playersLegend");
     const playerCountSelect = document.getElementById("playerCount");
     const startBtn = document.getElementById("startBtn");
     const modeSelectBtn = document.getElementById("modeSelectBtn");
+    const modeSoundToggleBtn = document.getElementById("modeSoundToggleBtn");
     const boardSizeInput = document.getElementById("boardSizeInput");
     const x2CellsInput = document.getElementById("x2CellsInput");
     const halfCellsInput = document.getElementById("halfCellsInput");
@@ -3381,6 +5495,13 @@ body.theme-desert .cell.zone-island::after { content: "🏝"; }
     const shieldChoiceSkipBtn = document.getElementById("shieldChoiceSkip");
     const goldenKeyChoiceOverlayEl = document.getElementById("goldenKeyChoiceOverlay");
     const goldenKeyChoiceButtons = document.querySelectorAll(".golden-key-choice-btn");
+    const nightmareVictoryOverlayEl = document.getElementById("nightmareVictoryOverlay");
+    const nightmareVictoryTitleEl = document.getElementById("nightmareVictoryTitle");
+    const nightmareVictorySubEl = document.getElementById("nightmareVictorySub");
+    const abyssUnlockOverlayEl = document.getElementById("abyssUnlockOverlay");
+    const abyssUnlockBadgeEl = document.getElementById("abyssUnlockBadge");
+    const abyssUnlockTitleEl = document.getElementById("abyssUnlockTitle");
+    const abyssUnlockSubEl = document.getElementById("abyssUnlockSub");
     const rewardUnlockOverlayEl = document.getElementById("rewardUnlockOverlay");
     const rewardUnlockIconEl = document.getElementById("rewardUnlockIcon");
     const rewardUnlockTitleEl = document.getElementById("rewardUnlockTitle");
@@ -3405,7 +5526,9 @@ body.theme-desert .cell.zone-island::after { content: "🏝"; }
       "theme-space",
       "theme-forest",
       "theme-desert",
-      "theme-neon"
+      "theme-neon",
+      "theme-nightmare",
+      "theme-abyss"
     ];
 
     const DICE_STYLE_CLASS_LIST = [
@@ -3414,10 +5537,20 @@ body.theme-desert .cell.zone-island::after { content: "🏝"; }
       "dice-style-space"
     ];
 
+    const AI_DIFFICULTY_THEME_CLASS_LIST = [
+      "ai-theme-easy",
+      "ai-theme-normal",
+      "ai-theme-hard",
+      "ai-theme-nightmare",
+      "ai-theme-abyss"
+    ];
+
     const DICE_STYLE_SYMBOLS = {
       forest: ["🌱", "🍃", "🌿", "🌳", "🍀", "🌲"],
       space: ["✦", "★", "☄", "☾", "✧", "🪐"]
     };
+    const NIGHTMARE_DICE_SYMBOLS = ["✦", "◆", "◈", "◇", "✧", "✹"];
+    const ABYSS_DICE_SYMBOLS = ["●", "◐", "◉", "◆", "✦", "◈"];
 
     const THEME_CELL_COPY = {
       default: {
@@ -3468,15 +5601,45 @@ body.theme-desert .cell.zone-island::after { content: "🏝"; }
     };
 
     let currentDiceFace = null;
+    let lastNonNightmareDiceStyle = "classic";
+    let lastManualTheme = "default";
 
     function applyTheme(themeName) {
       const body = document.body;
+      const forcedTheme = getForcedAiThemeName();
+      const requestedTheme = themeName || lastManualTheme || "default";
+      if (!forcedTheme && requestedTheme !== "nightmare" && requestedTheme !== "abyss") {
+        lastManualTheme = requestedTheme;
+      }
+      const nextTheme = forcedTheme || lastManualTheme || "default";
       THEME_CLASS_LIST.forEach((cls) => body.classList.remove(cls));
-      body.classList.add("theme-" + themeName);
+      body.classList.add("theme-" + nextTheme);
+
+      if (themeSelect) {
+        if (forcedTheme) {
+          themeSelect.value = forcedTheme;
+          themeSelect.disabled = true;
+          themeSelect.title = `${getAiDifficultyLabel()} AI에서는 전용 테마로 고정됩니다.`;
+        } else {
+          themeSelect.disabled = false;
+          themeSelect.title = "";
+          if (themeSelect.value === "nightmare" || themeSelect.value === "abyss") {
+            themeSelect.value = lastManualTheme;
+          }
+        }
+      }
+    }
+
+    function getForcedAiThemeName() {
+      if (gameMode !== "single-ai") return null;
+      if (aiDifficulty === "nightmare") return "nightmare";
+      if (aiDifficulty === "abyss") return "abyss";
+      return null;
     }
 
     function getCurrentThemeCopy() {
-      const themeName = themeSelect ? themeSelect.value : "default";
+      const forcedTheme = getForcedAiThemeName();
+      const themeName = forcedTheme || (themeSelect ? themeSelect.value : "default");
       return THEME_CELL_COPY[themeName] || THEME_CELL_COPY.default;
     }
 
@@ -3509,6 +5672,18 @@ body.theme-desert .cell.zone-island::after { content: "🏝"; }
     let popupTimerId = null;
     let isSoundOn = true; // 효과음 켜짐/꺼짐 상태
 
+    function updateSoundToggleButtons() {
+      const text = isSoundOn ? "🔊 효과음 켜짐" : "🔇 효과음 꺼짐";
+      [soundToggleBtn, modeSoundToggleBtn].forEach((button) => {
+        if (button) button.textContent = text;
+      });
+    }
+
+    function toggleSound() {
+      isSoundOn = !isSoundOn;
+      updateSoundToggleButtons();
+    }
+
     // ⭐ HEX → rgba 변환 (네온 그라데이션용)
     function hexToRgba(hex, alpha) {
       if (!hex) return "";
@@ -3528,9 +5703,20 @@ body.theme-desert .cell.zone-island::after { content: "🏝"; }
     function setDiceFace(value) {
       diceVisualEl.innerHTML = "";
       currentDiceFace = value;
+      diceVisualEl.classList.toggle("golden-fifteen-face", value === NIGHTMARE_GOLDEN_FIFTEEN_ROLL_VALUE);
 
       if (value >= 1 && value <= 6) {
-        const diceStyle = diceStyleSelect ? diceStyleSelect.value : "classic";
+        const useNightmareSkin = playerHasNightmareCrownDice(players[currentPlayerIndex]);
+        if (useNightmareSkin) {
+          renderNightmareDiceFace(value);
+          return;
+        }
+        const useAbyssSkin = playerHasAbyssDice(players[currentPlayerIndex]);
+        if (useAbyssSkin) {
+          renderAbyssDiceFace(value);
+          return;
+        }
+        const diceStyle = getSelectedDiceStyle();
         const pipMap = {
           1: [4],
           2: [0, 8],
@@ -3550,7 +5736,10 @@ body.theme-desert .cell.zone-island::after { content: "🏝"; }
           if (positions.includes(i)) {
             const pip = document.createElement("div");
             pip.className = diceStyle === "classic" ? "dice-pip" : "dice-pip dice-pip-symbol";
-            if (diceStyle !== "classic") {
+            if (diceStyle === "nightmare") {
+              pip.classList.add("nightmare-pip");
+              pip.textContent = NIGHTMARE_DICE_SYMBOLS[(value + i) % NIGHTMARE_DICE_SYMBOLS.length];
+            } else if (diceStyle !== "classic") {
               const symbols = DICE_STYLE_SYMBOLS[diceStyle] || DICE_STYLE_SYMBOLS.forest;
               pip.textContent = symbols[(value + i) % symbols.length];
             }
@@ -3561,15 +5750,145 @@ body.theme-desert .cell.zone-island::after { content: "🏝"; }
 
         diceVisualEl.appendChild(grid);
       } else {
-        diceVisualEl.textContent = String(value);
+        if (value === NIGHTMARE_GOLDEN_FIFTEEN_ROLL_VALUE) {
+          const goldenNumber = document.createElement("span");
+          goldenNumber.className = "dice-golden-fifteen-number";
+          goldenNumber.textContent = String(value);
+          diceVisualEl.appendChild(goldenNumber);
+        } else {
+          diceVisualEl.textContent = String(value);
+        }
       }
     }
 
+    function renderNightmareDiceFace(value) {
+      const pipMap = {
+        1: [4],
+        2: [0, 8],
+        3: [0, 4, 8],
+        4: [0, 2, 6, 8],
+        5: [0, 2, 4, 6, 8],
+        6: [0, 2, 3, 5, 6, 8]
+      };
+      const positions = pipMap[value] || [];
+      const grid = document.createElement("div");
+      grid.className = "nightmare-face-grid";
+
+      for (let i = 0; i < 9; i++) {
+        const cell = document.createElement("div");
+        cell.className = "nightmare-face-cell";
+        if (positions.includes(i)) {
+          const rune = document.createElement("span");
+          rune.className = "nightmare-rune";
+          rune.textContent = NIGHTMARE_DICE_SYMBOLS[(value + i) % NIGHTMARE_DICE_SYMBOLS.length];
+          cell.appendChild(rune);
+        }
+        grid.appendChild(cell);
+      }
+
+      diceVisualEl.appendChild(grid);
+    }
+
+    function renderAbyssDiceFace(value) {
+      const pipMap = {
+        1: [4],
+        2: [0, 8],
+        3: [0, 4, 8],
+        4: [0, 2, 6, 8],
+        5: [0, 2, 4, 6, 8],
+        6: [0, 2, 3, 5, 6, 8]
+      };
+      const positions = pipMap[value] || [];
+      const grid = document.createElement("div");
+      grid.className = "abyss-face-grid";
+
+      for (let i = 0; i < 9; i++) {
+        const cell = document.createElement("div");
+        cell.className = "abyss-face-cell";
+        if (positions.includes(i)) {
+          const rune = document.createElement("span");
+          rune.className = "abyss-rune";
+          rune.textContent = ABYSS_DICE_SYMBOLS[(value + i) % ABYSS_DICE_SYMBOLS.length];
+          cell.appendChild(rune);
+        }
+        grid.appendChild(cell);
+      }
+
+      diceVisualEl.appendChild(grid);
+    }
+
+    function getSafeDiceStyleValue(style) {
+      return DICE_STYLE_CLASS_LIST.includes(`dice-style-${style}`)
+        ? style
+        : "classic";
+    }
+
     function getSelectedDiceStyle() {
-      return diceStyleSelect ? diceStyleSelect.value : "classic";
+      if (!diceStyleSelect) return "classic";
+      if (diceStyleSelect.value === "nightmare" || diceStyleSelect.value === "abyss") {
+        return lastNonNightmareDiceStyle || "classic";
+      }
+      return getSafeDiceStyleValue(diceStyleSelect.value);
+    }
+
+    function shouldLockDiceStyleForNightmare() {
+      if (document.body.classList.contains("mode-select-active")) {
+        return selectedDiceItem === "nightmare-crown";
+      }
+      if (selectedDiceItem === "nightmare-crown") return true;
+      return players.some((player) => playerHasNightmareCrownDice(player));
+    }
+
+    function shouldLockDiceStyleForAbyss() {
+      if (document.body.classList.contains("mode-select-active")) {
+        return selectedDiceItem === "abyss-dice";
+      }
+      if (selectedDiceItem === "abyss-dice") return true;
+      return players.some((player) => playerHasAbyssDice(player));
+    }
+
+    function syncDiceStyleSelectLock() {
+      if (!diceStyleSelect) return;
+      const lockedStyle = shouldLockDiceStyleForNightmare()
+        ? "nightmare"
+        : (shouldLockDiceStyleForAbyss() ? "abyss" : null);
+      const shouldLock = !!lockedStyle;
+      if (shouldLock) {
+        const currentStyle = getSelectedDiceStyle();
+        lastNonNightmareDiceStyle = currentStyle;
+        diceStyleSelect.value = lockedStyle;
+        diceStyleSelect.disabled = true;
+        diceStyleSelect.title = lockedStyle === "nightmare"
+          ? "악몽 주사위 착용 중에는 악몽 스킨으로 고정됩니다."
+          : "심연 주사위 착용 중에는 심연 스킨으로 고정됩니다.";
+        setDiceStyleClass("classic");
+        return;
+      }
+
+      diceStyleSelect.disabled = false;
+      diceStyleSelect.title = "";
+      const restoredStyle = (diceStyleSelect.value === "nightmare" || diceStyleSelect.value === "abyss")
+        ? (lastNonNightmareDiceStyle || "classic")
+        : getSafeDiceStyleValue(diceStyleSelect.value || lastNonNightmareDiceStyle);
+      diceStyleSelect.value = restoredStyle;
+      lastNonNightmareDiceStyle = restoredStyle;
+      setDiceStyleClass(restoredStyle);
+    }
+
+    function setDiceStyleClass(style) {
+      const nextStyle = getSafeDiceStyleValue(style);
+      diceVisualEl.classList.remove(...DICE_STYLE_CLASS_LIST);
+      diceVisualEl.classList.add(`dice-style-${nextStyle}`);
     }
 
     function renderDiceIdleFace() {
+      if (playerHasNightmareCrownDice(players[currentPlayerIndex]) ||
+        playerHasAbyssDice(players[currentPlayerIndex])) {
+        setDiceFace(1);
+        currentDiceFace = null;
+        return;
+      }
+
       if (getSelectedDiceStyle() === "classic") {
         diceVisualEl.innerHTML = "";
         diceVisualEl.textContent = "-";
@@ -3582,17 +5901,20 @@ body.theme-desert .cell.zone-island::after { content: "🏝"; }
     }
 
     function applyDiceStyle(style) {
-      const nextStyle = DICE_STYLE_CLASS_LIST.includes(`dice-style-${style}`)
-        ? style
-        : "classic";
-      diceVisualEl.classList.remove(...DICE_STYLE_CLASS_LIST);
-      diceVisualEl.classList.add(`dice-style-${nextStyle}`);
+      syncDiceStyleSelectLock();
+      const nextStyle = (shouldLockDiceStyleForNightmare() || shouldLockDiceStyleForAbyss()) ? "classic" : style;
+      setDiceStyleClass(nextStyle);
       resetDiceStyle();
 
       if (currentDiceFace !== null && currentDiceFace !== "-") {
         setDiceFace(currentDiceFace);
       } else {
         renderDiceIdleFace();
+      }
+      if (playerHasNightmareCrownDice(players[currentPlayerIndex])) {
+        applyNightmareCrownDiceStyle();
+      } else if (playerHasAbyssDice(players[currentPlayerIndex])) {
+        applyAbyssDiceStyle();
       }
     }
 
@@ -3648,10 +5970,60 @@ body.theme-desert .cell.zone-island::after { content: "🏝"; }
     function resetDiceStyle() {
       diceVisualEl.classList.remove("cheat-active");
       diceVisualEl.classList.remove("rolling");
+      diceVisualEl.classList.remove("nightmare-crown-dice");
+      diceVisualEl.classList.remove("nightmare-infinity-roll");
+      diceVisualEl.classList.remove("abyss-dice");
+      diceVisualEl.classList.remove("golden-fifteen-face");
       diceVisualEl.style.borderColor = "";
       diceVisualEl.style.background = "";
       diceVisualEl.style.color = "";
       diceVisualEl.style.boxShadow = "";
+    }
+
+    function isNightmareCrownDice(itemId) {
+      return itemId === "nightmare-crown";
+    }
+
+    function playerHasNightmareCrownDice(player) {
+      return !!player && !player.isAi && isNightmareCrownDice(player.diceItem);
+    }
+
+    function playerHasImmuneDice(player) {
+      return !!player && !player.isAi && player.diceItem === "immune";
+    }
+
+    function playerHasAbyssDice(player) {
+      return !!player && !player.isAi && player.diceItem === "abyss-dice";
+    }
+
+    function isAbyssRiskCell(pos, multiplier = null) {
+      const cellMultiplier = multiplier === null ? getMultiplierInfo(pos).multiplier : multiplier;
+      return resetCells.includes(pos) || islandCells.includes(pos) || cellMultiplier < 1;
+    }
+
+    function applyNightmareCrownDiceStyle() {
+      diceVisualEl.classList.add("nightmare-crown-dice");
+    }
+
+    function applyAbyssDiceStyle() {
+      diceVisualEl.classList.add("abyss-dice");
+    }
+
+    function syncDiceStyleForCurrentTurn() {
+      if (isRollingDice || isAnimating) return;
+      const current = players[currentPlayerIndex];
+      syncDiceStyleSelectLock();
+      resetDiceStyle();
+      if (!current) return;
+      if (playerHasNightmareCrownDice(current)) {
+        applyNightmareCrownDiceStyle();
+        return;
+      }
+      if (playerHasAbyssDice(current)) {
+        applyAbyssDiceStyle();
+        return;
+      }
+      setDiceNeonForColor(current.color);
     }
 
     // ✅ 변경: 플레이어 말 색 기반 네온을 좀 더 연하게 표현
@@ -3662,7 +6034,7 @@ body.theme-desert .cell.zone-island::after { content: "🏝"; }
       }
       const softOuter = hexToRgba(color, 0.25); // 바깥쪽 은은한 색
       const softInner = hexToRgba(color, 0.10); // 안쪽 더 연한 색
-      const diceStyle = diceStyleSelect ? diceStyleSelect.value : "classic";
+      const diceStyle = getSelectedDiceStyle();
 
       if (diceStyle !== "classic") {
         diceVisualEl.style.borderColor = color;
@@ -3738,11 +6110,229 @@ body.theme-desert .cell.zone-island::after { content: "🏝"; }
       log(`goldtest: ${player.name}을(를) 황금열쇠 직전 칸(${player.position})으로 이동했습니다.`);
     }
 
+    function normalizeCheatCode(code) {
+      return String(code || "").trim().toLowerCase();
+    }
+
+    function isNightmareUnlockCheatCode(code) {
+      return NIGHTMARE_UNLOCK_CHEAT_CODES.includes(normalizeCheatCode(code));
+    }
+
+    function isNightmareCrownCheatCode(code) {
+      return NIGHTMARE_CROWN_CHEAT_CODES.includes(normalizeCheatCode(code));
+    }
+
+    function isNightmareInfinityTestCheatCode(code) {
+      return NIGHTMARE_INFINITY_TEST_CHEAT_CODES.includes(normalizeCheatCode(code));
+    }
+
+    function isAbyssUnlockCheatCode(code) {
+      return ABYSS_UNLOCK_CHEAT_CODES.includes(normalizeCheatCode(code));
+    }
+
+    function isAbyssDiceCheatCode(code) {
+      return ABYSS_DICE_CHEAT_CODES.includes(normalizeCheatCode(code));
+    }
+
+    function unlockNightmareDifficultyByCheat(options = {}) {
+      const wasAlreadyUnlocked = isAiDifficultyUnlocked("nightmare");
+      aiRewardWins.easy = Math.max(aiRewardWins.easy || 0, 1);
+      aiRewardWins.normal = Math.max(aiRewardWins.normal || 0, 1);
+      aiRewardWins.hard = Math.max(aiRewardWins.hard || 0, 1);
+      aiRewardWins.hardBasic = Math.max(aiRewardWins.hardBasic || 0, NIGHTMARE_UNLOCK_BASIC_HARD_CLEARS);
+      saveAiRewardWins();
+
+      const nightmareInput = document.querySelector("input[name=\"aiDifficulty\"][value=\"nightmare\"]");
+      if (nightmareInput) {
+        nightmareInput.checked = true;
+        aiDifficulty = "nightmare";
+      }
+
+      updateAiDifficultyButtons();
+      updateDiceItemButtons();
+      renderAchievementCatalog();
+
+      log(wasAlreadyUnlocked
+        ? "🌑 악몽 AI는 이미 해금되어 있습니다."
+        : "🌑 치트 코드로 악몽 AI를 해금했습니다.");
+
+      if (cheatTextEl) {
+        cheatTextEl.textContent = wasAlreadyUnlocked
+          ? "치트: 악몽 AI 이미 해금"
+          : "치트: 악몽 AI 해금";
+        cheatTextEl.style.color = "#4c1d95";
+      }
+
+      if (options.showPopup !== false) {
+        showCheatPopup(
+          { color: "#ede9fe", bg: "#4c1d95" },
+          wasAlreadyUnlocked ? "이미 해금되어 있습니다." : "악몽 AI 해금!",
+          "해금",
+          "🌑",
+          2400
+        );
+      }
+
+      return !wasAlreadyUnlocked;
+    }
+
+    function unlockNightmareCrownByCheat(player, options = {}) {
+      const before = aiRewardWins.nightmare || 0;
+      aiRewardWins.easy = Math.max(aiRewardWins.easy || 0, 1);
+      aiRewardWins.normal = Math.max(aiRewardWins.normal || 0, 1);
+      aiRewardWins.hard = Math.max(aiRewardWins.hard || 0, 1);
+      aiRewardWins.hardBasic = Math.max(aiRewardWins.hardBasic || 0, NIGHTMARE_UNLOCK_BASIC_HARD_CLEARS);
+      aiRewardWins.nightmare = Math.max(before, NIGHTMARE_CROWN_EFFECT_WINS);
+      saveAiRewardWins();
+      selectedDiceItem = "nightmare-crown";
+      const humanPlayer = player && !player.isAi
+        ? player
+        : players.find((pl) => !pl.isAi);
+      if (humanPlayer) {
+        humanPlayer.diceItem = "nightmare-crown";
+        humanPlayer.diceItemChargesRemaining = getDiceItemInitialCharges("nightmare-crown");
+        humanPlayer.diceItemReserved = false;
+      }
+      updateAiDifficultyButtons();
+      updateDiceItemButtons();
+      updateDiceItemStatus();
+      renderAchievementCatalog();
+
+      const targetPlayer = humanPlayer || player || players[0];
+      const wasAlreadyUnlocked = before >= NIGHTMARE_CROWN_EFFECT_WINS;
+      log(wasAlreadyUnlocked
+        ? "🌑 악몽 주사위는 이미 해금되어 있습니다."
+        : "🌑 치트 코드로 악몽 주사위를 해금했습니다.");
+
+      if (cheatTextEl) {
+        cheatTextEl.textContent = wasAlreadyUnlocked
+          ? "치트: 악몽 주사위 이미 해금"
+          : "치트: 악몽 주사위 해금";
+        cheatTextEl.style.color = "#7c3aed";
+      }
+
+      if (options.showPopup !== false) {
+        showCheatPopup(
+          { color: "#fef3c7", bg: "#312e81" },
+          wasAlreadyUnlocked ? "이미 해금되어 있습니다." : "악몽 주사위 해금!",
+          "해금",
+          "🌑",
+          2400
+        );
+      }
+      if (options.playEffect !== false) {
+        playNightmareCrownVictoryEffect(targetPlayer, !wasAlreadyUnlocked);
+      }
+      syncDiceStyleForCurrentTurn();
+      return !wasAlreadyUnlocked;
+    }
+
+    function unlockAbyssByCheat(options = {}) {
+      const wasAlreadyUnlocked = isAiDifficultyUnlocked("abyss");
+      const before = aiRewardWins.nightmareBasic || 0;
+      aiRewardWins.easy = Math.max(aiRewardWins.easy || 0, 1);
+      aiRewardWins.normal = Math.max(aiRewardWins.normal || 0, 1);
+      aiRewardWins.hard = Math.max(aiRewardWins.hard || 0, 1);
+      aiRewardWins.hardBasic = Math.max(aiRewardWins.hardBasic || 0, NIGHTMARE_UNLOCK_BASIC_HARD_CLEARS);
+      aiRewardWins.nightmare = Math.max(aiRewardWins.nightmare || 0, 1);
+      aiRewardWins.nightmareBasic = Math.max(before, ABYSS_UNLOCK_BASIC_NIGHTMARE_CLEARS);
+      saveAiRewardWins();
+
+      const abyssInput = document.querySelector("input[name=\"aiDifficulty\"][value=\"abyss\"]");
+      if (abyssInput) {
+        abyssInput.checked = true;
+        aiDifficulty = "abyss";
+      }
+
+      updateAiDifficultyButtons();
+      updateDiceItemButtons();
+      renderAchievementCatalog();
+
+      log(wasAlreadyUnlocked
+        ? "👁️‍🗨️ 심연 AI는 이미 해금되어 있습니다."
+        : "👁️‍🗨️ 치트 코드로 심연 AI를 해금했습니다.");
+
+      if (cheatTextEl) {
+        cheatTextEl.textContent = wasAlreadyUnlocked
+          ? "치트: 심연 AI 이미 해금"
+          : "치트: 심연 AI 해금";
+        cheatTextEl.style.color = "#155e75";
+      }
+
+      if (options.showPopup !== false) {
+        showCheatPopup(
+          { color: "#cffafe", bg: "#155e75" },
+          wasAlreadyUnlocked ? "이미 해금되어 있습니다." : "심연 AI 해금!",
+          "해금",
+          "👁️‍🗨️",
+          2400
+        );
+      }
+
+      return !wasAlreadyUnlocked;
+    }
+
+    function unlockAbyssDiceByCheat(player, options = {}) {
+      const before = aiRewardWins.abyss || 0;
+      const requiredWins = DICE_ITEM_UNLOCKS["abyss-dice"].wins;
+      const wasAlreadyUnlocked = before >= requiredWins;
+
+      aiRewardWins.easy = Math.max(aiRewardWins.easy || 0, 1);
+      aiRewardWins.normal = Math.max(aiRewardWins.normal || 0, 1);
+      aiRewardWins.hard = Math.max(aiRewardWins.hard || 0, 1);
+      aiRewardWins.hardBasic = Math.max(aiRewardWins.hardBasic || 0, NIGHTMARE_UNLOCK_BASIC_HARD_CLEARS);
+      aiRewardWins.nightmare = Math.max(aiRewardWins.nightmare || 0, 1);
+      aiRewardWins.nightmareBasic = Math.max(aiRewardWins.nightmareBasic || 0, ABYSS_UNLOCK_BASIC_NIGHTMARE_CLEARS);
+      aiRewardWins.abyss = Math.max(before, requiredWins);
+      saveAiRewardWins();
+
+      selectedDiceItem = "abyss-dice";
+      const humanPlayer = player && !player.isAi
+        ? player
+        : players.find((pl) => !pl.isAi);
+      if (humanPlayer) {
+        humanPlayer.diceItem = "abyss-dice";
+        humanPlayer.diceItemChargesRemaining = getDiceItemInitialCharges("abyss-dice");
+        humanPlayer.diceItemReserved = false;
+      }
+
+      updateAiDifficultyButtons();
+      updateDiceItemButtons();
+      updateDiceItemStatus();
+      renderAchievementCatalog();
+
+      const targetPlayer = humanPlayer || player || players[0];
+      log(wasAlreadyUnlocked
+        ? "👁️‍🗨️ 심연 주사위는 이미 해금되어 있습니다."
+        : "👁️‍🗨️ 치트 코드로 심연 주사위를 해금했습니다.");
+
+      if (cheatTextEl) {
+        cheatTextEl.textContent = wasAlreadyUnlocked
+          ? "치트: 심연 주사위 이미 해금"
+          : "치트: 심연 주사위 해금";
+        cheatTextEl.style.color = "#155e75";
+      }
+
+      if (options.showPopup !== false) {
+        showCheatPopup(
+          { color: "#cffafe", bg: "#083344" },
+          wasAlreadyUnlocked ? "이미 해금되어 있습니다." : "심연 주사위 해금!",
+          "해금",
+          "👁️‍🗨️",
+          2400
+        );
+      }
+      if (options.playEffect !== false) {
+        playAbyssDiceUnlockEffect(targetPlayer, !wasAlreadyUnlocked);
+      }
+      syncDiceStyleForCurrentTurn();
+      return !wasAlreadyUnlocked;
+    }
+
     function getCheatsForCurrentRoll() {
       const cheats = {
         goldenTen: false,
         doubleStep: false,
-        trapImmune: false,
         extraTurn: false,
         leadFollow: false,
         swapLead: false,
@@ -3754,6 +6344,14 @@ body.theme-desert .cell.zone-island::after { content: "🏝"; }
         warpMiddle: false,
         positionStorm: false,
         goldTest: false,
+        nightmareDifficultyUnlock: false,
+        nightmareCrownUnlock: false,
+        nightmareInfinityTest: false,
+        abyssUnlock: false,
+        abyssDiceUnlock: false,
+        riskReverse: false,
+        slowReverse: false,
+        goldenMeteor: false,
         forcedRoll: null,
         triggered: []
       };
@@ -3784,6 +6382,38 @@ body.theme-desert .cell.zone-island::after { content: "🏝"; }
           activateGoldTestForPlayer(currentPlayer);
           return;
         }
+        if (isNightmareUnlockCheatCode(normalizedCode)) {
+          cheats.nightmareDifficultyUnlock = true;
+          cheats.triggered.push({ code: normalizedCode, name: "악몽 AI 해금", desc: "악몽 AI 즉시 해금" });
+          unlockNightmareDifficultyByCheat({ showPopup: false });
+          return;
+        }
+        if (isNightmareCrownCheatCode(normalizedCode)) {
+          cheats.nightmareCrownUnlock = true;
+          cheats.triggered.push({ code: normalizedCode, name: "악몽 주사위 해금", desc: "악몽 주사위 즉시 해금" });
+          unlockNightmareCrownByCheat(currentPlayer, { showPopup: false, playEffect: true });
+          return;
+        }
+        if (isAbyssUnlockCheatCode(normalizedCode)) {
+          cheats.abyssUnlock = true;
+          cheats.triggered.push({ code: normalizedCode, name: "심연 AI 해금", desc: "심연 AI 즉시 해금" });
+          unlockAbyssByCheat({ showPopup: false });
+          return;
+        }
+        if (isAbyssDiceCheatCode(normalizedCode)) {
+          cheats.abyssDiceUnlock = true;
+          cheats.triggered.push({ code: normalizedCode, name: "심연 주사위 해금", desc: "심연 주사위 즉시 해금" });
+          unlockAbyssDiceByCheat(currentPlayer, { showPopup: false, playEffect: true });
+          return;
+        }
+        if (isNightmareInfinityTestCheatCode(normalizedCode)) {
+          cheats.nightmareInfinityTest = true;
+          cheats.triggered.push({ code: normalizedCode, name: "무한대 눈 테스트", desc: "악몽 주사위 무한대 눈 강제 발동" });
+          if (currentPlayer && !playerHasNightmareCrownDice(currentPlayer)) {
+            unlockNightmareCrownByCheat(currentPlayer, { showPopup: false, playEffect: false });
+          }
+          return;
+        }
 
         const def = CHEAT_DEFS.find(d => d.code === code);
         if (!def) {
@@ -3795,13 +6425,15 @@ body.theme-desert .cell.zone-island::after { content: "🏝"; }
 
         if (code === "3025")      cheats.goldenTen = true;
         else if (code === "1357") cheats.doubleStep = true;
-        else if (code === "2468") cheats.trapImmune = true;
         else if (code === "9999") cheats.extraTurn = true;
         else if (code === "1111") cheats.leadFollow = true;
         else if (code === "2222") cheats.swapLead = true;
         else if (code === "6666") cheats.warpLeadSkip = true;
         else if (code === "3333") cheats.pushOthersBack = true;
         else if (code === "4444") cheats.shield2turn = true;
+        else if (code === "9090") cheats.riskReverse = true;
+        else if (code === "1919") cheats.slowReverse = true;
+        else if (code === "7878") cheats.goldenMeteor = true;
         else if (code === "5555") cheats.rerollHigher = true;
         else if (code === "7777") cheats.randomPlus3To6 = true;
         else if (code === "8888") cheats.warpMiddle = true;
@@ -3857,6 +6489,7 @@ if (cheats.triggered.length > 0) {
       else if (prefixLabel === "방어")    playSound("shield");
       else if (prefixLabel === "x2 배속") playSound("speed");
       else if (prefixLabel === "1/2 배속") playSound("speedHalf");
+      else if (prefixLabel === "악몽")    playSound("cheat");
 
       goldenKeyOverlayEl.classList.remove("show");
       goldenKeyPopupEl.classList.remove("show");
@@ -3919,12 +6552,12 @@ if (cheats.triggered.length > 0) {
         cheatTextEl.textContent = "치트: 없음";
       }
 
-      diceVisualEl.classList.remove("cheat-active");
+      // 치트 턴은 이전 플레이어의 주사위 외형을 물려받지 않도록 완전히 초기화한다.
+      resetDiceStyle();
 
       const styleMap = {
         goldenTen:       { color: "#f59e0b", bg: "#fffbeb", border: "#fbbf24" },
         doubleStep:      { color: "#3b82f6", bg: "#eff6ff", border: "#bfdbfe" },
-        trapImmune:      { color: "#22c55e", bg: "#ecfdf3", border: "#bbf7d0" },
         extraTurn:       { color: "#a855f7", bg: "#faf5ff", border: "#e9d5ff" },
         leadFollow:      { color: "#ec4899", bg: "#fdf2f8", border: "#f9a8d4" },
         swapLead:        { color: "#06b6d4", bg: "#ecfeff", border: "#a5f3fc" },
@@ -3935,13 +6568,20 @@ if (cheats.triggered.length > 0) {
         randomPlus3To6:  { color: "#ef4444", bg: "#fef2f2", border: "#fecaca" },
         warpMiddle:      { color: "#8b5cf6", bg: "#f5f3ff", border: "#ddd6fe" },
         positionStorm:   { color: "#0ea5e9", bg: "#f0f9ff", border: "#7dd3fc" },
-        goldTest:        { color: "#d97706", bg: "#fffbeb", border: "#facc15" }
+        riskReverse:     { color: "#dc2626", bg: "#fff1f2", border: "#fda4af" },
+        slowReverse:     { color: "#2563eb", bg: "#eff6ff", border: "#93c5fd" },
+        goldenMeteor:    { color: "#f59e0b", bg: "#fffbeb", border: "#facc15" },
+        goldTest:        { color: "#d97706", bg: "#fffbeb", border: "#facc15" },
+        nightmareDifficultyUnlock: { color: "#4c1d95", bg: "#ede9fe", border: "#a78bfa" },
+        nightmareCrownUnlock: { color: "#7c3aed", bg: "#f5f3ff", border: "#c4b5fd" },
+        abyssUnlock:     { color: "#155e75", bg: "#ecfeff", border: "#67e8f9" },
+        abyssDiceUnlock: { color: "#0891b2", bg: "#ecfeff", border: "#22d3ee" },
+        nightmareInfinityTest: { color: "#facc15", bg: "#1e1b4b", border: "#a78bfa" }
       };
 
       const priority = [
         "goldenTen",
         "doubleStep",
-        "trapImmune",
         "extraTurn",
         "leadFollow",
         "swapLead",
@@ -3952,7 +6592,15 @@ if (cheats.triggered.length > 0) {
         "randomPlus3To6",
         "warpMiddle",
         "positionStorm",
-        "goldTest"
+        "riskReverse",
+        "slowReverse",
+        "goldenMeteor",
+        "goldTest",
+        "nightmareDifficultyUnlock",
+        "nightmareCrownUnlock",
+        "abyssUnlock",
+        "abyssDiceUnlock",
+        "nightmareInfinityTest"
       ];
 
       let mainKey = null;
@@ -3995,27 +6643,218 @@ if (cheats.triggered.length > 0) {
       }
     }
 
+    function applyRiskReverse(player) {
+      const oldTraps = Array.from(new Set(resetCells)).sort((a, b) => a - b);
+      const oldKeys = Array.from(new Set(goldenKeyCells)).sort((a, b) => a - b);
+      if (oldTraps.length === 0 && oldKeys.length === 0) {
+        log("🔀 위험 반전: 바꿀 함정칸과 황금열쇠칸이 없습니다.");
+        return;
+      }
+
+      resetCells = oldKeys;
+      goldenKeyCells = oldTraps;
+      if (resetCellsInput) resetCellsInput.value = resetCells.join(", ");
+      if (gKeyCellsInput) gKeyCellsInput.value = goldenKeyCells.join(", ");
+
+      renderBoard();
+      renderTokens();
+      updateLegendText();
+      updateStatusText();
+
+      const playerName = player ? `${player.name}의 ` : "";
+      log(`🔀 ${playerName}위험 반전: 함정 ${oldTraps.length}개와 황금열쇠 ${oldKeys.length}개를 서로 교환했습니다.`);
+      showCheatPopup(
+        { color: "#dc2626", bg: "#fff1f2" },
+        `함정 ${oldTraps.length}개 ↔ 황금열쇠 ${oldKeys.length}개`,
+        "위험 반전",
+        "🔀",
+        2200
+      );
+    }
+
+    function applySlowReverse(player) {
+      const slowCells = [];
+      const nextZones = [];
+
+      specialZones.forEach((zone) => {
+        if (zone.multiplier < 1) {
+          for (let pos = zone.start; pos <= zone.end; pos++) {
+            slowCells.push(pos);
+          }
+        } else {
+          nextZones.push(zone);
+        }
+      });
+
+      const reversedCells = Array.from(new Set(slowCells)).sort((a, b) => a - b);
+      if (reversedCells.length === 0) {
+        log("🔵 저속 역전: 바꿀 1/2칸이 없습니다.");
+        return;
+      }
+
+      reversedCells.forEach((pos) => {
+        const duplicateIndex = nextZones.findIndex((zone) => zone.start === pos && zone.end === pos);
+        if (duplicateIndex >= 0) nextZones.splice(duplicateIndex, 1);
+        nextZones.push({ start: pos, end: pos, multiplier: 2, label: "x2 칸" });
+      });
+
+      specialZones = nextZones.sort((a, b) => a.start - b.start);
+      syncInputsFromState();
+      renderBoard();
+      renderTokens();
+      updateStatusText();
+
+      const playerName = player ? `${player.name}의 ` : "";
+      log(`🔵 ${playerName}저속 역전: 1/2칸 ${reversedCells.length}개를 x2칸으로 바꿨습니다.`);
+      showCheatPopup(
+        { color: "#2563eb", bg: "#eff6ff" },
+        `1/2칸 ${reversedCells.length}개 → x2칸`,
+        "저속 역전",
+        "🔵",
+        2200
+      );
+    }
+
+    function applyGoldenMeteor(player) {
+      const finishPos = BOARD_SIZE - 1;
+      const candidates = [];
+
+      for (let pos = 1; pos < finishPos; pos++) {
+        if (findZone(pos)) continue;
+        if (resetCells.includes(pos)) continue;
+        if (goldenKeyCells.includes(pos)) continue;
+        if (islandCells.includes(pos)) continue;
+        candidates.push(pos);
+      }
+
+      if (candidates.length === 0) {
+        log("☄️ 황금 유성: 황금열쇠로 바꿀 일반칸이 없습니다.");
+        return;
+      }
+
+      const picked = [];
+      const pool = candidates.slice();
+      const count = Math.min(3, pool.length);
+      for (let i = 0; i < count; i++) {
+        const idx = Math.floor(Math.random() * pool.length);
+        picked.push(pool.splice(idx, 1)[0]);
+      }
+
+      goldenKeyCells = Array.from(new Set(goldenKeyCells.concat(picked))).sort((a, b) => a - b);
+      if (gKeyCellsInput) gKeyCellsInput.value = goldenKeyCells.join(", ");
+
+      renderBoard();
+      renderTokens();
+      updateLegendText();
+      updateStatusText();
+
+      const playerName = player ? `${player.name}의 ` : "";
+      log(`☄️ ${playerName}황금 유성: 일반칸 ${picked.join(", ")}번이 황금열쇠칸으로 변했습니다.`);
+      showCheatPopup(
+        { color: "#f59e0b", bg: "#fffbeb" },
+        `${picked.join(", ")}번 칸에 황금열쇠 생성`,
+        "황금 유성",
+        "☄️",
+        2400
+      );
+    }
+
     function updateStatusText() {
       if (players.length === 0) {
         currentPlayerEl.textContent = "-";
         currentPlayerEl.style.color = "#111827";
+        if (opponentAiLineEl) opponentAiLineEl.hidden = true;
+        if (opponentAiNameEl) opponentAiNameEl.textContent = "";
         positionsEl.textContent = "-";
+        renderCurrentEffects(null);
         return;
       }
 
       const current = players[currentPlayerIndex];
-      currentPlayerEl.textContent = current.name;
+      currentPlayerEl.textContent = getPlayerDisplayName(current);
       currentPlayerEl.style.color = current.color;
 
+      if (opponentAiLineEl && opponentAiNameEl) {
+        if (gameMode === "single-ai") {
+          opponentAiLineEl.hidden = false;
+          opponentAiNameEl.textContent = `${getAiDifficultyLabel()} AI`;
+          opponentAiNameEl.className = `opponent-ai-name ai-${aiDifficulty}`;
+        } else {
+          opponentAiLineEl.hidden = true;
+          opponentAiNameEl.textContent = "";
+          opponentAiNameEl.className = "opponent-ai-name";
+        }
+      }
+
       const posText = players
-        .map((p) => `${p.name}: ${p.position}칸`)
+        .map((p) => `${getPlayerDisplayName(p)}: ${p.position}칸`)
         .join(" / ");
       positionsEl.textContent = posText;
+      renderCurrentEffects(current);
 
       const pills = playersLegendEl.querySelectorAll(".player-pill");
       pills.forEach((pill, idx) => {
         pill.classList.toggle("current-turn", idx === currentPlayerIndex);
       });
+    }
+
+    function renderCurrentEffects(player) {
+      if (!currentEffectsEl) return;
+      currentEffectsEl.innerHTML = "";
+
+      const effects = getCurrentEffectLabels(player);
+      const labels = effects.length > 0 ? effects : ["없음"];
+
+      labels.forEach((label) => {
+        const pill = document.createElement("span");
+        pill.className = "current-effect-pill";
+        if (effects.length === 0) pill.classList.add("empty");
+        pill.textContent = label;
+        currentEffectsEl.appendChild(pill);
+      });
+    }
+
+    function getCurrentEffectLabels(player) {
+      if (!player) return [];
+
+      const effects = [];
+      const itemId = player.diceItem || "basic";
+      const charges = player.diceItemChargesRemaining || 0;
+
+      if (itemId !== "basic") {
+        const itemLabel = getDiceItemLabelById(itemId);
+        if (isDiceItemPassive(itemId)) {
+          effects.push(itemLabel);
+        } else if (charges > 0) {
+          if (player.diceItemReserved && isDiceItemReservable(itemId)) {
+            effects.push(`${itemLabel} 예약됨`);
+          } else {
+            effects.push(getDiceItemStatusDetail(itemId, charges) || itemLabel);
+          }
+        }
+      }
+
+      if (player.shieldChargesRemaining && player.shieldChargesRemaining > 0) {
+        effects.push(`보호막 ${player.shieldChargesRemaining}회`);
+      }
+      if (player.skipTurnsRemaining && player.skipTurnsRemaining > 0) {
+        effects.push(`휴식 ${player.skipTurnsRemaining}턴`);
+      }
+      if (player.trapImmune) {
+        effects.push("함정 무시");
+      }
+      if (player.isFastMoving) {
+        effects.push("질주 중");
+      }
+
+      return effects;
+    }
+
+    function getPlayerDisplayName(player) {
+      if (gameMode === "single-ai" && player && player.isAi) {
+        return `${getAiDifficultyLabel()} AI`;
+      }
+      return player ? player.name : "-";
     }
 
     function renderPlayersLegend() {
@@ -4105,6 +6944,7 @@ if (cheats.triggered.length > 0) {
         token.className = "token";
         token.style.background = p.color;
         token.title = p.name;
+        token.dataset.playerIndex = String(idx);
 
         if (idx === currentPlayerIndex) {
           token.classList.add("current-turn");
@@ -4316,7 +7156,7 @@ if (cheats.triggered.length > 0) {
 
 
 
-    function animateMove(player, steps, onComplete) {
+    function animateMove(player, steps, onComplete, stepDelayMs = 250) {
       if (steps <= 0) {
         onComplete();
         return;
@@ -4364,7 +7204,7 @@ if (cheats.triggered.length > 0) {
           return;
         }
 
-        setTimeout(step, 250);
+        setTimeout(step, stepDelayMs);
       }
 
       step();
@@ -4484,6 +7324,9 @@ log(msg);
         case "trap":
           msg = `🛡 ${player.name}이(가) 함정으로 인한 해로운 효과를 방어했습니다.${usedText}`;
           break;
+        case "slow":
+          msg = `🛡️ ${player.name}이(가) 1/2칸 감속 효과를 방어했습니다.${usedText}`;
+          break;
         case "swap":
           msg = `🛡 ${player.name}이(가) 자리 교환으로 인한 해로운 효과를 방어했습니다.${usedText}`;
           break;
@@ -4524,6 +7367,7 @@ log(msg);
     }
 
     function getAiDifficultyLabel() {
+      if (aiDifficulty === "abyss") return "심연";
       if (aiDifficulty === "nightmare") return "악몽";
       if (aiDifficulty === "hard") return "어려움";
       if (aiDifficulty === "normal") return "보통";
@@ -4531,6 +7375,7 @@ log(msg);
     }
 
     function getAiDifficultyLabelById(difficulty) {
+      if (difficulty === "abyss") return "심연";
       if (difficulty === "nightmare") return "악몽";
       if (difficulty === "hard") return "어려움";
       if (difficulty === "normal") return "보통";
@@ -4543,16 +7388,22 @@ log(msg);
         return (aiRewardWins.easy || 0) >= 1 ||
           (aiRewardWins.normal || 0) >= 1 ||
           (aiRewardWins.hard || 0) >= 1 ||
-          (aiRewardWins.nightmare || 0) >= 1;
+          (aiRewardWins.nightmare || 0) >= 1 ||
+          (aiRewardWins.abyss || 0) >= 1;
       }
       if (difficulty === "hard") {
         return (aiRewardWins.normal || 0) >= 1 ||
           (aiRewardWins.hard || 0) >= 1 ||
-          (aiRewardWins.nightmare || 0) >= 1;
+          (aiRewardWins.nightmare || 0) >= 1 ||
+          (aiRewardWins.abyss || 0) >= 1;
       }
       if (difficulty === "nightmare") {
         return (aiRewardWins.hardBasic || 0) >= NIGHTMARE_UNLOCK_BASIC_HARD_CLEARS ||
-          (aiRewardWins.nightmare || 0) >= 1;
+          (aiRewardWins.nightmare || 0) >= 1 ||
+          (aiRewardWins.abyss || 0) >= 1;
+      }
+      if (difficulty === "abyss") {
+        return (aiRewardWins.nightmareBasic || 0) >= ABYSS_UNLOCK_BASIC_NIGHTMARE_CLEARS;
       }
       return false;
     }
@@ -4561,6 +7412,7 @@ log(msg);
       if (difficulty === "normal") return "쉬움 AI 1승 필요";
       if (difficulty === "hard") return "보통 AI 1승 필요";
       if (difficulty === "nightmare") return `어려움 AI를 기본 주사위로 ${NIGHTMARE_UNLOCK_BASIC_HARD_CLEARS}승 필요`;
+      if (difficulty === "abyss") return `악몽 AI를 기본 주사위로 ${ABYSS_UNLOCK_BASIC_NIGHTMARE_CLEARS}승 필요`;
       return "사용 가능";
     }
 
@@ -4580,6 +7432,7 @@ log(msg);
     function updateAiDifficultyButtons() {
       if (!aiDifficultyInputs || !aiDifficultyInputs.length) return;
       ensureUnlockedAiDifficultySelected();
+      syncAiDifficultyThemeClass();
       aiDifficultyInputs.forEach((input) => {
         const option = input.closest(".ai-difficulty-option");
         const unlocked = isAiDifficultyUnlocked(input.value);
@@ -4593,17 +7446,27 @@ log(msg);
     }
 
     function loadAiRewardWins() {
-      const fallback = { easy: 0, normal: 0, hard: 0, nightmare: 0, hardBasic: 0, goldenHunter: false };
+      const fallback = { easy: 0, normal: 0, hard: 0, nightmare: 0, abyss: 0, hardBasic: 0, nightmareBasic: 0, goldenHunter: false, trapHits: 0, originReturn: false };
       try {
         const saved = JSON.parse(localStorage.getItem(AI_REWARD_STORAGE_KEY) || "{}");
-        return {
+        const loaded = {
           easy: Math.max(0, parseInt(saved.easy, 10) || 0),
           normal: Math.max(0, parseInt(saved.normal, 10) || 0),
           hard: Math.max(0, parseInt(saved.hard, 10) || 0),
           nightmare: Math.max(0, parseInt(saved.nightmare, 10) || 0),
+          abyss: Math.max(0, parseInt(saved.abyss, 10) || 0),
           hardBasic: Math.max(0, parseInt(saved.hardBasic, 10) || 0),
-          goldenHunter: !!saved.goldenHunter
+          nightmareBasic: Math.max(0, parseInt(saved.nightmareBasic, 10) || 0),
+          goldenHunter: !!saved.goldenHunter,
+          trapHits: Math.max(0, parseInt(saved.trapHits, 10) || 0),
+          originReturn: !!saved.originReturn
         };
+
+        if (loaded.nightmareBasic < ABYSS_UNLOCK_BASIC_NIGHTMARE_CLEARS) {
+          loaded.abyss = 0;
+        }
+
+        return loaded;
       } catch (e) {
         return fallback;
       }
@@ -4616,10 +7479,10 @@ log(msg);
     }
 
     function resetAiRewardWins() {
-      const shouldReset = window.confirm("AI 클리어 기록을 모두 초기화할까요? 해금된 주사위도 다시 잠깁니다.");
+      const shouldReset = window.confirm("AI/조건 보상 기록을 모두 초기화할까요? 해금된 주사위도 다시 잠깁니다.");
       if (!shouldReset) return;
 
-      aiRewardWins = { easy: 0, normal: 0, hard: 0, nightmare: 0, hardBasic: 0, goldenHunter: false };
+      aiRewardWins = { easy: 0, normal: 0, hard: 0, nightmare: 0, abyss: 0, hardBasic: 0, nightmareBasic: 0, goldenHunter: false, trapHits: 0, originReturn: false };
       selectedDiceItem = "basic";
       saveAiRewardWins();
       updateAiDifficultyButtons();
@@ -4631,11 +7494,16 @@ log(msg);
       if (itemId === "weak-stable") return "약한 안정 주사위";
       if (itemId === "weak-dash") return "약한 질주 주사위";
       if (itemId === "weak-shield") return "약한 방패 주사위";
+      if (itemId === "weak-reroll") return "약한 재굴림 주사위";
       if (itemId === "shield") return "방패 주사위";
       if (itemId === "dash") return "질주 주사위";
       if (itemId === "reroll") return "재굴림 주사위";
       if (itemId === "revenge") return "복수 주사위";
+      if (itemId === "nightmare-crown") return "악몽 주사위";
+      if (itemId === "abyss-dice") return "심연 주사위";
       if (itemId === "golden-hunter") return "황금 사냥꾼 주사위";
+      if (itemId === "immune") return "면역 주사위";
+      if (itemId === "origin") return "태초 주사위";
       return "기본 주사위";
     }
 
@@ -4643,22 +7511,32 @@ log(msg);
       if (itemId === "weak-stable") return "🧭";
       if (itemId === "weak-dash") return "⚡";
       if (itemId === "weak-shield") return "🛡️";
+      if (itemId === "weak-reroll") return "🔁";
       if (itemId === "shield") return "🛡️";
       if (itemId === "dash") return "⚡";
       if (itemId === "reroll") return "🔁";
       if (itemId === "revenge") return "🔥";
+      if (itemId === "nightmare-crown") return "🌑";
+      if (itemId === "abyss-dice") return "👁️‍🗨️";
       if (itemId === "golden-hunter") return "🔑";
+      if (itemId === "immune") return "🧬";
+      if (itemId === "origin") return "🌀";
       return "🎲";
     }
 
     function getDiceItemRewardDescription(itemId) {
       if (itemId === "weak-dash") return "예약하면 주사위 값 +1. 1회 사용.";
       if (itemId === "weak-shield") return "함정칸 효과를 1회 방어합니다.";
+      if (itemId === "weak-reroll") return "예약하면 두 주사위 눈 중 하나를 선택합니다. 1회 사용.";
       if (itemId === "dash") return "예약하면 주사위 값 +3. 3회 사용.";
       if (itemId === "shield") return "함정/무인도 효과를 3회 방어합니다.";
       if (itemId === "reroll") return "예약하면 두 주사위 눈 중 하나를 선택합니다. 3회 사용.";
       if (itemId === "revenge") return "꼴찌일 때 주사위 값 +3.";
+      if (itemId === "nightmare-crown") return "15% 확률로 황금 15가 나와 15칸 이동합니다.";
+      if (itemId === "abyss-dice") return "해로운 효과 완전 면역, 위험 칸에서 출발 시 20%확률로 +6";
       if (itemId === "golden-hunter") return "황금열쇠 칸에서 카드 3장 중 하나를 선택합니다.";
+      if (itemId === "immune") return "함정, 무인도, 1/2칸, 위치 교환, 뒤로 밀기를 모두 막습니다.";
+      if (itemId === "origin") return "게임당 1회, 상대를 출발점으로 되돌립니다.";
       return "새로운 주사위를 사용할 수 있습니다.";
     }
 
@@ -4671,6 +7549,7 @@ log(msg);
       const unlock = DICE_ITEM_UNLOCKS[itemId];
       if (!unlock) return false;
       if (unlock.achievement) return !!aiRewardWins[unlock.achievement];
+      if (unlock.achievementCount) return (aiRewardWins[unlock.achievementCount] || 0) >= unlock.target;
       if (!unlock.difficulty) return true;
       return (aiRewardWins[unlock.difficulty] || 0) >= unlock.wins;
     }
@@ -4680,7 +7559,16 @@ log(msg);
       const unlock = DICE_ITEM_UNLOCKS[itemId];
       if (!unlock) return "사용 불가";
       if (unlock.achievement) {
+        if (itemId === "origin") {
+          return isDiceItemUnlocked(itemId)
+            ? "사용 가능"
+            : "도착까지 10칸 이하 남은 상태에서 함정에 걸린 뒤 승리";
+        }
         return isDiceItemUnlocked(itemId) ? "사용 가능" : "한 판 황금열쇠 3회 획득 후 승리";
+      }
+      if (unlock.achievementCount) {
+        if (isDiceItemUnlocked(itemId)) return "사용 가능";
+        return `함정 누적 ${getAchievementProgress(aiRewardWins[unlock.achievementCount], unlock.target)}`;
       }
       if (!unlock.difficulty || isDiceItemUnlocked(itemId)) return "사용 가능";
       const label = `${getAiDifficultyLabelById(unlock.difficulty)} AI`;
@@ -4690,7 +7578,9 @@ log(msg);
     function getDiceItemRewardMeta(itemId) {
       const unlock = DICE_ITEM_UNLOCKS[itemId];
       if (!unlock) return "다음 싱글 AI 모드부터 선택할 수 있습니다.";
+      if (itemId === "origin") return "조건 보상 · 다음 싱글 AI 모드부터 선택 가능";
       if (unlock.achievement) return "조건 보상 · 다음 싱글 AI 모드부터 선택 가능";
+      if (unlock.achievementCount) return `조건 보상 · 함정 누적 ${unlock.target}회 달성 시 선택 가능`;
       if (!unlock.difficulty) return "다음 싱글 AI 모드부터 선택할 수 있습니다.";
       const label = `${getAiDifficultyLabelById(unlock.difficulty)} AI`;
       return `${label} ${unlock.wins}승 보상 · 다음 싱글 AI 모드부터 선택 가능`;
@@ -4700,8 +7590,23 @@ log(msg);
       return `${Math.min(Math.max(current || 0, 0), target)}/${target}`;
     }
 
+    function isNightmareCrownEffectUnlocked() {
+      return (aiRewardWins.nightmare || 0) >= NIGHTMARE_CROWN_EFFECT_WINS;
+    }
+
     function createDiceRewardAchievement(itemId) {
       const unlock = DICE_ITEM_UNLOCKS[itemId];
+      if (unlock && unlock.achievementCount) {
+        return {
+          id: `dice-${itemId}`,
+          icon: getDiceItemIconById(itemId),
+          title: getDiceItemLabelById(itemId),
+          desc: `함정 누적 ${unlock.target}회`,
+          done: isDiceItemUnlocked(itemId),
+          progress: getAchievementProgress(aiRewardWins[unlock.achievementCount], unlock.target)
+        };
+      }
+
       const difficulty = unlock && unlock.difficulty;
       const wins = unlock && unlock.wins ? unlock.wins : 0;
       return {
@@ -4740,12 +7645,32 @@ log(msg);
           done: isAiDifficultyUnlocked("nightmare"),
           progress: getAchievementProgress(aiRewardWins.hardBasic, NIGHTMARE_UNLOCK_BASIC_HARD_CLEARS)
         },
-        createDiceRewardAchievement("weak-dash"),
+        {
+          id: "unlock-abyss-ai",
+          icon: "👁️‍🗨️",
+          title: "심연 AI 해금",
+          desc: `악몽 AI 기본 주사위 ${ABYSS_UNLOCK_BASIC_NIGHTMARE_CLEARS}승`,
+          done: isAiDifficultyUnlocked("abyss"),
+          progress: getAchievementProgress(aiRewardWins.nightmareBasic, ABYSS_UNLOCK_BASIC_NIGHTMARE_CLEARS)
+        },
+        createDiceRewardAchievement("weak-reroll"),
         createDiceRewardAchievement("weak-shield"),
-        createDiceRewardAchievement("dash"),
-        createDiceRewardAchievement("shield"),
+        createDiceRewardAchievement("weak-dash"),
         createDiceRewardAchievement("reroll"),
+        createDiceRewardAchievement("shield"),
+        createDiceRewardAchievement("dash"),
         createDiceRewardAchievement("revenge"),
+        createDiceRewardAchievement("nightmare-crown"),
+        createDiceRewardAchievement("abyss-dice"),
+        createDiceRewardAchievement("immune"),
+        {
+          id: "origin",
+          icon: getDiceItemIconById("origin"),
+          title: getDiceItemLabelById("origin"),
+          desc: "도착까지 10칸 이하 남은 상태에서 함정에 걸린 뒤 승리",
+          done: !!aiRewardWins.originReturn,
+          progress: aiRewardWins.originReturn ? "완료" : "미달성"
+        },
         {
           id: "golden-hunter",
           icon: getDiceItemIconById("golden-hunter"),
@@ -4850,6 +7775,9 @@ log(msg);
       if (nightmareAiWinCountEl) {
         nightmareAiWinCountEl.textContent = `${aiRewardWins.nightmare || 0}승`;
       }
+      if (abyssAiWinCountEl) {
+        abyssAiWinCountEl.textContent = `${aiRewardWins.abyss || 0}승`;
+      }
       renderAchievementCatalog();
     }
 
@@ -4871,6 +7799,7 @@ log(msg);
           lockText.textContent = getDiceItemLockText(itemId);
         }
       });
+      syncDiceStyleSelectLock();
     }
 
     function getCurrentBoardSettings() {
@@ -4921,9 +7850,18 @@ log(msg);
       });
     }
 
+    function syncAiDifficultyThemeClass() {
+      document.body.classList.remove(...AI_DIFFICULTY_THEME_CLASS_LIST);
+      if (gameMode === "single-ai") {
+        document.body.classList.add(`ai-theme-${aiDifficulty}`);
+      }
+    }
+
     function updateModeEditingControls() {
       const isSingleAi = gameMode === "single-ai";
       document.body.classList.toggle("single-ai-active", isSingleAi);
+      syncAiDifficultyThemeClass();
+      if (themeSelect) applyTheme(themeSelect.value);
       if (playerCountSelect) playerCountSelect.disabled = isSingleAi;
       if (boardSizeInput) boardSizeInput.disabled = isSingleAi;
       [x2CellsInput, halfCellsInput, resetCellsInput, gKeyCellsInput, islandCellsInput].forEach((input) => {
@@ -4965,7 +7903,8 @@ log(msg);
     function getDiceItemInitialCharges(itemId) {
       if (itemId === "dash") return 3;
       if (itemId === "shield" || itemId === "reroll") return 3;
-      if (itemId === "weak-stable" || itemId === "weak-dash" || itemId === "weak-shield" || itemId === "revenge") return 1;
+      if (itemId === "origin") return 1;
+      if (itemId === "weak-stable" || itemId === "weak-dash" || itemId === "weak-shield" || itemId === "weak-reroll" || itemId === "revenge") return 1;
       return 0;
     }
 
@@ -4973,22 +7912,29 @@ log(msg);
       if (itemId === "weak-stable") return `1/2칸 무시 ${charges}회`;
       if (itemId === "weak-dash") return `+1 이동 ${charges}회`;
       if (itemId === "weak-shield") return `함정 방어 ${charges}회`;
+      if (itemId === "weak-reroll") return `재굴림 ${charges}회`;
       if (itemId === "shield") return `함정/무인도 방어 ${charges}회`;
       if (itemId === "dash") return `+3 이동 ${charges}회`;
       if (itemId === "reroll") return `재굴림 ${charges}회`;
       if (itemId === "revenge") return `꼴찌 +3 ${charges}회`;
+      if (itemId === "nightmare-crown") return "";
+      if (itemId === "abyss-dice") return "";
       if (itemId === "golden-hunter") return "황금열쇠 3장 선택";
+      if (itemId === "immune") return "해로운 효과 면역";
+      if (itemId === "origin") return `상대 출발점 ${charges}회`;
       return "효과 없음";
     }
 
     function isDiceItemPassive(itemId) {
-      return itemId === "golden-hunter";
+      return itemId === "golden-hunter" || itemId === "nightmare-crown" || itemId === "abyss-dice" || itemId === "immune";
     }
 
     function isDiceItemReservable(itemId) {
       return itemId === "weak-dash" ||
+        itemId === "weak-reroll" ||
         itemId === "dash" ||
-        itemId === "reroll";
+        itemId === "reroll" ||
+        itemId === "origin";
     }
 
     function updateDiceItemStatus() {
@@ -4998,7 +7944,10 @@ log(msg);
       if (!player || player.diceItem === "basic") {
         diceItemStatusEl.hidden = gameMode !== "single-ai";
         if (diceItemStatusNameEl) diceItemStatusNameEl.textContent = "기본 주사위";
-        if (diceItemStatusDetailEl) diceItemStatusDetailEl.textContent = "효과 없음";
+        if (diceItemStatusDetailEl) {
+          diceItemStatusDetailEl.hidden = false;
+          diceItemStatusDetailEl.textContent = "효과 없음";
+        }
         if (diceItemStatusIconEl) {
           diceItemStatusIconEl.textContent = getDiceItemIconById("basic");
           diceItemStatusIconEl.classList.remove("on");
@@ -5016,9 +7965,11 @@ log(msg);
       if (diceItemStatusNameEl) diceItemStatusNameEl.textContent = getDiceItemLabelById(player.diceItem);
       if (diceItemStatusDetailEl) {
         const detail = getDiceItemStatusDetail(player.diceItem, charges);
-        diceItemStatusDetailEl.textContent = isOn
-          ? (player.diceItemReserved ? `예약됨 · ${detail}` : detail)
+        const detailText = isOn
+          ? (player.diceItemReserved && detail ? `예약됨 · ${detail}` : detail)
           : "";
+        diceItemStatusDetailEl.hidden = detailText.length === 0;
+        diceItemStatusDetailEl.textContent = detailText;
       }
       if (diceItemStatusIconEl) {
         diceItemStatusIconEl.textContent = getDiceItemIconById(player.diceItem);
@@ -5041,6 +7992,7 @@ log(msg);
       player.diceItemReserved = !player.diceItemReserved;
       log(`${getDiceItemIconById(player.diceItem)} ${getDiceItemLabelById(player.diceItem)} ${player.diceItemReserved ? "예약됨" : "예약 해제"}`);
       updateDiceItemStatus();
+      updateStatusText();
       playSound("click");
     }
 
@@ -5114,11 +8066,91 @@ log(msg);
       return player.diceItemChargesRemaining;
     }
 
+    function tryUseOriginDiceItem(player) {
+      if (!player || !player.diceItemReserved || !canUsePlayerDiceItem(player, "origin")) return false;
+
+      const target = players.find((pl) => pl !== player && pl.isAi) ||
+        players
+          .filter((pl) => pl !== player)
+          .sort((a, b) => b.position - a.position)[0];
+
+      if (!target) return false;
+      if (target.position <= 0) {
+        log("🌀 태초 주사위: 상대가 이미 출발점에 있어 예약을 유지합니다.");
+        return false;
+      }
+
+      const before = target.position;
+      player.diceItemReserved = false;
+      const remaining = consumeDiceItemCharge(player);
+      target.position = 0;
+      target.isFastMoving = false;
+
+      log(`🌀 태초 주사위: ${getPlayerDisplayName(target)}을(를) ${before}칸에서 출발점으로 되돌렸습니다. 남은 사용 ${remaining}회`);
+      showCheatPopup(
+        { color: "#7c2d12", bg: "#fff7ed" },
+        `${getPlayerDisplayName(target)} → 출발점`,
+        "태초 회귀",
+        "🌀",
+        2200
+      );
+      playSound("cheat");
+      renderTokens();
+      updateStatusText();
+      updateDiceItemStatus();
+      return true;
+    }
+
     function isPlayerLast(player) {
       if (!player || players.length < 2) return false;
       const others = players.filter((pl) => pl !== player);
       return others.some((pl) => pl.position > player.position) &&
         others.every((pl) => pl.position >= player.position);
+    }
+
+    function createNightmareInfinityRollEffect(roll, player, forced = false) {
+      const infiniteRoll = BOARD_SIZE * 2;
+      diceVisualEl.classList.add("nightmare-infinity-roll");
+      setDiceFace(NIGHTMARE_INFINITY_ROLL_DISPLAY);
+      window.setTimeout(() => {
+        diceVisualEl.classList.remove("nightmare-infinity-roll");
+      }, 5200);
+      log(forced
+        ? `∞ 테스트 커맨드로 악몽 주사위의 무한대 눈을 강제 발동했습니다. ${player.name}이(가) 도착 지점까지 질주합니다.`
+        : `∞ 악몽 주사위의 무한대 눈이 떴습니다. ${player.name}이(가) 도착 지점까지 질주합니다.`);
+      showCheatPopup(
+        { color: "#fef3c7", bg: "#1e1b4b" },
+        forced
+          ? "테스트 발동! 무한대의 눈으로 끝까지 질주합니다."
+          : "5% 확률! 무한대의 눈으로 끝까지 질주합니다.",
+        "악몽",
+        NIGHTMARE_INFINITY_ROLL_DISPLAY,
+        2400
+      );
+      return {
+        originalRoll: roll,
+        finalRoll: infiniteRoll,
+        displayRoll: NIGHTMARE_INFINITY_ROLL_DISPLAY,
+        delayMs: 900
+      };
+    }
+
+    function createNightmareGoldenFifteenRollEffect(roll, player) {
+      const goldenRoll = NIGHTMARE_GOLDEN_FIFTEEN_ROLL_VALUE;
+      log(`🌑 악몽 주사위의 황금 15가 떴습니다. ${player.name}이(가) 15칸 질주합니다.`);
+      showCheatPopup(
+        { color: "#b45309", bg: "#fffbeb" },
+        "15% 확률! 황금 15로 질주합니다.",
+        "악몽",
+        goldenRoll,
+        2200
+      );
+      return {
+        originalRoll: roll,
+        finalRoll: goldenRoll,
+        displayRoll: goldenRoll,
+        delayMs: 850
+      };
     }
 
     function applyDiceItemRollEffect(roll, player, cheats) {
@@ -5130,7 +8162,14 @@ log(msg);
       };
 
       if (!player || player.isAi || roll < 1 || roll > 6) return result;
+      if (cheats.nightmareInfinityTest && playerHasNightmareCrownDice(player)) {
+        return createNightmareInfinityRollEffect(roll, player, true);
+      }
       if (cheats.triggered && cheats.triggered.length > 0) return result;
+
+      if (playerHasNightmareCrownDice(player) && Math.random() < NIGHTMARE_GOLDEN_FIFTEEN_ROLL_CHANCE) {
+        return createNightmareGoldenFifteenRollEffect(roll, player);
+      }
 
       if (player.diceItemReserved && canUsePlayerDiceItem(player, "weak-dash")) {
         const boosted = roll + 1;
@@ -5172,18 +8211,23 @@ log(msg);
         };
       }
 
-      if (player.diceItemReserved && canUsePlayerDiceItem(player, "reroll")) {
+      const rerollItemId = player.diceItemReserved && canUsePlayerDiceItem(player, "weak-reroll")
+        ? "weak-reroll"
+        : (player.diceItemReserved && canUsePlayerDiceItem(player, "reroll") ? "reroll" : null);
+      if (rerollItemId) {
         const rerolled = Math.floor(Math.random() * 6) + 1;
         player.diceItemReserved = false;
         const remaining = consumeDiceItemCharge(player);
-        log(`🔁 재굴림 주사위: ${roll}, ${rerolled} 중 이동할 눈을 선택하세요. 남은 사용 ${remaining}회`);
+        const itemLabel = getDiceItemLabelById(rerollItemId);
+        log(`🔁 ${itemLabel}: ${roll}, ${rerolled} 중 이동할 눈을 선택하세요. 남은 사용 ${remaining}회`);
         return {
           originalRoll: roll,
           finalRoll: roll,
           displayRoll: roll,
           delayMs: 0,
           needsChoice: true,
-          choiceRolls: [roll, rerolled]
+          choiceRolls: [roll, rerolled],
+          itemLabel
         };
       }
 
@@ -5259,26 +8303,222 @@ log(msg);
       return true;
     }
 
+    function tryUseImmuneDiceProtection(player, context) {
+      if (!playerHasImmuneDice(player)) return false;
+
+      const targetTextMap = {
+        trap: "함정",
+        island: "무인도",
+        slow: "1/2칸",
+        swap: "위치 교환",
+        pushBack: "뒤로 밀기",
+        positionStorm: "자리 폭풍"
+      };
+      const targetText = targetTextMap[context] || "해로운 효과";
+
+      log(`🧬 면역 주사위: ${player.name}이(가) ${targetText} 효과를 막았습니다.`);
+      showCheatPopup(
+        { color: "#0f766e", bg: "#ecfdf5" },
+        `${targetText} 효과를 막았습니다.`,
+        "면역",
+        "🧬",
+        1800
+      );
+      playSound("shield");
+      return true;
+    }
+
+    function tryUseAbyssDiceProtection(player, context) {
+      if (!playerHasAbyssDice(player)) return false;
+
+      const targetTextMap = {
+        trap: "함정",
+        island: "무인도",
+        slow: "1/2칸",
+        swap: "위치 교환",
+        pushBack: "뒤로 밀기",
+        positionStorm: "자리 폭풍"
+      };
+      const targetText = targetTextMap[context] || "해로운 효과";
+
+      log(`👁️‍🗨️ 심연 주사위: ${player.name}이(가) ${targetText} 효과를 무시했습니다.`);
+      showCheatPopup(
+        { color: "#67e8f9", bg: "#083344" },
+        `${targetText} 효과를 무시했습니다.`,
+        "심연 면역",
+        "👁️‍🗨️",
+        1800
+      );
+      playSound("shield");
+      return true;
+    }
+
+    function getAbyssDiceStartBoost(player, startPos, multiplier) {
+      if (!playerHasAbyssDice(player) || !isAbyssRiskCell(startPos, multiplier)) return 0;
+      if (Math.random() >= 0.2) return 0;
+
+      log(`👁️‍🗨️ 심연 주사위: 위험 칸(${startPos})에서 출발해 이번 이동 +6이 발동했습니다.`);
+      showCheatPopup(
+        { color: "#cffafe", bg: "#0f172a" },
+        "위험 칸 출발 보너스 +6!",
+        "심연 가속",
+        "👁️‍🗨️",
+        2000
+      );
+      playSound("speed");
+      return 6;
+    }
+
+    function recordNearFinishTrapFall(player, trapPos, finishPos) {
+      if (gameMode !== "single-ai" || !player || player.isAi) return;
+
+      const remainingToFinish = finishPos - trapPos;
+      if (remainingToFinish < 0 || remainingToFinish > ORIGIN_DICE_TRAP_REMAINING_LIMIT) return;
+
+      if (!player.nearFinishTrapFallThisGame) {
+        log(`🌀 태초 조건 기록: 도착까지 ${remainingToFinish}칸 남은 상태에서 함정에 걸렸습니다. 이 판에서 승리하면 태초 주사위가 해금됩니다.`);
+      }
+      player.nearFinishTrapFallThisGame = true;
+    }
+
+    function recordTrapHit(player) {
+      if (gameMode !== "single-ai" || !player || player.isAi) return;
+
+      const before = Math.max(0, parseInt(aiRewardWins.trapHits, 10) || 0);
+      const after = before + 1;
+      aiRewardWins.trapHits = after;
+      saveAiRewardWins();
+      updateDiceItemButtons();
+      renderAchievementCatalog();
+
+      if (before < IMMUNE_DICE_TRAP_HIT_UNLOCK_COUNT) {
+        log(`🧬 함정 누적 기록 ${getAchievementProgress(after, IMMUNE_DICE_TRAP_HIT_UNLOCK_COUNT)}`);
+      }
+
+      if (before < IMMUNE_DICE_TRAP_HIT_UNLOCK_COUNT &&
+        after >= IMMUNE_DICE_TRAP_HIT_UNLOCK_COUNT) {
+        log("🎁 조건 보상 해금: 면역 주사위");
+        queueRewardUnlockPopup("immune");
+      }
+    }
+
+    function playNightmareCrownVictoryEffect(player, justUnlocked = false, variant = "unlock") {
+      const isVictory = variant === "victory";
+      if (!nightmareVictoryOverlayEl || !player || player.isAi || (!justUnlocked && !isVictory)) return;
+
+      const playerIndex = players.indexOf(player);
+      const tokenEl = playerIndex >= 0
+        ? document.querySelector(`.token[data-player-index="${playerIndex}"]`)
+        : null;
+      const targetEl = tokenEl || boardEl;
+      const rect = targetEl ? targetEl.getBoundingClientRect() : null;
+      const x = rect ? rect.left + rect.width / 2 : window.innerWidth / 2;
+      const y = rect ? rect.top + rect.height / 2 : window.innerHeight / 2;
+
+      nightmareVictoryOverlayEl.style.setProperty("--nightmare-x", `${x}px`);
+      nightmareVictoryOverlayEl.style.setProperty("--nightmare-y", `${y}px`);
+      nightmareVictoryOverlayEl.setAttribute("aria-hidden", "false");
+      if (nightmareVictoryTitleEl) {
+        nightmareVictoryTitleEl.textContent = isVictory ? "악몽 승리" : "악몽 주사위 해금";
+      }
+      if (nightmareVictorySubEl) {
+        nightmareVictorySubEl.textContent = isVictory
+          ? "월식의 주사위가 승리를 집어삼켰습니다."
+          : "악몽 AI 10승 보상이 깨어났습니다.";
+      }
+
+      nightmareVictoryOverlayEl.classList.remove("show");
+      if (tokenEl) tokenEl.classList.remove("nightmare-victory-winner");
+      if (gameContainerEl) gameContainerEl.classList.remove("nightmare-victory-shake");
+
+      void nightmareVictoryOverlayEl.offsetWidth;
+      nightmareVictoryOverlayEl.classList.add("show");
+      if (tokenEl) tokenEl.classList.add("nightmare-victory-winner");
+      if (gameContainerEl) gameContainerEl.classList.add("nightmare-victory-shake");
+
+      window.setTimeout(() => {
+        nightmareVictoryOverlayEl.classList.remove("show");
+        nightmareVictoryOverlayEl.setAttribute("aria-hidden", "true");
+        if (tokenEl) tokenEl.classList.remove("nightmare-victory-winner");
+        if (gameContainerEl) gameContainerEl.classList.remove("nightmare-victory-shake");
+      }, 4800);
+    }
+
+    function playAbyssDiceUnlockEffect(player, justUnlocked = false, variant = "unlock") {
+      const isVictory = variant === "victory";
+      if (!abyssUnlockOverlayEl || !player || player.isAi || (!justUnlocked && !isVictory)) return;
+
+      const playerIndex = players.indexOf(player);
+      const tokenEl = playerIndex >= 0
+        ? document.querySelector(`.token[data-player-index="${playerIndex}"]`)
+        : null;
+      const targetEl = tokenEl || boardEl;
+      const rect = targetEl ? targetEl.getBoundingClientRect() : null;
+      const rawX = rect ? rect.left + rect.width / 2 : window.innerWidth / 2;
+      const rawY = rect ? rect.top + rect.height / 2 : window.innerHeight / 2;
+      const x = Math.min(Math.max(rawX, 120), window.innerWidth - 120);
+      const y = Math.min(Math.max(rawY, 260), window.innerHeight - 150);
+
+      abyssUnlockOverlayEl.style.setProperty("--abyss-x", `${x}px`);
+      abyssUnlockOverlayEl.style.setProperty("--abyss-y", `${y}px`);
+      abyssUnlockOverlayEl.setAttribute("aria-hidden", "false");
+      if (abyssUnlockBadgeEl) {
+        abyssUnlockBadgeEl.textContent = isVictory ? "ABYSS VICTORY" : "ABYSS REWARD";
+      }
+      if (abyssUnlockTitleEl) {
+        abyssUnlockTitleEl.textContent = isVictory ? "심연 승리" : "심연 주사위 해금";
+      }
+      if (abyssUnlockSubEl) {
+        abyssUnlockSubEl.textContent = isVictory
+          ? "심연의 눈이 승리자를 응시합니다."
+          : "검은 균열에서 심연의 주사위가 떠오릅니다.";
+      }
+      abyssUnlockOverlayEl.classList.remove("show");
+      if (gameContainerEl) gameContainerEl.classList.remove("abyss-unlock-shake");
+
+      void abyssUnlockOverlayEl.offsetWidth;
+      abyssUnlockOverlayEl.classList.add("show");
+      if (gameContainerEl) gameContainerEl.classList.add("abyss-unlock-shake");
+      playSound("cheat");
+
+      window.setTimeout(() => {
+        abyssUnlockOverlayEl.classList.remove("show");
+        abyssUnlockOverlayEl.setAttribute("aria-hidden", "true");
+        if (gameContainerEl) gameContainerEl.classList.remove("abyss-unlock-shake");
+      }, ABYSS_DICE_UNLOCK_EFFECT_DURATION_MS);
+    }
+
     function recordAiClearReward(winner) {
       if (gameMode !== "single-ai" || !winner || winner.isAi) return;
       if (aiDifficulty !== "easy" &&
         aiDifficulty !== "normal" &&
         aiDifficulty !== "hard" &&
-        aiDifficulty !== "nightmare") return;
+        aiDifficulty !== "nightmare" &&
+        aiDifficulty !== "abyss") return;
 
       const before = aiRewardWins[aiDifficulty] || 0;
       const after = before + 1;
       const hardBasicBefore = aiRewardWins.hardBasic || 0;
+      const nightmareBasicBefore = aiRewardWins.nightmareBasic || 0;
       const clearedHardWithBasicDice = aiDifficulty === "hard" && winner.diceItem === "basic";
+      const clearedNightmareWithBasicDice = aiDifficulty === "nightmare" && winner.diceItem === "basic";
       const unlockedGoldenHunter = !aiRewardWins.goldenHunter &&
         (winner.goldenKeysCollected || 0) >= 3;
+      const unlockedOriginDice = !aiRewardWins.originReturn &&
+        !!winner.nearFinishTrapFallThisGame;
 
       aiRewardWins[aiDifficulty] = after;
       if (clearedHardWithBasicDice) {
         aiRewardWins.hardBasic = hardBasicBefore + 1;
       }
+      if (clearedNightmareWithBasicDice) {
+        aiRewardWins.nightmareBasic = nightmareBasicBefore + 1;
+      }
       if (unlockedGoldenHunter) {
         aiRewardWins.goldenHunter = true;
+      }
+      if (unlockedOriginDice) {
+        aiRewardWins.originReturn = true;
       }
       saveAiRewardWins();
       updateAiDifficultyButtons();
@@ -5298,6 +8538,23 @@ log(msg);
             "악몽 AI 난이도가 해금되었습니다.",
             "난이도 해금",
             "🌑",
+            2600
+          );
+        }
+      }
+
+      if (clearedNightmareWithBasicDice) {
+        const nightmareBasicAfter = aiRewardWins.nightmareBasic || 0;
+        const nightmareBasicProgress = Math.min(nightmareBasicAfter, ABYSS_UNLOCK_BASIC_NIGHTMARE_CLEARS);
+        log(`👁️‍🗨️ 악몽 AI 기본 주사위 클리어 ${nightmareBasicProgress}/${ABYSS_UNLOCK_BASIC_NIGHTMARE_CLEARS}`);
+        if (nightmareBasicBefore < ABYSS_UNLOCK_BASIC_NIGHTMARE_CLEARS &&
+          nightmareBasicAfter >= ABYSS_UNLOCK_BASIC_NIGHTMARE_CLEARS) {
+          log("👁️‍🗨️ 심연 AI 난이도가 해금되었습니다.");
+          showCheatPopup(
+            { color: "#155e75", bg: "#cffafe" },
+            "심연 AI 난이도가 해금되었습니다.",
+            "난이도 해금",
+            "👁️‍🗨️",
             2600
           );
         }
@@ -5325,9 +8582,20 @@ log(msg);
         );
       }
 
+      if (aiDifficulty === "nightmare" &&
+        before < NIGHTMARE_CROWN_EFFECT_WINS &&
+        after >= NIGHTMARE_CROWN_EFFECT_WINS) {
+        log("🌑 악몽 주사위가 해금되었습니다.");
+      }
+
       if (unlockedGoldenHunter) {
         log("🎁 조건 보상 해금: 황금 사냥꾼 주사위");
         queueRewardUnlockPopup("golden-hunter");
+      }
+
+      if (unlockedOriginDice) {
+        log("🎁 조건 보상 해금: 태초 주사위");
+        queueRewardUnlockPopup("origin");
       }
 
       Object.keys(DICE_ITEM_UNLOCKS).forEach((itemId) => {
@@ -5342,7 +8610,20 @@ log(msg);
     function finishGameWithWinner(player, message) {
       playSound("win");
       log(message);
+      const nightmareCrownWasUnlocked = isNightmareCrownEffectUnlocked();
+      const abyssDiceWasUnlocked = isDiceItemUnlocked("abyss-dice");
       recordAiClearReward(player);
+      const nightmareCrownJustUnlocked = !nightmareCrownWasUnlocked && isNightmareCrownEffectUnlocked();
+      const abyssDiceJustUnlocked = !abyssDiceWasUnlocked && isDiceItemUnlocked("abyss-dice");
+      if (nightmareCrownJustUnlocked) {
+        playNightmareCrownVictoryEffect(player, true);
+      } else if (playerHasNightmareCrownDice(player)) {
+        playNightmareCrownVictoryEffect(player, false, "victory");
+      } else if (abyssDiceJustUnlocked) {
+        playAbyssDiceUnlockEffect(player, true);
+      } else if (playerHasAbyssDice(player)) {
+        playAbyssDiceUnlockEffect(player, false, "victory");
+      }
       diceInfoEl.textContent = `${player.name} 승리! 게임이 끝났습니다.`;
       gameOver = true;
       rollBtn.disabled = true;
@@ -5352,6 +8633,7 @@ log(msg);
     }
 
     function getAiStrategyChance() {
+      if (aiDifficulty === "abyss") return 1;
       if (aiDifficulty === "nightmare") return 0.85;
       if (aiDifficulty === "hard") return 0.65;
       if (aiDifficulty === "normal") return 0.3;
@@ -5410,6 +8692,22 @@ log(msg);
     function chooseAiRoll(cheats) {
       const strategyChance = getAiStrategyChance();
       const randomRoll = () => Math.floor(Math.random() * 6) + 1;
+
+      if (aiDifficulty === "abyss") {
+        aiNightmareRollCount++;
+        const rollOptions = [randomRoll(), randomRoll()];
+        if (aiNightmareRollCount % 3 === 0) rollOptions.push(randomRoll());
+        const abyssCandidates = rollOptions.map((roll) => ({
+          roll,
+          score: scoreAiRoll(roll, cheats)
+        }));
+        const bestAbyssScore = Math.max(...abyssCandidates.map((item) => item.score));
+        const bestAbyssCandidates = abyssCandidates.filter((item) => item.score === bestAbyssScore);
+        const pickedAbyss = bestAbyssCandidates[Math.floor(Math.random() * bestAbyssCandidates.length)];
+
+        log(`👁️‍🗨️ 심연 AI 예측 주사위: ${rollOptions.join(", ")} 중 ${pickedAbyss.roll}을 선택했습니다.`);
+        return pickedAbyss.roll;
+      }
 
       if (aiDifficulty === "nightmare") {
         aiNightmareRollCount++;
@@ -5470,7 +8768,44 @@ log(msg);
       scheduleAiTurn();
     }
 
+    async function applyIslandLandingEffect(player, appliedPlayers = null, reason = "") {
+      if (!player || !islandCells.includes(player.position)) return false;
+      if (appliedPlayers && appliedPlayers.has(player)) return false;
+      if (appliedPlayers) appliedPlayers.add(player);
+
+      const islandPos = player.position;
+      const reasonText = reason ? `${reason}으로 ` : "";
+
+      if (tryUseImmuneDiceProtection(player, "island")) {
+        return true;
+      }
+      if (tryUseAbyssDiceProtection(player, "island")) {
+        return true;
+      }
+      if (await tryUseDiceItemDefense(player, "island")) {
+        return true;
+      }
+      if (player.shieldChargesRemaining && player.shieldChargesRemaining > 0) {
+        useShield(player, "island");
+        return true;
+      }
+
+      player.skipTurnsRemaining = (player.skipTurnsRemaining || 0) + 3;
+      log(`🏝 ${player.name}이(가) ${reasonText}무인도 칸(${islandPos})에 도착했습니다. 다음 자기 턴 3번을 쉽니다.`);
+
+      showCheatPopup(
+        { color: "#ccfbf1", bg: "#0f766e" },
+        `무인도 칸(${islandPos})! 다음 자기 턴 3번을 쉽니다.`,
+        "무인도",
+        "🏝",
+        2000
+      );
+
+      return true;
+    }
+
     async function afterMoveCheck(player, cheats) {
+      const islandEffectAppliedPlayers = new Set();
       renderTokens();
       updateStatusText();
 
@@ -5479,11 +8814,6 @@ log(msg);
       if (player.position === finishPos) {
         finishGameWithWinner(player, `🎉 ${player.name}이(가) 도착 지점에 먼저 도달했습니다! 게임 종료!`);
         return;
-      }
-
-      if (cheats.trapImmune) {
-        player.trapImmune = true;
-        log(`🧲 치트: ${player.name}이(가) 남은 게임 동안 함정 칸을 모두 무시합니다.`);
       }
 
       if (cheats.shield2turn) {
@@ -5504,8 +8834,13 @@ log(msg);
 
       if (resetCells.includes(player.position)) {
         const trapPos = player.position;
+        recordTrapHit(player);
 
-        if (player.trapImmune) {
+        if (tryUseImmuneDiceProtection(player, "trap")) {
+          // 면역 주사위 패시브로 함정 처리 완료
+        } else if (tryUseAbyssDiceProtection(player, "trap")) {
+          // 심연 주사위 패시브로 함정 처리 완료
+        } else if (player.trapImmune) {
           log(`🧲 함정 칸(${trapPos})에 도착했지만, 함정 무시 효과로 안전합니다.`);
         } else if (await tryUseDiceItemDefense(player, "trap")) {
           // 주사위 아이템 방어 효과로 함정 처리 완료
@@ -5529,32 +8864,14 @@ log(msg);
             }, 400);
           }
 
+          recordNearFinishTrapFall(player, trapPos, finishPos);
           player.position = 0;
           renderTokens();
           updateStatusText();
         }
       }
 
-      if (islandCells.includes(player.position)) {
-        const islandPos = player.position;
-
-        if (await tryUseDiceItemDefense(player, "island")) {
-          // 주사위 아이템 방어 효과로 무인도 처리 완료
-        } else if (player.shieldChargesRemaining && player.shieldChargesRemaining > 0) {
-          useShield(player, "island");
-        } else {
-          player.skipTurnsRemaining = (player.skipTurnsRemaining || 0) + 3;
-          log(`🏝 ${player.name}이(가) 무인도 칸(${islandPos})에 도착했습니다. 다음 자기 턴 3번을 쉽니다.`);
-
-          showCheatPopup(
-            { color: "#ccfbf1", bg: "#0f766e" },
-            `무인도 칸(${islandPos})! 다음 자기 턴 3번을 쉽니다.`,
-            "무인도",
-            "🏝",
-            2000
-          );
-        }
-      }
+      await applyIslandLandingEffect(player, islandEffectAppliedPlayers);
 
       if (cheats.leadFollow) {
         let maxPos = -1;
@@ -5582,6 +8899,10 @@ log(msg);
 
         if (leader === player) {
           log("🔄 치트: 이미 선두라 교환 효과가 없습니다.");
+        } else if (tryUseImmuneDiceProtection(leader, "swap")) {
+          // 면역 주사위 패시브로 위치 교환 처리 완료
+        } else if (tryUseAbyssDiceProtection(leader, "swap")) {
+          // 심연 주사위 패시브로 위치 교환 처리 완료
         } else if (leader.shieldChargesRemaining && leader.shieldChargesRemaining > 0) {
           useShield(leader, "swap");
         } else {
@@ -5591,6 +8912,8 @@ log(msg);
           log(`🔄 치트: ${player.name}과(와) ${leader.name}의 위치를 교환했습니다.`);
           renderTokens();
           updateStatusText();
+          await applyIslandLandingEffect(player, islandEffectAppliedPlayers, "교환");
+          await applyIslandLandingEffect(leader, islandEffectAppliedPlayers, "교환");
         }
       }
 
@@ -5598,7 +8921,11 @@ log(msg);
         players.forEach((pl) => {
           if (pl === player) return;
           if (pl.position > 0) {
-            if (pl.shieldChargesRemaining && pl.shieldChargesRemaining > 0) {
+            if (tryUseImmuneDiceProtection(pl, "pushBack")) {
+              // 면역 주사위 패시브로 뒤로 밀기 처리 완료
+            } else if (tryUseAbyssDiceProtection(pl, "pushBack")) {
+              // 심연 주사위 패시브로 뒤로 밀기 처리 완료
+            } else if (pl.shieldChargesRemaining && pl.shieldChargesRemaining > 0) {
               useShield(pl, "pushBack");
             } else {
               pl.position = Math.max(0, pl.position - 2);
@@ -5627,12 +8954,22 @@ log(msg);
           log("🌪 치트: 자리 폭풍은 플레이어가 2명 이상일 때만 발동합니다.");
         } else {
           const beforePositions = players.map((pl) => pl.position);
-          const hasDifferentPositions = beforePositions.some((pos) => pos !== beforePositions[0]);
+          const stormTargets = players
+            .map((pl, idx) => ({ player: pl, index: idx, position: beforePositions[idx] }))
+            .filter(({ player }) => {
+              if (tryUseImmuneDiceProtection(player, "positionStorm")) return false;
+              if (tryUseAbyssDiceProtection(player, "positionStorm")) return false;
+              return true;
+            });
+          const movablePositions = stormTargets.map(({ position }) => position);
+          const hasDifferentPositions = movablePositions.some((pos) => pos !== movablePositions[0]);
 
-          if (!hasDifferentPositions) {
+          if (stormTargets.length < 2) {
+            log("🌪 치트: 면역 효과로 자리 폭풍에 휘말릴 대상이 부족합니다.");
+          } else if (!hasDifferentPositions) {
             log("🌪 치트: 모두 같은 칸에 있어 자리 폭풍 효과가 없습니다.");
           } else {
-            let shuffled = beforePositions.slice();
+            let shuffled = movablePositions.slice();
             let changed = false;
 
             for (let attempt = 0; attempt < 12; attempt++) {
@@ -5642,16 +8979,16 @@ log(msg);
                 shuffled[i] = shuffled[j];
                 shuffled[j] = tmp;
               }
-              changed = shuffled.some((pos, idx) => pos !== beforePositions[idx]);
+              changed = shuffled.some((pos, idx) => pos !== movablePositions[idx]);
               if (changed) break;
             }
 
             if (!changed) {
-              shuffled = beforePositions.slice().reverse();
+              shuffled = movablePositions.slice().reverse();
             }
 
-            players.forEach((pl, idx) => {
-              pl.position = shuffled[idx];
+            stormTargets.forEach(({ player: targetPlayer }, idx) => {
+              targetPlayer.position = shuffled[idx];
             });
 
             const summary = players
@@ -5715,6 +9052,7 @@ log(msg);
       if (players.length === 0) return;
       const player = players[currentPlayerIndex];
       const startPos = player.position;
+      const isNightmareInfinityMove = displayedRoll === NIGHTMARE_INFINITY_ROLL_DISPLAY;
       let { multiplier, label } = getMultiplierInfo(startPos);
 
       if (tryUseSlowIgnoreItem(player, multiplier)) {
@@ -5722,12 +9060,28 @@ log(msg);
         label = "1/2 칸 무시";
       }
 
+      if (multiplier < 1 && tryUseImmuneDiceProtection(player, "slow")) {
+        multiplier = 1;
+        label = "1/2 면역";
+      }
+
+      if (multiplier < 1 && tryUseAbyssDiceProtection(player, "slow")) {
+        multiplier = 1;
+        label = "심연 면역";
+      }
+
+      if (multiplier < 1 && player.shieldChargesRemaining && player.shieldChargesRemaining > 0) {
+        useShield(player, "slow");
+        multiplier = 1;
+        label = "1/2 보호막";
+      }
+
       if (cheats.goldTest) {
         multiplier = 1;
         label = "goldtest";
       }
 
-      if ((!cheats.triggered || cheats.triggered.length === 0) && multiplier !== 1) {
+      if (!isNightmareInfinityMove && (!cheats.triggered || cheats.triggered.length === 0) && multiplier !== 1) {
         const isBoost = multiplier > 1;
         const style = isBoost
           ? { color: "#fed7aa", bg: "#7c2d12" }
@@ -5743,10 +9097,15 @@ log(msg);
         log("🚀 치트로 이번 이동 거리가 2배가 됩니다.");
       }
 
-      const isFast = (multiplier > 1) || cheats.doubleStep;
+      const abyssStartBoost = getAbyssDiceStartBoost(player, startPos, getMultiplierInfo(startPos).multiplier);
+      if (abyssStartBoost > 0) {
+        label = label === "일반 구간" ? "심연 +6" : `${label} + 심연 +6`;
+      }
+
+      const isFast = isNightmareInfinityMove || (multiplier > 1) || cheats.doubleStep || abyssStartBoost > 0;
       player.isFastMoving = isFast;
 
-      const effectiveSteps = Math.floor(roll * multiplier * extraFactor);
+      const effectiveSteps = Math.floor(roll * multiplier * extraFactor) + abyssStartBoost;
 
       const finishPos = BOARD_SIZE - 1;
       let targetPos = startPos + effectiveSteps;
@@ -5766,23 +9125,28 @@ log(msg);
         renderTokens();
         afterMoveCheck(player, cheats);
       } else {
+        const stepDelayMs = isNightmareInfinityMove
+          ? Math.max(18, Math.min(70, Math.floor(1500 / Math.max(stepsToMove, 1))))
+          : 250;
         animateMove(player, stepsToMove, () => {
           player.isFastMoving = false;
           renderTokens();
           afterMoveCheck(player, cheats);
-        });
+        }, stepDelayMs);
       }
     }
 
     function refreshUI() {
       renderTokens();
       updateStatusText();
+      syncDiceStyleForCurrentTurn();
     }
 
     function resetTopPanel() {
       logEl.innerHTML = "";
       resetDiceStyle();
       renderDiceIdleFace();
+      syncDiceStyleForCurrentTurn();
       diceInfoEl.textContent = "🎲 주사위를 굴려 게임을 시작해 보세요.";
       secretCodeInput.value = "";
       cheatTextEl.textContent = "치트: 없음";
@@ -5811,13 +9175,30 @@ log(msg);
 
       const cheats = getCheatsForCurrentRoll();
       showCheatText(cheats);
+      tryUseOriginDiceItem(player);
+
+      if (cheats.riskReverse) {
+        applyRiskReverse(player);
+      }
+      if (cheats.slowReverse) {
+        applySlowReverse(player);
+      }
+      if (cheats.goldenMeteor) {
+        applyGoldenMeteor(player);
+      }
 
       const hasCheat = cheats.triggered && cheats.triggered.length > 0;
 
       // 치트가 없을 때 → 말 색깔 기반 연한 네온
       if (!hasCheat && player) {
         resetDiceStyle();
-        setDiceNeonForColor(player.color);
+        if (playerHasNightmareCrownDice(player)) {
+          applyNightmareCrownDiceStyle();
+        } else if (playerHasAbyssDice(player)) {
+          applyAbyssDiceStyle();
+        } else {
+          setDiceNeonForColor(player.color);
+        }
       }
 
       if (!hasCheat) {
@@ -5852,7 +9233,8 @@ log(msg);
             log("✨ 치트: 황금 주사위(15)가 적용되었습니다.");
           } else if (cheats.rerollHigher) {
             const r1 = Math.floor(Math.random() * 6) + 1;
-            const r2 = Math.floor(Math.random() * 6) + 1;
+            const r2Pool = [1, 2, 3, 4, 5, 6].filter((value) => value !== r1);
+            const r2 = r2Pool[Math.floor(Math.random() * r2Pool.length)];
             finalRoll = Math.max(r1, r2);
             log(`🎲 치트: 재굴림 (${r1}, ${r2}) 중 ${finalRoll} 사용.`);
           } else if (isAiTurn()) {
@@ -5875,7 +9257,8 @@ log(msg);
             showRerollChoice(itemRollEffect.choiceRolls[0], itemRollEffect.choiceRolls[1])
               .then((pickedRoll) => {
                 setDiceFace(pickedRoll);
-                log(`🔁 재굴림 주사위: ${pickedRoll}을(를) 선택했습니다.`);
+                const rerollLabel = itemRollEffect.itemLabel || "재굴림 주사위";
+                log(`🔁 ${rerollLabel}: ${pickedRoll}을(를) 선택했습니다.`);
                 moveWithFinalRoll({
                   ...itemRollEffect,
                   finalRoll: pickedRoll,
@@ -5907,8 +9290,7 @@ log(msg);
       }
 
       currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
-      renderTokens();
-      updateStatusText();
+      refreshUI();
       scheduleAiTurn();
     }
 
@@ -5962,6 +9344,7 @@ log(msg);
           trapImmune: false,
           storedCheatCode: null,
           goldenKeysCollected: 0,
+          nearFinishTrapFallThisGame: false,
           isFastMoving: false,
           isAi: gameMode === "single-ai" && i === 1
         });
@@ -5997,6 +9380,39 @@ log(msg);
       playSound("click");
       setupGame();
     });
+
+    if (secretCodeInput) {
+      secretCodeInput.addEventListener("keydown", (e) => {
+        if (e.key !== "Enter") return;
+
+        const codes = secretCodeInput.value
+          .split(/[,\s]+/)
+          .map((code) => code.trim())
+          .filter(Boolean);
+
+        const hasNightmareUnlockCode = codes.some(isNightmareUnlockCheatCode);
+        const hasNightmareDiceCode = codes.some(isNightmareCrownCheatCode);
+        const hasAbyssUnlockCode = codes.some(isAbyssUnlockCheatCode);
+        const hasAbyssDiceCode = codes.some(isAbyssDiceCheatCode);
+        if (!hasNightmareUnlockCode && !hasNightmareDiceCode && !hasAbyssUnlockCode && !hasAbyssDiceCode) return;
+
+        e.preventDefault();
+        const currentPlayer = players[currentPlayerIndex] || players.find((pl) => !pl.isAi) || players[0];
+        if (hasNightmareUnlockCode) {
+          unlockNightmareDifficultyByCheat({ showPopup: true });
+        }
+        if (hasNightmareDiceCode) {
+          unlockNightmareCrownByCheat(currentPlayer, { showPopup: true, playEffect: true });
+        }
+        if (hasAbyssUnlockCode) {
+          unlockAbyssByCheat({ showPopup: true });
+        }
+        if (hasAbyssDiceCode) {
+          unlockAbyssDiceByCheat(currentPlayer, { showPopup: true, playEffect: true });
+        }
+        secretCodeInput.value = "";
+      });
+    }
 
     if (coopModeBtn) {
       coopModeBtn.addEventListener("click", () => {
@@ -6066,6 +9482,7 @@ log(msg);
           }
           aiDifficulty = e.target.value;
           updateAiDifficultyButtons();
+          updateStatusText();
           playSound("click");
         });
       });
@@ -6082,6 +9499,9 @@ log(msg);
     }
 
     themeSelect.addEventListener("change", (e) => {
+      if (!getForcedAiThemeName()) {
+        lastManualTheme = e.target.value;
+      }
       applyTheme(e.target.value);
       renderBoard();
       renderTokens();
@@ -6119,19 +9539,11 @@ log(msg);
       });
     }
     // 🔊 / 🔇 효과음 켜기/끄기 토글
-    if (soundToggleBtn) {
-      soundToggleBtn.addEventListener("click", () => {
-        isSoundOn = !isSoundOn;
-        soundToggleBtn.textContent = isSoundOn
-          ? "🔊 효과음 켜짐"
-          : "🔇 효과음 꺼짐";
-        // 켜진 상태로 바뀔 때만 살짝 클릭 소리 내고 싶으면 아래 한 줄 주석 해제
-        // if (isSoundOn) playSound("click");
-      });
-
-      // 처음 로드 시 버튼 텍스트 초기화
-      soundToggleBtn.textContent = "🔊 효과음 켜짐";
-    }
+    [soundToggleBtn, modeSoundToggleBtn].forEach((button) => {
+      if (!button) return;
+      button.addEventListener("click", toggleSound);
+    });
+    updateSoundToggleButtons();
 
   // 🔽 칸 편집 모드 접기 / 펼치기
     if (cellEditToggleBtn && cellEditCardEl && cellEditBodyEl) {
