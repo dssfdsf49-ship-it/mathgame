@@ -2,6 +2,14 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="주사위게임" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="./icons/dice-app-icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="./icons/dice-app-icon-192.png" />
   <title>주사위 보드게임</title>
   <style>
 /* 🎯 주사위 옆 치트 커맨드 입력 */
@@ -68,6 +76,46 @@ body.single-ai-active .board-size-setting {
   border: 1px solid #e5e7eb;
   box-shadow: 0 16px 44px rgba(15, 23, 42, 0.12);
   position: relative;
+}
+
+.mode-install-btn {
+  position: absolute;
+  left: 20px;
+  top: 20px;
+  min-height: 34px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid #bfdbfe;
+  background: linear-gradient(135deg, #eff6ff, #ecfeff);
+  color: #1d4ed8;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.14);
+}
+
+.mode-install-btn[hidden] {
+  display: none !important;
+}
+
+.mode-install-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(37, 99, 235, 0.2);
+}
+
+.mode-install-btn:active {
+  transform: translateY(1px);
+}
+
+@media (display-mode: fullscreen), (display-mode: standalone) {
+  .mode-install-btn {
+    display: none !important;
+  }
+
+  body {
+    min-height: 100dvh;
+    overscroll-behavior: none;
+  }
 }
 
 .mode-select-title {
@@ -3271,6 +3319,12 @@ body.theme-neon .status span {
     }
 
     @media (max-width: 560px) {
+      .mode-install-btn {
+        position: static;
+        display: block;
+        margin: 0 auto 8px;
+      }
+
       .mode-sound-toggle-btn {
         position: static;
         display: block;
@@ -4722,6 +4776,7 @@ body.single-ai-active.ai-theme-abyss .finish-cell {
 </head>
 <body class="theme-default mode-select-active">
   <section class="mode-select-screen" id="modeSelectScreen">
+    <button type="button" class="mode-install-btn" id="pwaInstallBtn" hidden>📱 앱 설치</button>
     <button type="button" class="mode-sound-toggle-btn" id="modeSoundToggleBtn">🔊 효과음 켜짐</button>
     <h1 class="mode-select-title">주사위 보드게임</h1>
     <div class="mode-select-grid">
@@ -5426,6 +5481,7 @@ body.single-ai-active.ai-theme-abyss .finish-cell {
     let isRewardUnlockPopupOpen = false;
     let customBoardSettings = null;
     let aiNightmareRollCount = 0;
+    let deferredInstallPrompt = null;
 
     const cellTokenEls = [];
 
@@ -5448,6 +5504,7 @@ body.single-ai-active.ai-theme-abyss .finish-cell {
     const achievementCatalogListEl = document.getElementById("achievementCatalogList");
     const achievementCatalogCountEl = document.getElementById("achievementCatalogCount");
     const modeSelectMessageEl = document.getElementById("modeSelectMessage");
+    const pwaInstallBtn = document.getElementById("pwaInstallBtn");
     const boardEl = document.getElementById("board");
     const gameContainerEl = document.querySelector(".game-container");
     const rollBtn = document.getElementById("rollBtn");
@@ -9544,6 +9601,51 @@ log(msg);
       button.addEventListener("click", toggleSound);
     });
     updateSoundToggleButtons();
+
+    function isRunningAsInstalledApp() {
+      return window.matchMedia("(display-mode: fullscreen)").matches ||
+        window.matchMedia("(display-mode: standalone)").matches ||
+        window.navigator.standalone === true;
+    }
+
+    function setupPwaInstallPrompt() {
+      if (!pwaInstallBtn || isRunningAsInstalledApp()) return;
+
+      window.addEventListener("beforeinstallprompt", (event) => {
+        event.preventDefault();
+        deferredInstallPrompt = event;
+        pwaInstallBtn.hidden = false;
+      });
+
+      pwaInstallBtn.addEventListener("click", async () => {
+        if (!deferredInstallPrompt) return;
+
+        playSound("click");
+        pwaInstallBtn.hidden = true;
+        deferredInstallPrompt.prompt();
+        await deferredInstallPrompt.userChoice.catch(() => undefined);
+        deferredInstallPrompt = null;
+      });
+
+      window.addEventListener("appinstalled", () => {
+        deferredInstallPrompt = null;
+        pwaInstallBtn.hidden = true;
+      });
+    }
+
+    function registerPwaServiceWorker() {
+      if (!("serviceWorker" in navigator)) return;
+      if (!/^https?:$/.test(window.location.protocol)) return;
+
+      window.addEventListener("load", () => {
+        navigator.serviceWorker
+          .register("./service-worker.js")
+          .catch((error) => console.warn("Service worker registration failed:", error));
+      });
+    }
+
+    setupPwaInstallPrompt();
+    registerPwaServiceWorker();
 
   // 🔽 칸 편집 모드 접기 / 펼치기
     if (cellEditToggleBtn && cellEditCardEl && cellEditBodyEl) {
