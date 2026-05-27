@@ -5260,7 +5260,7 @@ body.single-ai-active.ai-theme-abyss .finish-cell {
           <button type="button" class="dice-item-option" data-item="revenge" disabled>
             <span class="dice-item-icon">🔥</span>
             <span class="dice-item-name">복수 주사위</span>
-            <span class="dice-item-desc">꼴찌일 때 주사위 값 +3</span>
+            <span class="dice-item-desc">꼴찌일 때마다 주사위 값 +3</span>
             <span class="dice-item-lock">어려움 AI 10승 필요</span>
           </button>
         </div>
@@ -7917,7 +7917,7 @@ log(msg);
       if (itemId === "dash") return "예약하면 주사위 값 +3. 3회 사용.";
       if (itemId === "shield") return "함정/무인도 효과를 3회 방어합니다.";
       if (itemId === "reroll") return "예약하면 두 주사위 눈 중 하나를 선택합니다. 3회 사용.";
-      if (itemId === "revenge") return "꼴찌일 때 주사위 값 +3.";
+      if (itemId === "revenge") return "꼴찌일 때마다 주사위 값 +3.";
       if (itemId === "nightmare-crown") return "15% 확률로 황금 15가 나와 15칸 이동합니다.";
       if (itemId === "abyss-dice") return "해로운 효과 완전 면역, 위험 칸에서 출발 시 20%확률로 +6";
       if (itemId === "golden-hunter") return "황금열쇠 칸에서 카드 3장 중 하나를 선택합니다.";
@@ -8290,7 +8290,7 @@ log(msg);
       if (itemId === "dash") return 3;
       if (itemId === "shield" || itemId === "reroll") return 3;
       if (itemId === "origin") return 1;
-      if (itemId === "weak-stable" || itemId === "weak-dash" || itemId === "weak-shield" || itemId === "weak-reroll" || itemId === "revenge") return 1;
+      if (itemId === "weak-stable" || itemId === "weak-dash" || itemId === "weak-shield" || itemId === "weak-reroll") return 1;
       return 0;
     }
 
@@ -8302,7 +8302,7 @@ log(msg);
       if (itemId === "shield") return `함정/무인도 방어 ${charges}회`;
       if (itemId === "dash") return `+3 이동 ${charges}회`;
       if (itemId === "reroll") return `재굴림 ${charges}회`;
-      if (itemId === "revenge") return `꼴찌 +3 ${charges}회`;
+      if (itemId === "revenge") return "꼴찌일 때 +3";
       if (itemId === "nightmare-crown") return "";
       if (itemId === "abyss-dice") return "";
       if (itemId === "golden-hunter") return "황금열쇠 3장 선택";
@@ -8312,7 +8312,7 @@ log(msg);
     }
 
     function isDiceItemPassive(itemId) {
-      return itemId === "golden-hunter" || itemId === "nightmare-crown" || itemId === "abyss-dice" || itemId === "immune";
+      return itemId === "golden-hunter" || itemId === "nightmare-crown" || itemId === "abyss-dice" || itemId === "immune" || itemId === "revenge";
     }
 
     function isDiceItemReservable(itemId) {
@@ -8617,10 +8617,13 @@ log(msg);
         };
       }
 
-      if (canUsePlayerDiceItem(player, "revenge") && isPlayerLast(player)) {
+      if (gameMode === "single-ai" &&
+        player &&
+        !player.isAi &&
+        player.diceItem === "revenge" &&
+        isPlayerLast(player)) {
         const boosted = roll + 3;
-        const remaining = consumeDiceItemCharge(player);
-        log(`🔥 복수 주사위: 꼴찌 효과로 ${roll} → ${boosted}. 남은 사용 ${remaining}회`);
+        log(`🔥 복수 주사위: 꼴찌 효과로 ${roll} → ${boosted}.`);
         showCheatPopup(
           { color: "#be123c", bg: "#fff1f2" },
           `꼴찌 효과 ${roll} +3 → ${boosted}칸 이동`,
